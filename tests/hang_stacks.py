@@ -32,7 +32,7 @@ CONTEXT_OFFSET = {name: 0x78 + 8 * index for index, name in enumerate(REGISTERS)
 CONTEXT_OFFSET["rip"] = 0xF8
 
 # Modules of this project: a thread with one of them on its stack is marked and printed early.
-OWN_MODULES = ("apbquestprobe.dll", "apbgameplaytrace.dll", "adaptivepapyrusbudget.dll", "apbtestsaveloader.dll")
+OWN_MODULES = ("apbquestprobe.dll", "apbgameplaytrace.dll", "papyruscatchup.dll", "adaptivepapyrusbudget.dll", "apbtestsaveloader.dll")
 
 
 class Module:

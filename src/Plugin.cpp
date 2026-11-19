@@ -18,7 +18,8 @@ namespace
     using RunTasks = void(void*, void*, void*, void*, float);
 
     constexpr auto runtime = SKSE::RUNTIME_SSE_1_6_1170;
-    constexpr auto pluginName = "AdaptivePapyrusBudget";
+    constexpr auto pluginName = "PapyrusCatchUp";
+    constexpr auto iniName = L"PapyrusCatchUp.ini";
     // Logs of earlier game sessions kept beside the current one (LogHistory.h). A log is a few
     // kilobytes, and on a day of many short launches ten of them covered only a few hours.
     constexpr std::size_t keptLogs = 50;
@@ -91,7 +92,7 @@ namespace
     // or anything unreadable leaves it off and is reported, so a typo cannot install a hook.
     bool ReadSwitch(const wchar_t* section, const wchar_t* key)
     {
-        const auto value = ReadValue(L"AdaptivePapyrusBudget.ini", section, key);
+        const auto value = ReadValue(iniName, section, key);
         if (!value) {
             return false;
         }
@@ -106,7 +107,7 @@ namespace
 
     std::optional<double> ReadNumber(const wchar_t* section, const wchar_t* key)
     {
-        const auto value = ReadValue(L"AdaptivePapyrusBudget.ini", section, key);
+        const auto value = ReadValue(iniName, section, key);
         if (!value) {
             return std::nullopt;
         }
@@ -121,10 +122,10 @@ namespace
     // [VMCatchUp] Mode: off (default), carried, or accelerate. Anything else keeps it off.
     std::optional<VMCatchUp::Mode> ReadCatchUpMode()
     {
-        if (ReadValue(L"AdaptivePapyrusBudget.ini", L"VMCatchUp", L"Enabled")) {
+        if (ReadValue(iniName, L"VMCatchUp", L"Enabled")) {
             SKSE::log::warn("[VMCatchUp] Enabled is no longer read; use Mode=off, carried or accelerate");
         }
-        const auto value = ReadValue(L"AdaptivePapyrusBudget.ini", L"VMCatchUp", L"Mode");
+        const auto value = ReadValue(iniName, L"VMCatchUp", L"Mode");
         if (!value || _wcsicmp(value->c_str(), L"off") == 0) {
             return std::nullopt;
         }

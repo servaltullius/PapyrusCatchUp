@@ -1,4 +1,4 @@
-# Adaptive Papyrus Budget 개발일지
+# Papyrus Catch-Up 개발일지 (구 Adaptive Papyrus Budget)
 
 2026-11-10 11시 기준. 무엇을 왜 시도했고, 무엇이 틀렸고, 지금 어디까지 왔는지를 시간 순서로 적습니다. 수치와 조건의 자세한 내용은 [README](README.md)와 `verification/`의 기록이 원본이고, 이 문서는 그 흐름을 잇는 글입니다.
 
@@ -23,8 +23,8 @@
 | 측정된 효과 | 장비 변경 장면, 30 FPS, 같은 실행 안의 끔 대비 이벤트 해소 시간: 지금의 `accelerate`(구현을 확인한 읽기만 인정) 8~13%, 지나치기 옵션을 켜면 61~73% 단축(시험 DLL로 측정). `carried`: 그 장면에서는 효과 없음. 42 FPS에서 지나치기는 모든 대기 호출의 평균 대기를 27% 줄였지만 장비 해소 시간에는 차이가 없었습니다(연표 40). 지금의 `accelerate`는 42 FPS에서 다시 재지 않았습니다. 이전 이름 규칙의 18~39%(30 FPS), 32~56%(42 FPS)는 지금 빌드의 값이 아닙니다. |
 | 안전성 | 셀 이동 반복, JB1 오류 검증에서 따라잡기를 끈 회차와 다른 결과를 찾지 못했습니다(같은 모드 구성끼리의 비교). 퀘스트 구간 A는 본 실행(끔·`accelerate`·지나치기 각 10회차)과 진행 중 저장 후 재로드(각 4회차)를 했고 조건 간 차이가 없었습니다(연표 35·36). 다른 퀘스트와 장면, 42 FPS, 배포 DLL에서 지나치기를 켠 실행은 남아 있습니다. |
 | 지원 범위 | Skyrim AE 1.6.1170만. 다른 버전에서는 설치 검사에서 꺼집니다. |
-| 배포 | 일반 배포는 보류. 직접 써 볼 ZIP은 `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`(11-17 20:01 빌드, 연표 49)입니다. `-20261114` ZIP은 11-14 02:59 빌드입니다(연표 47). `-20261112` ZIP은 11-12 14:44 빌드입니다(연표 45). `-20261111` ZIP은 그 전 빌드입니다(연표 39). 날짜 없는 0.3.0 ZIP은 11-10 수정 전 빌드입니다. |
-| 버전 관리 | 없음. 빌드는 SHA-256으로만 추적하고 있습니다. |
+| 배포 | 일반 배포는 보류. 직접 써 볼 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(11-19 16:09 빌드, DLL `21077a93…`, 연표 50)입니다. 이전 이름의 `-20261117` ZIP은 11-17 20:01 빌드입니다(연표 49). `-20261114` ZIP은 11-14 02:59 빌드(연표 47), `-20261112` ZIP은 11-12 14:44 빌드(연표 45), `-20261111` ZIP은 11-11 12:26 빌드(연표 39), 날짜 없는 0.3.0 ZIP은 11-10 수정 전 빌드입니다. |
+| 버전 관리 | 공개 GitHub 저장소 `servaltullius/PapyrusCatchUp` (`main`, 2026-11-19 초기화). |
 
 ### 결과와 빌드
 
@@ -572,6 +572,15 @@ Alduin's Wall의 여관 장면을 자동으로 진행시키고 기록하는 프�
 - **한계:** 묶음 안의 어느 태스크릿이 오래 걸렸는지는 모릅니다(태스크릿 실행 자체에는 훅이 없음). 같은 이름이 여러 느린 프레임에 반복해 나오는지를 봐야 합니다.
 - **실행 확인 (`relchk-1117-slowframe`):** 서 있는 장면에서는 초과가 거의 없어서, 이 실행만 `MaxExtraMS=0.25`(초과 기준 0.5ms)로 낮췄습니다. 초과 1회에 `cfdebug.Log, CritterMaster.OnUpdate, HeelsFixCorrectEffect.CheckHeelsHeight`가 찍혀, 게임 안에서 이름을 읽는 경로가 동작했습니다. 규칙 위반 0. 플레이 프로필의 설정(2.0ms)은 그대로입니다.
 - **뒤처리:** MO2의 선택 프로필과 확인용 모드의 INI를 되돌렸고, `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`(SHA-256 `afe42354…`)을 만들었으며, 플레이 프로필의 DLL을 교체했습니다.
+
+### 50. GitHub 공개 저장소 초기화 및 `PapyrusCatchUp` 리네이밍 (11-19 15:09 ~ 16:10)
+
+기존 이름 `AdaptivePapyrusBudget`이 0.1~0.2 시절 예산 보정(Budget) 방식과 혼동되므로, 핵심 기능인 저프레임 VM 따라잡기를 반영해 프로젝트·배포 산출물 이름을 `PapyrusCatchUp`으로 통일했습니다.
+
+- **GitHub 저장소:** 로컬 Git(`main`) 초기화 후 공개 저장소 `servaltullius/PapyrusCatchUp` 생성 및 초기 커밋(`ae41521`) 푸시.
+- **리네이밍 범위:** `xmake.lua` 프로젝트·타겟·출력명(`PapyrusCatchUp.dll`), `src/Plugin.cpp`의 `pluginName`/`iniName`(`PapyrusCatchUp`, `PapyrusCatchUp.ini`, `PapyrusCatchUp.log`), `package/SKSE/Plugins/PapyrusCatchUp.ini`, `tests/hang_stacks.py`의 `OWN_MODULES`. 과거 검증 하네스 내부 이름(`APBGameplayTrace`, `APBQuestProbe`, `APB_*` 환경 변수)과 11-09~17 기록은 그대로 유지했습니다.
+- **빌드·검증:** `PapyrusCatchUp.dll`(SHA-256 `21077a93…`), `budget_policy_tests`, `catchup_policy_tests` 모두 빌드·통과. 배포 ZIP `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(SHA-256 `b615407b…`) 생성. DLL 바이너리에 `PapyrusCatchUp`/`PapyrusCatchUp.ini` 포함 및 `AdaptivePapyrusBudget` 잔재 0건 확인.
+- **미확인:** 리네이밍된 `PapyrusCatchUp.dll`의 실제 게임 로드 확인은 아직 수행하지 않았습니다(동작 로직은 11-17 20:01 빌드와 동일).
 
 ## 틀렸다가 고친 판단
 

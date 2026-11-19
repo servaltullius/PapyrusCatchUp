@@ -1,6 +1,6 @@
-# Adaptive Papyrus Budget
+# Papyrus Catch-Up (구 Adaptive Papyrus Budget)
 
-Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기능은 낮은 FPS에서 엔진의 VM 처리 기회를 추가하는 `[VMCatchUp]`입니다. **배포 INI의 모든 기능은 꺼져 있습니다**(`Mode=off`, `[General] Enabled=false`, `[NativePacing] Enabled=false`). 설치만 해서는 게임 코드를 바꾸지 않습니다.
+Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기능은 낮은 FPS에서 엔진의 VM 처리 기회를 추가하는 `[VMCatchUp]`입니다. 2026-11-19 빌드부터 배포 DLL·INI·로그 이름을 `PapyrusCatchUp`으로 변경했습니다(이전 검증 로그와 해시 표의 `AdaptivePapyrusBudget`은 변경 전 이름). **배포 INI의 모든 기능은 꺼져 있습니다**(`Mode=off`, `[General] Enabled=false`, `[NativePacing] Enabled=false`). 설치만 해서는 게임 코드를 바꾸지 않습니다.
 
 - `carried`: 그 프레임의 순정 VM 업데이트가 예산 안에 처리하지 못하고 대기열에 남긴 호출을, 다음 프레임 대신 같은 프레임의 추가 순환에서 처리합니다. 스크립트당 한 프레임에 한 호출까지이며, 그 프레임에 새로 대기열에 들어간 호출은 순정처럼 다음 프레임까지 기다립니다. Save93 장비 변경 장면에서는 남는 호출이 드물어 효과가 측정되지 않았습니다.
 - `accelerate`(실험): 이번 프레임에 생긴 스크립트와, 이번 프레임에 상태 변경으로 판정된 네이티브를 부른 스크립트를 뺀 나머지의 대기 호출을 같은 프레임에 실행합니다. 읽기 호출이 이어지는 스크립트, `Utility.Wait`에서 깨어난 기존 스크립트의 첫 대기 호출도 여기에 해당합니다. Save93 장비 변경 시험에서 핸들러 수가 같은 회차끼리 비교해, 11-09 빌드(`7311ef79…`)로 게임 창을 앞에 둔 측정에서 이벤트 해소 시간이 30 FPS에서 18~39%, 42 FPS에서 32~56% 줄었습니다. 11-10에 판정 범위를 좁힌 뒤의 빌드(`20588280…`)로 다시 잰 값은 30 FPS에서 평균 25~33%로 비슷했고, 42 FPS에서는 174건 회차가 0~1프레임 차이(끔 252~325ms, 켬 229~301ms), 202건 회차가 5~36%(4회차, 평균 25%)였습니다. 창 상태를 기록하지 않은 이전 측정에서는 30 FPS 42~53%, 42 FPS 0~10%(핸들러 174건 장면)로, 실행과 장면에 따라 편차가 큽니다. 대신 두 호출 사이에 들어가던 게임 갱신 한 프레임이 사라집니다. 위 측정은 모두 함수 이름으로 읽기를 판정하던 때의 값입니다. 2026-11-10 16:08 빌드부터는 구현을 읽어 확인한 함수만 읽기로 보며(아래 "읽기 판정"), 같은 실행 안의 비교에서 이 규칙은 이름 규칙보다 해소 시간이 길었습니다(174건 평균 1,140ms 대 905ms). 따로 돌린 따라잡기 없는 실행에 견주면 11~14% 짧은 수준이지만, 같은 실행에서 비교한 값은 아직 없습니다. 이 모드는 읽기 호출만 앞당기는 모드가 아닙니다. 변경으로 판정된 호출도 그 스택이 이번 프레임에 아직 변경을 하지 않았다면 추가 순환에서 실행됩니다. 이 간격에 기대는 스크립트가 있을 수 있어 실험 모드로 둡니다.
@@ -192,9 +192,9 @@ Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기�
 - 다른 플러그인이 같은 `call` 명령을 SKSE 방식으로 먼저 훅했으면, 호출 대상 주소만 다른 것은 허용하고 그 훅을 거쳐 원래 함수로 이어 줍니다. Papyrus Tweaks NG 4.1.1의 `bImproveValidateArgsLogs`(기본 켬)가 104853+0x650을 훅하며, `accelerate`는 이 조합으로 측정했습니다. 로그에는 "already hooked by another plugin"으로 남습니다.
 - Papyrus Tweaks NG의 `bSpeedUpNativeCalls`는 104853+0x61D~0x629를 바꿉니다. VM 따라잡기의 훅 지점과 겹치지 않지만 함께 켠 상태는 시험하지 않았습니다. 같은 구간을 쓰는 이 플러그인의 `[NativePacing]`은 그 옵션과 함께 쓸 수 없습니다.
 
-로그는 `Documents\My Games\Skyrim Special Edition\SKSE\AdaptivePapyrusBudget.log`입니다. SKSE 플러그인의 로그는 게임을 켤 때마다 새로 쓰이므로, 11-12 14:44 빌드부터는 로그를 열기 전에 이전 세션의 로그를 `AdaptivePapyrusBudget-날짜-시각.log`로 옮겨 두고 최근 50개만 남깁니다(이름의 시각은 그 로그가 마지막으로 쓰인 때. 11-14 02:59 빌드 전에는 10개였는데, 짧게 여러 번 켜는 날에는 몇 시간치밖에 안 됐습니다). 옮기거나 지우지 못한 경우(다른 프로그램이 열어 둔 파일 등)에는 그대로 두고 새 로그에 한 줄을 남기며, 플러그인 로드에는 영향이 없습니다.
+로그는 `Documents\My Games\Skyrim Special Edition\SKSE\PapyrusCatchUp.log`입니다(2026-11-19 이전 빌드는 `AdaptivePapyrusBudget.log`). SKSE 플러그인의 로그는 게임을 켤 때마다 새로 쓰이므로, 11-12 14:44 빌드부터는 로그를 열기 전에 이전 세션의 로그를 `PapyrusCatchUp-날짜-시각.log`로 옮겨 두고 최근 50개만 남깁니다(이름의 시각은 그 로그가 마지막으로 쓰인 때. 11-14 02:59 빌드 전에는 10개였는데, 짧게 여러 번 켜는 날에는 몇 시간치밖에 안 됐습니다). 옮기거나 지우지 못한 경우(다른 프로그램이 열어 둔 파일 등)에는 그대로 두고 새 로그에 한 줄을 남기며, 플러그인 로드에는 영향이 없습니다.
 
-60초마다 `AdaptivePapyrusBudget.log`에 추가 순환 수, 추가 순환이 실행한 대기열 호출 수(`extra_calls`), 순환 직전에 대기 중이던 태스크릿 수(`leftover_tasklets`), 규칙 때문에 순환을 시작하지 않은 프레임 수(`blocked_skips`)와 도중에 멈춘 횟수(`blocked_stops`), 지나치기 옵션이 지나친 호출 수(`front_skips`)와 대기열을 다시 짠 횟수(`order_rebuilds`), 게이트가 닫힌 횟수(`gate_closes`), 규칙 위반 수(`guard_violations`), 태스크릿에서 바로 실행된 변경 네이티브 수(`direct_changes`), 프레임당 추가 시간, 가장 오래 걸린 `Update`와 태스크릿 묶음의 시간을 기록합니다.
+60초마다 `PapyrusCatchUp.log`에 추가 순환 수, 추가 순환이 실행한 대기열 호출 수(`extra_calls`), 순환 직전에 대기 중이던 태스크릿 수(`leftover_tasklets`), 규칙 때문에 순환을 시작하지 않은 프레임 수(`blocked_skips`)와 도중에 멈춘 횟수(`blocked_stops`), 지나치기 옵션이 지나친 호출 수(`front_skips`)와 대기열을 다시 짠 횟수(`order_rebuilds`), 게이트가 닫힌 횟수(`gate_closes`), 규칙 위반 수(`guard_violations`), 태스크릿에서 바로 실행된 변경 네이티브 수(`direct_changes`), 프레임당 추가 시간, 가장 오래 걸린 `Update`와 태스크릿 묶음의 시간을 기록합니다.
 
 ```ini
 [VMCatchUp]
@@ -379,9 +379,9 @@ CPU를 2스레드로 묶었을 때 평균 프레임이 2.5% 늘었고, 태스크
 
 ## 설치
 
-MO2에 배포 ZIP을 설치하고 모드를 활성화합니다. 지금 소스의 ZIP은 `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`입니다(11-17 20:01 빌드, SHA-256 `afe42354…`. `-20261114` ZIP은 느린 프레임 기록이 없는 11-14 02:59 빌드, SHA-256 `3d14f75c…`. `-20261112` ZIP은 로그를 10개만 보관하는 11-12 14:44 빌드이고, `-20261111` ZIP은 이전 세션 로그 보관이 없는 11-11 12:26 빌드이고, 날짜가 없는 `0.3.0` ZIP은 11-10 수정 전 빌드). 설치한 그대로는 모든 기능이 꺼져 있습니다. Skyrim 1.6.1170용 SKSE와 Address Library가 필요합니다. VM 따라잡기는 `AdaptivePapyrusBudget.ini`의 `[VMCatchUp] Mode`로 켭니다(기본 `off`). 예전 예산 보정은 기본으로 꺼져 있고, `[General] Enabled=true`로 켤 수 있습니다. 키가 없을 때도 꺼짐으로 처리합니다. INI 값 뒤의 `;` 또는 `#` 주석은 무시합니다.
+MO2에 배포 ZIP을 설치하고 모드를 활성화합니다. 지금 소스의 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`입니다(11-19 16:09 빌드, DLL SHA-256 `21077a93…`, ZIP SHA-256 `b615407b…`; 구 이름 `AdaptivePapyrusBudget`에서 이름만 바꾼 빌드. 이전 `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`은 11-17 20:01 빌드, SHA-256 `afe42354…`). 구 `AdaptivePapyrusBudget.dll`을 쓰던 경우에는 기존 모드를 끄고 교체해야 중복 훅을 피합니다. 설치한 그대로는 모든 기능이 꺼져 있습니다. Skyrim 1.6.1170용 SKSE와 Address Library가 필요합니다. VM 따라잡기는 `PapyrusCatchUp.ini`의 `[VMCatchUp] Mode`로 켭니다(기본 `off`). 예전 예산 보정은 기본으로 꺼져 있고, `[General] Enabled=true`로 켤 수 있습니다. 키가 없을 때도 꺼짐으로 처리합니다. INI 값 뒤의 `;` 또는 `#` 주석은 무시합니다.
 
-SSE Display Tweaks의 `DynamicUpdateBudget`이 켜져 있으면 예전 예산 보정은 Display Tweaks에 예산 제어를 맡기고 건너뜁니다. VM 따라잡기는 이 설정과 관계없이 동작합니다. 기본 INI와 `SSEDisplayTweaks_Custom.ini`를 함께 확인하며, 실행 파일의 예산 로드 및 호출 명령도 검사합니다. 설치 후 동작 여부는 SKSE 로그 폴더의 `AdaptivePapyrusBudget.log`에서 확인할 수 있습니다. 설치 로그 줄에 선택한 `mode`가 남습니다.
+SSE Display Tweaks의 `DynamicUpdateBudget`이 켜져 있으면 예전 예산 보정은 Display Tweaks에 예산 제어를 맡기고 건너뜁니다. VM 따라잡기는 이 설정과 관계없이 동작합니다. 기본 INI와 `SSEDisplayTweaks_Custom.ini`를 함께 확인하며, 실행 파일의 예산 로드 및 호출 명령도 검사합니다. 설치 후 동작 여부는 SKSE 로그 폴더의 `PapyrusCatchUp.log`에서 확인할 수 있습니다. 설치 로그 줄에 선택한 `mode`가 남습니다.
 
 ### 실제 스크립트 호출 앞당기기
 
@@ -405,14 +405,14 @@ VS 2026의 MSVC 14.50과 xmake 3.0.6으로 빌드했습니다. CommonLibSSE-NG�
 ```powershell
 git clone --depth 1 --branch v12.1.0 https://github.com/alandtse/CommonLibSSE-NG.git lib/commonlibsse-ng
 xmake f -y -m releasedbg --vs=2026 --vs_toolset=14.50 --skyrim_vr=n
-xmake build AdaptivePapyrusBudget
+xmake build PapyrusCatchUp
 xmake build budget_policy_tests
 xmake run budget_policy_tests
 xmake build catchup_policy_tests
 xmake run catchup_policy_tests
 ```
 
-`build/windows/x64/releasedbg/AdaptivePapyrusBudget.dll`과 `package/SKSE/Plugins/AdaptivePapyrusBudget.ini`를 배포 ZIP의 `SKSE/Plugins`에 넣습니다.
+`build/windows/x64/releasedbg/PapyrusCatchUp.dll`과 `package/SKSE/Plugins/PapyrusCatchUp.ini`를 배포 ZIP의 `SKSE/Plugins`에 넣습니다.
 
 시험마다 쓴 빌드가 다르므로, 결론은 아래 해시 단위로 읽어야 합니다. 배포 ZIP의 DLL과 시험 DLL(`APBGameplayTrace.dll`)은 같은 `VMCatchUp.cpp`를 컴파일한 별개 파일입니다.
 
