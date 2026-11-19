@@ -1,0 +1,122 @@
+<div style="max-width:720px;margin:0 auto;background:#eef1f2;color:#1c2226;padding:32px 22px;font-family:'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.8;word-break:keep-all;">
+
+<p style="margin:0 0 14px 0;"><span style="display:inline-block;border:1px solid #9a6326;color:#9a6326;border-radius:999px;padding:2px 12px;font-size:13px;">● 실험판 테스트 · Skyrim AE 1.6.1170 전용</span></p>
+<p style="margin:0;font-family:'Gowun Batang','바탕',Batang,serif;font-size:32px;font-weight:bold;line-height:1.3;">Papyrus Catch-Up v0.3.0</p>
+<p style="margin:4px 0 18px 0;font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;color:#56636b;">낮은 FPS에서의 스카이림 스크립트 밀림(스크립트 랙) 완화 SKSE 플러그인</p>
+
+<div style="background:#ffffff;border-left:4px solid #9a6326;padding:14px 18px;margin:0 0 24px 0;">
+<p style="margin:0 0 6px 0;"><b>먼저 분명히 말씀드립니다. 이 모드는 FPS를 올리는 모드가 아닙니다.</b></p>
+<p style="margin:0;">무거운 장소나 전투에서 <b>엔진 FPS가 50 아래로 떨어질 때 스크립트 반응이 한 박자씩 늦어지는 현상(스크립트 랙)</b>을 줄이는 모드입니다. 엔진 FPS가 50 이상일 때는 개입하지 않고 순정 그대로 돕니다. (DLSS·FSR·Lossless Scaling 프레임 생성을 쓰시는 분은 화면 표시 FPS가 아니라 <b>엔진 원본 FPS</b> 기준입니다.)</p>
+</div>
+
+<div style="background:#f8fafa;border:1px solid #c9d2d6;padding:20px 22px;margin:0 0 24px 0;">
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">왜 50 FPS 아래에서 스크립트가 밀리나요?</p>
+<p style="margin:10px 0 8px 0;">스카이림의 파피루스(Papyrus) 스크립트가 게임 상태를 조회하거나 부르는 많은 네이티브 함수는 작업 스레드에서 바로 실행되지 못하고 대기열을 거쳐 <b>다음 프레임의 VM 업데이트</b>에서 처리됩니다. 그래서 이런 호출이 10번 이어지는 스크립트는 60 FPS에서 0.17초 걸리던 일이 30 FPS에서는 0.33초, 20 FPS에서는 0.5초로 프레임에 정비례해 늦어집니다.</p>
+<p style="margin:0;"><b>Papyrus Catch-Up</b>은 최근 0.5초 평균 엔진 FPS가 50 아래로 내려갔을 때만, 엔진의 <span style="font-family:Consolas,monospace;font-size:13.5px;">VM update</span> 작업 안에서 순정 VM 순환을 같은 프레임에 추가로 실행해 밀린 호출을 따라잡습니다. 이때 구현을 직접 디스어셈블해 부수 효과가 없음을 확인한 읽기 함수(게임 30종 + SKSE 2.2.8 14종), 자동 프로퍼티 읽기, 산술·문자열 도우미만 같은 프레임 연쇄를 허용하고, 상태를 바꾸는 호출 뒤에는 순정처럼 다음 프레임을 기다립니다.</p>
+</div>
+
+<div style="background:#f8fafa;border:1px solid #c9d2d6;padding:20px 22px;margin:0 0 24px 0;">
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">이런 분께 체감이 됩니다</p>
+<ul style="margin:8px 0 0 0;padding-left:20px;">
+<li style="margin:0 0 6px 0;">무거운 도시, 대규모 전투, 사양 한계 등으로 <b>엔진 FPS가 30~49 구간으로 자주 내려가는 환경</b></li>
+<li style="margin:0 0 6px 0;">장비 이벤트·전투·생존·동료·장면 계열 등 <b>스크립트가 많은 대형 모드팩</b>을 돌리는 환경</li>
+<li style="margin:0;">무거운 구간에서 MCM 메뉴 열기, 장비 교체 효과, 장면·스킬 발동이 한참 뒤에 따라오는 답답함을 겪는 분</li>
+</ul>
+<p style="margin:10px 0 0 0;color:#56636b;font-size:14px;">엔진 FPS가 거의 항상 55~60 이상 유지되는 고사양 환경에서는 개입할 일이 거의 없어 체감이 작거나 없습니다.</p>
+</div>
+
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">지금까지 잰 숫자</p>
+<p style="margin:4px 0 12px 0;font-family:'Gowun Batang','바탕',Batang,serif;font-size:20px;font-weight:bold;color:#1c2226;">같은 세이브·같은 장면에서의 끔 / 켬 비교</p>
+<table style="border-collapse:collapse;width:100%;margin:0 0 8px 0;font-size:14px;background:#ffffff;">
+<tr>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">조건</th>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">장비 이벤트 해소 시간 (끔 → 켬)</th>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">전체 대기 호출 평균 대기</th>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">같은 프레임 실행 비율</th>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;"><b>30 FPS</b> · 목표 60</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">1.34초 → <b>0.36초 (−73%)</b><br>2.00초 → <b>0.77초 (−62%)</b></td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">36.2 ms → <b>23.6 ms (−35%)</b></td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">9% → <b>36%</b></td>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;"><b>42 FPS</b> · 목표 84</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">277 ms → <b>202 ms (−27%)</b></td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">23.1 ms → <b>14.7 ms (−36%)</b></td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;">9.4% → <b>36.3%</b></td>
+</tr>
+</table>
+<p style="margin:0 0 24px 0;color:#56636b;font-size:14px;">약 4,250 플러그인 환경(Save93 장비 변경 장면, 기본 설정 <span style="font-family:Consolas,monospace;font-size:13px;">accelerate</span> + <span style="font-family:Consolas,monospace;font-size:13px;">SkipWaitingCalls=true</span>)의 같은 실행 안 A/B 비교 결과입니다. 퀘스트 안전성 시험(<span style="font-family:Consolas,monospace;font-size:13px;">Alduin's Wall</span> 여관 장면 본 실행 30회 + 진행 중 저장·재로드 12회)에서 끔/켬 간 단계·대사·종료 상태 차이가 없었고, 실제 플레이 102세션에서 규칙 위반 0건, 본 플러그인 기인 CTD 0건이었습니다.</p>
+
+<div style="background:#f8fafa;border:1px solid #c9d2d6;padding:20px 22px;margin:0 0 24px 0;">
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">설치·제거 및 요구 사항</p>
+<ul style="margin:8px 0 0 0;padding-left:20px;">
+<li style="margin:0 0 6px 0;"><b>지원 버전:</b> <b>Skyrim AE 1.6.1170 전용</b>입니다. 1.5.97 / 1.6.640 / 1.7.x에서는 SKSE가 로드를 거부하므로 엉뚱한 주소에 훅을 걸어 튕기지 않습니다. (1.6.1170 테스트 반응과 로그를 본 뒤 1.6.640 → 1.5.97 순으로 확장을 검토할 예정입니다.)</li>
+<li style="margin:0 0 6px 0;"><b>필수 모드:</b> SKSE64 (2.2.8 기준 검토 완료 — 다른 SKSE 버전에서는 SKSE 네이티브 14종만 제외하고 동작), Address Library for SKSE Plugins.</li>
+<li style="margin:0 0 6px 0;"><b>설치:</b> ZIP 파일을 MO2에서 일반 모드처럼 설치하고 활성화하면 바로 켜집니다. (이전에 <span style="font-family:Consolas,monospace;font-size:13px;">AdaptivePapyrusBudget</span> 테스트판을 쓰셨다면 기존 모드를 꼭 끄고 교체해 주세요.)</li>
+<li style="margin:0 0 6px 0;"><b>제거 안전성:</b> <b>세이브 파일에 아무것도 쓰지 않는 순수 SKSE DLL</b>입니다. 테스트 중 언제든 모드를 끄고 빼셔도 세이브가 꼬이지 않습니다.</li>
+<li style="margin:0;"><b>호환성:</b> <span style="font-family:Consolas,monospace;font-size:13px;">SSE Display Tweaks</span>, <span style="font-family:Consolas,monospace;font-size:13px;">Papyrus Tweaks NG</span>와 함께 쓸 수 있습니다. 훅 지점 기계어를 설치 전·매 프레임 검사하므로 충돌하는 모드가 있으면 스스로 꺼지고 로그를 남깁니다.</li>
+</ul>
+</div>
+
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">주요 INI 설정</p>
+<p style="margin:4px 0 12px 0;font-family:'Gowun Batang','바탕',Batang,serif;font-size:20px;font-weight:bold;color:#1c2226;">SKSE/Plugins/PapyrusCatchUp.ini</p>
+<table style="border-collapse:collapse;width:100%;margin:0 0 8px 0;font-size:14px;background:#ffffff;">
+<tr>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">항목</th>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;background:#f8fafa;font-weight:bold;">기본값</th>
+<th style="border:1px solid #c9d2d6;padding:8px 10px;text-align:left;background:#f8fafa;font-weight:bold;">설명</th>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">Mode</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">accelerate</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;"><span style="font-family:Consolas,monospace;font-size:13px;">off</span>(끔) / <span style="font-family:Consolas,monospace;font-size:13px;">carried</span>(예산 이월분만) / <span style="font-family:Consolas,monospace;font-size:13px;">accelerate</span>(읽기 연쇄 가속)</td>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">EngageBelowFPS</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">50</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;">최근 0.5초 평균 엔진 FPS가 이 값 아래일 때만 개입</td>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">TargetFPS</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">84</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;">개입 시 복구할 목표 VM 순환 속도(Hz). 40대 FPS에서도 체감되도록 84가 기본이며, 보수적으로 순정 60 FPS 수준만 원하시면 <span style="font-family:Consolas,monospace;font-size:13px;">60</span>으로 낮추시면 됩니다.</td>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">SkipWaitingCalls</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">true</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;">대기열 맨 앞의 변경 호출을 잠시 뒤로 미뤄 뒤의 읽기 호출을 먼저 처리(순환 후 원래 순서 복원). 순서 민감 퀘스트·모드에서 이상이 보이면 <span style="font-family:Consolas,monospace;font-size:13px;">false</span>로 끄실 수 있습니다.</td>
+</tr>
+<tr>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">MaxExtraMS</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;text-align:center;font-family:Consolas,monospace;font-size:13px;">2.0</td>
+<td style="border:1px solid #c9d2d6;padding:8px 10px;">프레임당 추가 처리 시간 상한(ms). 상한의 2배를 넘으면 3초간 자동 휴식하고 원인 스크립트 이름을 로그에 남깁니다.</td>
+</tr>
+</table>
+<p style="margin:0 0 24px 0;color:#56636b;font-size:14px;">※ 세이브 로드·로딩 화면 직후 10초 동안은 초기 스크립트 폭주를 피하기 위해 자동으로 개입을 보류합니다.</p>
+
+<div style="background:#ffffff;border-left:4px solid #2c5873;padding:16px 18px;margin:0 0 24px 0;">
+<p style="margin:0 0 8px 0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">아직 확인하지 못한 점 (실험판 주의)</p>
+<ul style="margin:0;padding-left:20px;">
+<li style="margin:0 0 6px 0;"><b>모드·퀘스트 범위:</b> 지금까지 확인한 것은 한 가지 대형 모드팩 구성과 <span style="font-family:Consolas,monospace;font-size:13px;">Alduin's Wall</span> 여관 장면·장비 변경·셀 이동입니다. 다른 퀘스트나 서드파티 모드에서 순정과 다른 실행 순서에 민감한 스크립트가 나올 수 있습니다.</li>
+<li style="margin:0 0 6px 0;"><b>CPU 100% 병목 환경:</b> 실플레이 32~49 FPS 구간에서 프레임당 추가 비용은 평균 0.07~0.19 ms였지만, CPU가 완전히 포화된 저사양 환경에서의 프레임타임 영향은 이번 실험판 로그로 함께 확인하려 합니다.</li>
+<li style="margin:0;"><b>Papyrus Tweaks 미사용(순정 연산 한도 100) 환경:</b> 시험 환경은 <span style="font-family:Consolas,monospace;font-size:13px;">iMaxOpsPerFrame=500</span> 기준이었습니다.</li>
+</ul>
+</div>
+
+<div style="background:#f8fafa;border:1px solid #c9d2d6;padding:20px 22px;margin:0 0 24px 0;">
+<p style="margin:0;font-family:Consolas,monospace;font-size:12px;letter-spacing:2px;color:#56636b;">테스터분들께 듣고 싶은 것</p>
+<ol style="margin:8px 0 0 0;padding-left:20px;">
+<li style="margin:0 0 6px 0;">엔진 FPS가 50 아래로 내려가는 구간에서 MCM·장비·전투·장면 반응이 빨라졌다고 체감되시나요?</li>
+<li style="margin:0 0 6px 0;">반대로 툭 끊김(스터터링)이나 프레임 저하가 새로 느껴지는 구간이 있나요?</li>
+<li style="margin:0 0 6px 0;">퀘스트 진행 꼬임, 장면 멈춤, CTD 같은 이상 증상이 나오면 꼭 알려 주세요.</li>
+</ol>
+<p style="margin:12px 0 4px 0;"><b>로그 파일 위치 (문제 제보나 후기 때 함께 올려 주시면 큰 도움이 됩니다):</b></p>
+<p style="margin:0 0 6px 0;font-family:Consolas,monospace;font-size:13px;background:#ffffff;border:1px solid #c9d2d6;padding:8px 10px;">내 문서\My Games\Skyrim Special Edition\SKSE\PapyrusCatchUp.log</p>
+<p style="margin:0;color:#56636b;font-size:13.5px;">이전 실행 로그도 같은 폴더에 <span style="font-family:Consolas,monospace;font-size:12.5px;">PapyrusCatchUp-날짜-시각.log</span> 이름으로 최근 50개까지 자동 보관됩니다. 느린 프레임이 걸리면 어떤 스크립트가 돌았는지도 로그에 찍힙니다.</p>
+</div>
+
+<p style="margin:0;color:#56636b;font-size:13.5px;text-align:center;">소스 코드 및 상세 기술 문서: <a href="https://github.com/servaltullius/PapyrusCatchUp" style="color:#2c5873;">github.com/servaltullius/PapyrusCatchUp</a></p>
+
+</div>

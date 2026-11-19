@@ -104,10 +104,10 @@ namespace
     //   after this frame's tasklets instead of in the next frame's update, so the order in which it
     //   observes other scripts' work can still differ from the stock game.
     // accelerate (experimental): also a script's next call in the same frame when every native it ran
-    //   this frame left game state alone (reads by function name, plus a few side-effect-free helper
-    //   classes) and it existed before this frame. Natives are judged both when the queue runs them and
-    //   when a tasklet calls them directly. This removes the game update between two of its calls,
-    //   which some scripts may depend on.
+    //   this frame left game state alone (the reviewed reads of NativeClassification.h, auto-property
+    //   getters, and side-effect-free helpers) and it existed before this frame. Natives are judged both
+    //   when the queue runs them and when a tasklet calls them directly. This removes the game update
+    //   between two of its calls, which some scripts may depend on.
     //
     // In both modes the front of the queue is never skipped: an extra cycle starts only when the front
     // call may run, and stops when a call that may not run reaches the front. Extra cycles skip the
@@ -1374,18 +1374,22 @@ namespace
         if (engaged) {
             ++stats.engagedFrames;
         }
-        if (allowed == 0) {
-            MaybeLog(now);
-            return engaged;
-        }
         if (const auto load = loadedAt.load(std::memory_order_acquire); load != appliedLoad) {
             appliedLoad = load;
             settleUntil = Clock::time_point(Clock::duration(load)) + settleAfterLoad;
             pausedUntil = {};
         }
+        // While held after a load or paused after an overrun, no extra cycle can run anyway; turn
+        // hook collection off so the burst pays zero classification/lock overhead.
         if (now < settleUntil || now < pausedUntil) {
             policy.DropCredit();
-            ++stats.heldFrames;
+            if (engaged) {
+                ++stats.heldFrames;
+            }
+            MaybeLog(now);
+            return false;
+        }
+        if (allowed == 0) {
             MaybeLog(now);
             return engaged;
         }
@@ -1394,7 +1398,7 @@ namespace
         auto* vm = VirtualMachine::GetSingleton();
         if (!skyrimVM || !vm) {
             policy.DropCredit();
-            return engaged;
+            return false;
         }
 
         // Checked before anything reads the queue: the engine empties and reloads it without
@@ -1403,7 +1407,7 @@ namespace
             policy.DropCredit();
             ++stats.frozenStops;
             MaybeLog(now);
-            return engaged;
+            return false;
         }
 
         // An extra cycle starts only when the call at the front of the queue may run. Otherwise its
@@ -1420,6 +1424,15 @@ namespace
         const float passBudget = PassBudget();
         const auto deadline = now + std::chrono::duration_cast<Clock::duration>(
             std::chrono::duration<double, std::milli>(settings.maxExtraMS));
+        // Releases the references to the function objects the frame's batches ran on any exit path.
+        struct FrameRecordGuard
+        {
+            ~FrameRecordGuard() noexcept
+            {
+                frameCycles.clear();
+                frameFunctions.clear();
+            }
+        } clearFrameRecords;
         unsigned ran = 0;
         while (ran < allowed) {
             if (ran > 0) {
@@ -1501,7 +1514,8 @@ namespace
 
         const auto end = Clock::now();
         const double extraMS = std::chrono::duration<double, std::milli>(end - now).count();
-        if (extraMS > settings.maxExtraMS * overrunFactor) {
+        const bool paused = extraMS > settings.maxExtraMS * overrunFactor;
+        if (paused) {
             pausedUntil = end + overrunPause;
             policy.DropCredit();
             ++stats.overrunPauses;
@@ -1509,14 +1523,13 @@ namespace
                 overrunPause.count(), ran, extraMS, settings.maxExtraMS);
             ReportSlowFrame();
         }
-        // Releases the references to the function objects the frame's batches ran.
         frameCycles.clear();
         frameFunctions.clear();
         stats.cycles += ran;
         stats.extraMS += extraMS;
         stats.maxFrameExtraMS = std::max(stats.maxFrameExtraMS, extraMS);
         MaybeLog(end);
-        return engaged;
+        return engaged && !paused;
     }
 
     void ResetGameplayJobs(JobList* jobs)

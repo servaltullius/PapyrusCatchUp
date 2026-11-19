@@ -14,7 +14,8 @@ namespace MenuWatch
 
     // Reads from the UI whether the loading and the main menu are open. Call when a save has
     // finished loading or a new game starts (kPostLoadGame, kNewGame), on the thread of that
-    // message. This is the only place that reads the UI's menu list, which has no lock here.
+    // message (and as a fallback if OnEvent ever receives a null event). Reads the UI's menu list,
+    // which has no lock here.
     inline void Sync()
     {
         const auto asked = Detail::latch.Ask();

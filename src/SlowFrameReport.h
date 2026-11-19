@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <format>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // The text of the log line that names what ran in a frame whose extra cycles took too long.
@@ -23,12 +24,12 @@ namespace SlowFrameReport
         };
         std::vector<Entry> entries;
         for (std::size_t i = 0; i < names.size(); ++i) {
-            const std::string& name = names[i].empty() ? std::string("(unknown)") : names[i];
+            const std::string_view name = names[i].empty() ? std::string_view("(unknown)") : std::string_view(names[i]);
             const auto found = std::ranges::find(entries, name, &Entry::name);
             if (found != entries.end()) {
                 ++found->count;
             } else {
-                entries.push_back({ name, 1, i });
+                entries.push_back({ std::string(name), 1, i });
             }
         }
         std::ranges::stable_sort(entries, [](const Entry& a, const Entry& b) { return a.count > b.count; });

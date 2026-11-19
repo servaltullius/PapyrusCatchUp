@@ -23,7 +23,7 @@
 | 측정된 효과 | 장비 변경 장면, 30 FPS, 같은 실행 안의 끔 대비 이벤트 해소 시간: 지금의 `accelerate`(구현을 확인한 읽기만 인정) 8~13%, 지나치기 옵션을 켜면 61~73% 단축(시험 DLL로 측정). `carried`: 그 장면에서는 효과 없음. 42 FPS에서 지나치기는 모든 대기 호출의 평균 대기를 27% 줄였지만 장비 해소 시간에는 차이가 없었습니다(연표 40). 지금의 `accelerate`는 42 FPS에서 다시 재지 않았습니다. 이전 이름 규칙의 18~39%(30 FPS), 32~56%(42 FPS)는 지금 빌드의 값이 아닙니다. |
 | 안전성 | 셀 이동 반복, JB1 오류 검증에서 따라잡기를 끈 회차와 다른 결과를 찾지 못했습니다(같은 모드 구성끼리의 비교). 퀘스트 구간 A는 본 실행(끔·`accelerate`·지나치기 각 10회차)과 진행 중 저장 후 재로드(각 4회차)를 했고 조건 간 차이가 없었습니다(연표 35·36). 다른 퀘스트와 장면, 42 FPS, 배포 DLL에서 지나치기를 켠 실행은 남아 있습니다. |
 | 지원 범위 | Skyrim AE 1.6.1170만. 다른 버전에서는 설치 검사에서 꺼집니다. |
-| 배포 | 일반 배포는 보류. 직접 써 볼 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(11-19 16:09 빌드, DLL `21077a93…`, 연표 50)입니다. 이전 이름의 `-20261117` ZIP은 11-17 20:01 빌드입니다(연표 49). `-20261114` ZIP은 11-14 02:59 빌드(연표 47), `-20261112` ZIP은 11-12 14:44 빌드(연표 45), `-20261111` ZIP은 11-11 12:26 빌드(연표 39), 날짜 없는 0.3.0 ZIP은 11-10 수정 전 빌드입니다. |
+| 배포 | 1.6.1170 툴챈 실험판 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(DLL `91b984d4…`, ZIP `177a6e65…`, 연표 51~52)입니다. 이전 이름의 `-20261117` ZIP은 11-17 20:01 빌드입니다(연표 49). `-20261114` ZIP은 11-14 02:59 빌드(연표 47), `-20261112` ZIP은 11-12 14:44 빌드(연표 45), `-20261111` ZIP은 11-11 12:26 빌드(연표 39), 날짜 없는 0.3.0 ZIP은 11-10 수정 전 빌드입니다. |
 | 버전 관리 | 공개 GitHub 저장소 `servaltullius/PapyrusCatchUp` (`main`, 2026-11-19 초기화). |
 
 ### 결과와 빌드
@@ -581,6 +581,23 @@ Alduin's Wall의 여관 장면을 자동으로 진행시키고 기록하는 프�
 - **리네이밍 범위:** `xmake.lua` 프로젝트·타겟·출력명(`PapyrusCatchUp.dll`), `src/Plugin.cpp`의 `pluginName`/`iniName`(`PapyrusCatchUp`, `PapyrusCatchUp.ini`, `PapyrusCatchUp.log`), `package/SKSE/Plugins/PapyrusCatchUp.ini`, `tests/hang_stacks.py`의 `OWN_MODULES`. 과거 검증 하네스 내부 이름(`APBGameplayTrace`, `APBQuestProbe`, `APB_*` 환경 변수)과 11-09~17 기록은 그대로 유지했습니다.
 - **빌드·검증:** `PapyrusCatchUp.dll`(SHA-256 `21077a93…`), `budget_policy_tests`, `catchup_policy_tests` 모두 빌드·통과. 배포 ZIP `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(SHA-256 `b615407b…`) 생성. DLL 바이너리에 `PapyrusCatchUp`/`PapyrusCatchUp.ini` 포함 및 `AdaptivePapyrusBudget` 잔재 0건 확인.
 - **미확인:** 리네이밍된 `PapyrusCatchUp.dll`의 실제 게임 로드 확인은 아직 수행하지 않았습니다(동작 로직은 11-17 20:01 빌드와 동일).
+
+### 51. 공개 전 전수 코드리뷰 및 수정 (11-19 16:28 ~ 16:42)
+
+`src/` 전체 17개 파일과 CommonLibSSE-NG 관련 헤더를 대조해 전수 코드리뷰를 수행하고, 확인된 개선·오류 5건을 수정했습니다(DLL SHA-256 `91b984d4…`, ZIP `e055e677…`).
+
+- **보류·중단·동결 중 훅 수집 0화 (`src/VMCatchUp.cpp`):** 로드 후 10초 보류(`settleUntil`), 과부하 3초 중단(`pausedUntil`), VM 동결(`Frozen`) 구간에서 `frameActive`를 꺼서(반환값 `false`, `overrunPause` 발동 프레임도 즉시 `false`) 추가 순환을 돌리지 않는 폭주 구간의 불필요한 `IsReviewedRead`·`Chain::lock` 오버헤드를 제거했습니다.
+- **로그 정리 순회 오류 격리 (`src/LogHistory.h`):** `directory_iterator` 루프 전 `error.clear()`를 호출하고 `entry->is_regular_file`에 별도 `std::error_code`를 사용해 단일 파일 오류가 나머지 로그 정리를 중단시키지 않게 했습니다.
+- **INI 경로 CWD 독립화 (`src/Plugin.cpp`):** 상대 경로 `Data/SKSE/Plugins` 대신 `SkyrimSE.exe` 경로(`GetModuleFileNameW(nullptr)`) 기준 `Data\SKSE\Plugins`를 사용해 CWD 변경에 면역이면서 MO2 USVFS 승자 경로를 그대로 따르게 했습니다.
+- **예외 안전 및 정리 (`src/VMCatchUp.cpp`, `src/SlowFrameReport.h`, `src/MenuWatch.h`):** `frameCycles`/`frameFunctions` 해제에 RAII 가드 추가, `SlowFrameReport::Summarize`의 불필요한 `std::string` 복사 제거(`std::string_view`), `VMCatchUp.cpp`·`MenuWatch.h`의 구 주석 정정.
+- **검증:** `PapyrusCatchUp.dll` 및 단위 테스트 2종(`budget_policy_tests`, `catchup_policy_tests` 신규 케이스 포함) 재빌드·통과. **미확인:** 수정 빌드의 실제 게임 실행 확인은 아직 수행하지 않았습니다.
+
+### 52. 툴챈 실험판 배포 INI 기본값 확정 및 안내문 작성 (11-19 16:55)
+
+1.6.1170 실험판 공개를 위해 배포 INI 기본값을 실플레이 검증 설정으로 확정하고 툴챈 배포용 HTML 안내문을 작성했습니다.
+
+- **배포 INI (`package/SKSE/Plugins/PapyrusCatchUp.ini`):** `Mode=accelerate`, `EngageBelowFPS=50`, `TargetFPS=84`, `MaxExtraCycles=4`, `MaxExtraMS=2.0`, `SkipWaitingCalls=true` (`[General]`·`[NativePacing]`은 계속 `false`). 최종 배포 ZIP `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`(SHA-256 `177a6e65…`) 재패키징 완료.
+- **안내문:** `docs/툴챈-게시글.html`(아카라이브 에디터 HTML 복붙용) 및 `docs/툴챈-게시글-미리보기.html`(브라우저 확인용). FPS 상승 모드가 아닌 저프레임 스크립트 랙 완화 모드임을 첫머리에 명시하고, 30/42 FPS 실측 수치·퀘스트 구간 A 및 102세션 검증 결과·미확인 한계·세이브 무수정 제거 방법·로그 경로를 정리했습니다.
 
 ## 틀렸다가 고친 판단
 

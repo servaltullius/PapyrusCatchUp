@@ -1,6 +1,6 @@
 # Papyrus Catch-Up (구 Adaptive Papyrus Budget)
 
-Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기능은 낮은 FPS에서 엔진의 VM 처리 기회를 추가하는 `[VMCatchUp]`입니다. 2026-11-19 빌드부터 배포 DLL·INI·로그 이름을 `PapyrusCatchUp`으로 변경했습니다(이전 검증 로그와 해시 표의 `AdaptivePapyrusBudget`은 변경 전 이름). **배포 INI의 모든 기능은 꺼져 있습니다**(`Mode=off`, `[General] Enabled=false`, `[NativePacing] Enabled=false`). 설치만 해서는 게임 코드를 바꾸지 않습니다.
+Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기능은 낮은 FPS에서 엔진의 VM 처리 기회를 추가하는 `[VMCatchUp]`입니다. 2026-11-19 빌드부터 배포 DLL·INI·로그 이름을 `PapyrusCatchUp`으로 변경했고, 툴챈 실험판 배포용 INI 기본값을 실플레이 검증 설정(`Mode=accelerate`, `EngageBelowFPS=50`, `TargetFPS=84`, `SkipWaitingCalls=true`)으로 켰습니다(이전 검증 로그와 해시 표의 `AdaptivePapyrusBudget`은 변경 전 이름). `[General] Enabled=false`, `[NativePacing] Enabled=false`는 그대로 꺼져 있습니다. 보수적으로 쓰려면 `PapyrusCatchUp.ini`에서 `TargetFPS=60`, `SkipWaitingCalls=false` 또는 `Mode=off`로 변경할 수 있습니다.
 
 - `carried`: 그 프레임의 순정 VM 업데이트가 예산 안에 처리하지 못하고 대기열에 남긴 호출을, 다음 프레임 대신 같은 프레임의 추가 순환에서 처리합니다. 스크립트당 한 프레임에 한 호출까지이며, 그 프레임에 새로 대기열에 들어간 호출은 순정처럼 다음 프레임까지 기다립니다. Save93 장비 변경 장면에서는 남는 호출이 드물어 효과가 측정되지 않았습니다.
 - `accelerate`(실험): 이번 프레임에 생긴 스크립트와, 이번 프레임에 상태 변경으로 판정된 네이티브를 부른 스크립트를 뺀 나머지의 대기 호출을 같은 프레임에 실행합니다. 읽기 호출이 이어지는 스크립트, `Utility.Wait`에서 깨어난 기존 스크립트의 첫 대기 호출도 여기에 해당합니다. Save93 장비 변경 시험에서 핸들러 수가 같은 회차끼리 비교해, 11-09 빌드(`7311ef79…`)로 게임 창을 앞에 둔 측정에서 이벤트 해소 시간이 30 FPS에서 18~39%, 42 FPS에서 32~56% 줄었습니다. 11-10에 판정 범위를 좁힌 뒤의 빌드(`20588280…`)로 다시 잰 값은 30 FPS에서 평균 25~33%로 비슷했고, 42 FPS에서는 174건 회차가 0~1프레임 차이(끔 252~325ms, 켬 229~301ms), 202건 회차가 5~36%(4회차, 평균 25%)였습니다. 창 상태를 기록하지 않은 이전 측정에서는 30 FPS 42~53%, 42 FPS 0~10%(핸들러 174건 장면)로, 실행과 장면에 따라 편차가 큽니다. 대신 두 호출 사이에 들어가던 게임 갱신 한 프레임이 사라집니다. 위 측정은 모두 함수 이름으로 읽기를 판정하던 때의 값입니다. 2026-11-10 16:08 빌드부터는 구현을 읽어 확인한 함수만 읽기로 보며(아래 "읽기 판정"), 같은 실행 안의 비교에서 이 규칙은 이름 규칙보다 해소 시간이 길었습니다(174건 평균 1,140ms 대 905ms). 따로 돌린 따라잡기 없는 실행에 견주면 11~14% 짧은 수준이지만, 같은 실행에서 비교한 값은 아직 없습니다. 이 모드는 읽기 호출만 앞당기는 모드가 아닙니다. 변경으로 판정된 호출도 그 스택이 이번 프레임에 아직 변경을 하지 않았다면 추가 순환에서 실행됩니다. 이 간격에 기대는 스크립트가 있을 수 있어 실험 모드로 둡니다.
@@ -198,12 +198,12 @@ Skyrim AE 1.6.1170용 실험적 SKSE 플러그인입니다. 0.3.0의 핵심 기�
 
 ```ini
 [VMCatchUp]
-Mode=off            ; off, carried, accelerate
+Mode=accelerate         ; off, carried, accelerate (실험판 기본값: accelerate)
 EngageBelowFPS=50
-TargetFPS=60
+TargetFPS=84            ; 보수적 60 Hz 페이싱은 60 권장
 MaxExtraCycles=4
 MaxExtraMS=2.0
-SkipWaitingCalls=false   ; 실험, accelerate 전용
+SkipWaitingCalls=true   ; 실험, accelerate 전용 (실험판 기본값: true)
 ```
 
 `EngageBelowFPS`와 `TargetFPS`는 30~144, `MaxExtraCycles`는 1~8의 정수, `MaxExtraMS`는 0.25~8입니다. `EngageBelowFPS`가 `TargetFPS`보다 크면 `TargetFPS`로 낮추고 경고를 남깁니다. 범위를 벗어나거나 숫자가 아닌 값, 알 수 없는 `Mode`는 로그에 경고를 남기고 기본값(모드는 꺼짐)을 씁니다. 0.3.0 개발판의 `[VMCatchUp] Enabled` 키는 더 읽지 않으며, 남아 있으면 경고를 남깁니다. 숫자는 소수점을 마침표로 적으며, 시스템의 소수점 기호 설정과 관계없이 같게 읽습니다. `[General]`과 `[NativePacing]`의 켬·끔 값, `SkipWaitingCalls`는 `true`/`yes`/`on`/`1`과 `false`/`no`/`off`/`0`만 받습니다. 그 밖의 값은 경고를 남기고 꺼짐으로 처리합니다.
@@ -379,7 +379,7 @@ CPU를 2스레드로 묶었을 때 평균 프레임이 2.5% 늘었고, 태스크
 
 ## 설치
 
-MO2에 배포 ZIP을 설치하고 모드를 활성화합니다. 지금 소스의 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`입니다(11-19 16:09 빌드, DLL SHA-256 `21077a93…`, ZIP SHA-256 `b615407b…`; 구 이름 `AdaptivePapyrusBudget`에서 이름만 바꾼 빌드. 이전 `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`은 11-17 20:01 빌드, SHA-256 `afe42354…`). 구 `AdaptivePapyrusBudget.dll`을 쓰던 경우에는 기존 모드를 끄고 교체해야 중복 훅을 피합니다. 설치한 그대로는 모든 기능이 꺼져 있습니다. Skyrim 1.6.1170용 SKSE와 Address Library가 필요합니다. VM 따라잡기는 `PapyrusCatchUp.ini`의 `[VMCatchUp] Mode`로 켭니다(기본 `off`). 예전 예산 보정은 기본으로 꺼져 있고, `[General] Enabled=true`로 켤 수 있습니다. 키가 없을 때도 꺼짐으로 처리합니다. INI 값 뒤의 `;` 또는 `#` 주석은 무시합니다.
+MO2에 배포 ZIP을 설치하고 모드를 활성화합니다. 지금 소스의 ZIP은 `dist/PapyrusCatchUp-0.3.0-AE1170-20261119.zip`입니다(11-19 16:41 DLL SHA-256 `91b984d4…`, ZIP SHA-256 `177a6e65…`; `PapyrusCatchUp` 리네이밍·코드리뷰 수정·실험판 기본 INI 반영. 이전 `dist/AdaptivePapyrusBudget-0.3.0-AE1170-20261117.zip`은 11-17 20:01 빌드, SHA-256 `afe42354…`). 구 `AdaptivePapyrusBudget.dll`을 쓰던 경우에는 기존 모드를 끄고 교체해야 중복 훅을 피합니다. Skyrim 1.6.1170용 SKSE와 Address Library가 필요합니다. 실험판 배포 INI는 `[VMCatchUp]`이 기본 활성화(`Mode=accelerate`, `EngageBelowFPS=50`, `TargetFPS=84`, `SkipWaitingCalls=true`)되어 있으며, 보수적으로 쓰려면 `PapyrusCatchUp.ini`에서 `TargetFPS=60`, `SkipWaitingCalls=false`, 또는 `Mode=off`로 바꿀 수 있습니다. 예전 예산 보정(`[General] Enabled=false`)과 `[NativePacing] Enabled=false`는 기본으로 꺼져 있습니다. 키가 없을 때도 꺼짐으로 처리합니다. INI 값 뒤의 `;` 또는 `#` 주석은 무시합니다.
 
 SSE Display Tweaks의 `DynamicUpdateBudget`이 켜져 있으면 예전 예산 보정은 Display Tweaks에 예산 제어를 맡기고 건너뜁니다. VM 따라잡기는 이 설정과 관계없이 동작합니다. 기본 INI와 `SSEDisplayTweaks_Custom.ini`를 함께 확인하며, 실행 파일의 예산 로드 및 호출 명령도 검사합니다. 설치 후 동작 여부는 SKSE 로그 폴더의 `PapyrusCatchUp.log`에서 확인할 수 있습니다. 설치 로그 줄에 선택한 `mode`가 남습니다.
 

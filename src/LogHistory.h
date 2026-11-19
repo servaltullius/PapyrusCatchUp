@@ -134,9 +134,11 @@ namespace LogHistory
             // the narrow code page would throw at the first one that has no such form.
             using Name = std::filesystem::path::string_type;
             std::vector<std::filesystem::path> kept;
+            error.clear();
             for (std::filesystem::directory_iterator entry(directory, error), end; !error && entry != end; entry.increment(error)) {
                 const Name file = entry->path().filename().native();
-                if (IsKeptLog<Name::value_type>(name, file) && entry->is_regular_file(error)) {
+                std::error_code fileError;
+                if (IsKeptLog<Name::value_type>(name, file) && entry->is_regular_file(fileError) && !fileError) {
                     kept.push_back(entry->path());
                 }
             }

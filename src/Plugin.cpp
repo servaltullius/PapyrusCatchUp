@@ -23,7 +23,35 @@ namespace
     // Logs of earlier game sessions kept beside the current one (LogHistory.h). A log is a few
     // kilobytes, and on a day of many short launches ten of them covered only a few hours.
     constexpr std::size_t keptLogs = 50;
-    const std::filesystem::path pluginDirectory = L"Data/SKSE/Plugins";
+    // Resolved once from the game executable's directory so CWD changes by other plugins cannot
+    // hide INI files, while still passing through MO2's virtual Data\SKSE\Plugins view.
+    std::filesystem::path ResolvePluginDirectory()
+    {
+        std::wstring buffer(MAX_PATH, L'\0');
+        for (;;) {
+            const DWORD copied = GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
+            if (copied == 0) {
+                break;
+            }
+            if (copied < buffer.size()) {
+                buffer.resize(copied);
+                return std::filesystem::path(buffer).parent_path() / L"Data" / L"SKSE" / L"Plugins";
+            }
+            if (buffer.size() >= 32768) {
+                break;
+            }
+            buffer.resize(buffer.size() * 2);
+        }
+        std::error_code error;
+        const auto fallback = std::filesystem::absolute(L"Data/SKSE/Plugins", error);
+        return error ? std::filesystem::path(L"Data/SKSE/Plugins") : fallback;
+    }
+
+    const std::filesystem::path& PluginDirectory()
+    {
+        static const std::filesystem::path directory = ResolvePluginDirectory();
+        return directory;
+    }
 
     REL::Relocation<RunTasks*> originalRunTasks;
     const float* vanillaBudgetMS{};
@@ -59,7 +87,7 @@ namespace
     // Reads one INI value without a trailing ';' or '#' comment, which the Win32 reader keeps.
     std::optional<std::wstring> ReadValue(const wchar_t* name, const wchar_t* section, const wchar_t* key)
     {
-        const auto path = std::filesystem::absolute(pluginDirectory / name);
+        const auto path = PluginDirectory() / name;
         std::array<wchar_t, 128> buffer{};
         if (GetPrivateProfileStringW(section, key, nullptr, buffer.data(),
                 static_cast<DWORD>(buffer.size()), path.c_str()) == 0) {

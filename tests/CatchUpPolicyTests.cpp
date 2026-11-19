@@ -519,6 +519,14 @@ int main()
                 "A log that cannot be moved is left in place and reported");
         }
 
+        // A subdirectory that looks like a kept log name is skipped without stopping cleanup.
+        fs::create_directories(folder / "Plugin-20260101-000001.log", error);
+        write("Plugin.log", "with dir");
+        const auto withDir = LogHistory::Keep(folder, "Plugin", 3);
+        Check(withDir.problem.empty() && !withDir.kept.empty() && withDir.removed == 1 &&
+                  fs::is_directory(folder / "Plugin-20260101-000001.log"),
+            "Subdirectories with matching names are ignored and do not stop cleanup");
+
         const auto missing = LogHistory::Keep(folder / "does-not-exist", "Plugin", 3);
         Check(missing.kept.empty() && missing.removed == 0, "A folder that does not exist changes nothing");
         fs::remove_all(folder, error);
@@ -528,6 +536,8 @@ int main()
     Check(SlowFrameReport::Summarize({}, 12) == "none", "A batch without tasklets reports none");
     Check(SlowFrameReport::Summarize({ "B.g", "A.f", "B.g", "", "A.f", "B.g" }, 12) == "B.g x3, A.f x2, (unknown)",
         "Names are counted, the most frequent first, unknown ones named so");
+    Check(SlowFrameReport::Summarize({ "", "" }, 12) == "(unknown) x2",
+        "Multiple unknown names collapse into one count");
     Check(SlowFrameReport::Summarize({ "A.f", "B.g", "C.h", "D.i" }, 2) == "A.f, B.g (+2 more)",
         "Equal counts keep their order and the rest is counted");
 
