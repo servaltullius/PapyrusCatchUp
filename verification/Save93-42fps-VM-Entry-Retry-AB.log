@@ -1,0 +1,134 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 / 42 FPS
+Each launch reloads the same Save93 clone. Within a launch the sequence is off/on/on/off/on/off/off/on.
+Each window submits 12 real equip changes and 32 latent response probes. Different numbers of resulting script roots are reported separately.
+I/C are entry lock failure/success at Address Library ID 104853 + 0x2B1. Entry-lock wait is first I to next matching C. X is an observed successful fully-free owner CAS.
+Tail is the last traced depth-zero equipment handler. Root Q-P and nested native Q-P are disjoint; entry-lock wait is included in those waits. Drain is measured after the final equipment signal.
+J is a current FIFO head check; Y is ready while disabled, y is the extra pop, and j is completion. K marks the late tasklet checkpoint and V marks a checkpoint passing frame/headroom/VM gates.
+The early in-update checkpoint considered 24 disabled and 8 enabled queue heads. The next matching X was within 0.25 ms for 19/24 disabled heads and 0/8 enabled heads. Seven enabled heads released at 0.3210-0.3649 ms. No advance occurred.
+The UpdateTasklets vtable callback produced zero checkpoints in the actual gameplay path. No advance occurred.
+
+build/gameplay-trace/equip-42-entry-retry-ab
+SHA256 of captured DLL and event stream
+515AE5CC15E8D71DE5AAC79300D68D25B6BC37D41A396243B4DB0B4E7D968863  APBGameplayTrace.dll
+D1D35E0A27263BF95075DAFED3150369A5C598478CBDBD3488A45AAE95E91467  vm-events.csv
+trial mode matched/signals/completed tail_stack tail root_qp_ms native_qp_ms entry_lock_ms misses tasklet_passes qualifying_passes head ready advanced acquired entered unlock_matched tail_adv max_extra_ms
+1 off 12/12/174 1485316 HeelsFixCorrectEffect 14.376 210.871 92.161 386 0 0 8 0 0 0 0 0 0 n/a
+2 on 12/12/203 1486057 HeelsFixCorrectEffect 394.982 258.895 474.955 1020 0 0 3 0 0 0 0 0 0 n/a
+3 on 12/12/202 1486871 HeelsFixCorrectEffect 370.406 212.642 353.587 639 0 0 0 0 0 0 0 0 0 n/a
+4 off 12/12/202 1487415 HeelsFixCorrectEffect 395.189 215.018 402.090 660 0 0 0 0 0 0 0 0 0 n/a
+5 on 12/12/203 1487960 HeelsFixCorrectEffect 371.850 212.823 377.456 968 0 0 0 0 0 0 0 0 0 n/a
+6 off 12/12/174 1488491 HeelsFixCorrectEffect 17.310 210.176 67.958 391 0 0 6 0 0 0 0 0 0 n/a
+7 off 12/12/174 1489115 HeelsFixCorrectEffect 16.983 209.224 91.138 393 0 0 10 0 0 0 0 0 0 n/a
+8 on 12/12/174 1489629 HeelsFixCorrectEffect 17.326 208.368 90.867 751 0 0 5 0 0 0 0 0 0 n/a
+off tail_root_qp_median_ms=17.146 tail_native_qp_median_ms=210.524 tail_entry_lock_median_ms=91.650 drain_median_ms=252.749 tail_total_qp_median_ms=226.846
+  entry_lock_samples=1143 entry_lock_p95_ms=91.992 head_checks=24 advanced=0
+on tail_root_qp_median_ms=371.128 tail_native_qp_median_ms=212.733 tail_entry_lock_median_ms=365.521 drain_median_ms=609.834 tail_total_qp_median_ms=583.860
+  entry_lock_samples=1258 entry_lock_p95_ms=212.696 head_checks=8 advanced=0
+same_completed=174 off n=3 tail_total_qp_ms=226.207 tail_entry_lock_ms=91.138 drain_ms=252.701
+same_completed=174 on n=1 tail_total_qp_ms=225.694 tail_entry_lock_ms=90.867 drain_ms=253.095
+same_completed=202 off n=1 tail_total_qp_ms=610.207 tail_entry_lock_ms=402.090 drain_ms=634.259
+same_completed=202 on n=1 tail_total_qp_ms=583.048 tail_entry_lock_ms=353.587 drain_ms=609.050
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 251.184 32 40.949 336 672 24.125 24.318 0
+2 on 12 12 203 0 633.287 32 40.891 336 672 24.213 24.335 0
+3 on 12 12 202 0 609.050 32 41.929 336 672 24.251 24.366 0
+4 off 12 12 202 0 634.259 32 40.733 336 672 24.299 24.326 0
+5 on 12 12 203 0 610.619 32 41.645 335 672 24.191 24.282 0
+6 off 12 12 174 0 252.701 32 40.925 336 672 24.221 24.253 0
+7 off 12 12 174 0 252.797 32 41.307 336 673 24.548 24.300 0
+8 on 12 12 174 0 253.095 32 40.944 336 672 24.150 24.353 0
+off: probes=128 probe_p95_ms=40.913 action_probes=48 action_probe_p95_ms=39.620 drain_median_ms=252.749 frame_median_ms=23.812 frame_p99_ms=24.324 alt_frame_p99_ms=24.313
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=376 queued=376 equip_queued=74 equip_queue_p95_ms=24.298 equip_queue_total_ms=1653.608
+  form.haskeyword: executions=654 queued=654 equip_queued=599 equip_queue_p95_ms=46.588 equip_queue_total_ms=15197.202
+on: probes=128 probe_p95_ms=41.520 action_probes=48 action_probe_p95_ms=39.731 drain_median_ms=609.834 frame_median_ms=23.811 frame_p99_ms=24.203 alt_frame_p99_ms=24.335
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=376 queued=376 equip_queued=79 equip_queue_p95_ms=24.212 equip_queue_total_ms=1789.972
+  form.haskeyword: executions=693 queued=693 equip_queued=646 equip_queue_p95_ms=26.228 equip_queue_total_ms=16296.143
+
+build/gameplay-trace/equip-42-entry-tasklets-ab
+SHA256 of captured DLL and event stream
+2259AAD4D99AB87656B29F785746FD2BBA691BAF0D54B29F6490033C50B74F51  APBGameplayTrace.dll
+1F2981629C68471FE3DEAC9641A07CFE01AB17DF2FB39FA4B015B2BECD51C5B8  vm-events.csv
+trial mode matched/signals/completed tail_stack tail root_qp_ms native_qp_ms entry_lock_ms misses tasklet_passes qualifying_passes head ready advanced acquired entered unlock_matched tail_adv max_extra_ms
+1 off 12/12/174 1485282 HeelsFixCorrectEffect 9.983 259.130 140.592 767 0 0 0 0 0 0 0 0 0 n/a
+2 on 12/12/174 1486030 HeelsFixCorrectEffect 14.906 209.656 91.933 388 0 0 0 0 0 0 0 0 0 n/a
+3 on 12/12/174 1486777 HeelsFixCorrectEffect 17.161 208.252 67.389 393 0 0 0 0 0 0 0 0 0 n/a
+4 off 12/12/174 1487286 HeelsFixCorrectEffect 14.636 209.905 91.480 694 0 0 0 0 0 0 0 0 0 n/a
+5 on 12/12/174 1487817 HeelsFixCorrectEffect 14.372 210.095 91.991 431 0 0 0 0 0 0 0 0 0 n/a
+6 off 12/12/174 1488334 HeelsFixCorrectEffect 17.021 209.583 91.241 361 0 0 0 0 0 0 0 0 0 n/a
+7 off 12/12/203 1488985 HeelsFixCorrectEffect 372.415 212.392 426.937 1130 0 0 0 0 0 0 0 0 0 n/a
+8 on 12/12/202 1489549 HeelsFixCorrectEffect 348.074 212.784 354.262 694 0 0 0 0 0 0 0 0 0 n/a
+off tail_root_qp_median_ms=15.829 tail_native_qp_median_ms=211.148 tail_entry_lock_median_ms=116.036 drain_median_ms=274.286 tail_total_qp_median_ms=247.859
+  entry_lock_samples=1151 entry_lock_p95_ms=96.494 head_checks=0 advanced=0
+on tail_root_qp_median_ms=16.033 tail_native_qp_median_ms=209.875 tail_entry_lock_median_ms=91.962 drain_median_ms=251.413 tail_total_qp_median_ms=224.987
+  entry_lock_samples=1153 entry_lock_p95_ms=71.642 head_checks=0 advanced=0
+same_completed=174 off n=3 tail_total_qp_ms=226.604 tail_entry_lock_ms=91.480 drain_ms=253.233
+same_completed=174 on n=3 tail_total_qp_ms=224.561 tail_entry_lock_ms=91.933 drain_ms=250.764
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 295.339 32 41.335 336 672 24.130 24.351 0
+2 on 12 12 174 0 250.764 32 41.441 336 672 24.160 24.263 0
+3 on 12 12 174 0 252.062 32 41.470 336 672 24.159 24.282 0
+4 off 12 12 174 0 251.019 32 41.617 336 672 24.365 24.518 0
+5 on 12 12 174 0 250.369 32 40.813 336 672 24.261 24.273 0
+6 off 12 12 174 0 253.233 32 40.914 337 674 24.295 24.261 0
+7 off 12 12 203 0 610.670 32 41.091 337 672 24.250 24.386 0
+8 on 12 12 202 0 586.955 32 41.808 336 672 24.143 24.309 0
+off: probes=128 probe_p95_ms=41.267 action_probes=48 action_probe_p95_ms=39.929 drain_median_ms=274.286 frame_median_ms=23.810 frame_p99_ms=24.295 alt_frame_p99_ms=24.397
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=383 queued=382 equip_queued=74 equip_queue_p95_ms=24.092 equip_queue_total_ms=1687.132
+  form.haskeyword: executions=653 queued=653 equip_queued=599 equip_queue_p95_ms=46.157 equip_queue_total_ms=14912.721
+on: probes=128 probe_p95_ms=41.441 action_probes=48 action_probe_p95_ms=39.465 drain_median_ms=251.413 frame_median_ms=23.808 frame_p99_ms=24.173 alt_frame_p99_ms=24.282
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=378 queued=378 equip_queued=74 equip_queue_p95_ms=24.391 equip_queue_total_ms=1678.370
+  form.haskeyword: executions=647 queued=647 equip_queued=599 equip_queue_p95_ms=46.911 equip_queue_total_ms=15158.119
+
+build/gameplay-trace/equip-42-entry-worker-ab
+Final build: after 105176 returns on a worker that published a relevant unlock, after the stock VM retry pass on the same rendered frame.
+SSE Display Tweaks 0.5.16, 42 FPS, DynamicUpdateBudget=true in the test profile.
+Same-frame verification: 14 unique engine frame IDs, 13 matching X to C/P, one failed HasKeyword attempt acquired on the normal path 23.699 ms later. Independent render samples bracketed each entry with the logged frame and its successor.
+Successful HasKeyword unlock to entry 0.0049-0.0272 ms. Entry preceded the next measured stock S by 22.1621-24.9988 ms. Maximum measured extra operation 0.0112 ms.
+Zero advances on the final completed equipment stack. The first disabled window had 203 completed equipment handlers. Remaining seven windows each had 174.
+SHA256 of captured DLL, event stream, and loaded Save93
+B832E89529E5B05298727D3EACDD155235E0C2417FADCD1919C16E2195F7A1A1  APBGameplayTrace.dll
+EEA683B4F9226791AC07F73CB4FB9D28B6EF40BB0306466C9AF05B8281A73BAA  vm-events.csv
+87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.ess
+5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.skse
+trial mode matched/signals/completed tail_stack tail root_qp_ms native_qp_ms entry_lock_ms misses tasklet_passes qualifying_passes head ready advanced acquired entered unlock_matched tail_adv max_extra_ms
+1 off 12/12/203 1485368 HeelsFixCorrectEffect 14.702 284.805 165.983 603 12 11 2 2 0 0 0 0 0 n/a
+2 on 12/12/174 1486107 condiexp_pctracking 17.407 210.696 92.634 353 12 11 6 0 4 3 3 3 0 0.009
+3 on 12/12/174 1486857 HeelsFixCorrectEffect 15.806 209.132 114.632 370 11 11 7 0 4 4 4 4 0 0.011
+4 off 12/12/174 1487368 HeelsFixCorrectEffect 17.721 209.733 93.258 413 11 11 7 3 0 0 0 0 0 n/a
+5 on 12/12/174 1487903 HeelsFixCorrectEffect 37.098 212.568 139.745 397 14 13 5 0 2 2 2 2 0 0.008
+6 off 12/12/174 1488415 HeelsFixCorrectEffect 17.044 209.879 69.002 382 11 11 6 6 0 0 0 0 0 n/a
+7 off 12/12/174 1489049 HeelsFixCorrectEffect 16.883 233.857 116.175 380 12 11 7 6 0 0 0 0 0 n/a
+8 on 12/12/174 1489579 HeelsFixCorrectEffect 106.819 236.362 210.685 466 12 12 6 0 4 4 4 4 0 0.009
+off tail_root_qp_median_ms=16.964 tail_native_qp_median_ms=221.868 tail_entry_lock_median_ms=104.717 drain_median_ms=278.533 tail_total_qp_median_ms=239.097
+  entry_lock_samples=1128 entry_lock_p95_ms=93.264 head_checks=22 advanced=0
+on tail_root_qp_median_ms=27.252 tail_native_qp_median_ms=211.632 tail_entry_lock_median_ms=127.188 drain_median_ms=288.294 tail_total_qp_median_ms=238.884
+  entry_lock_samples=1080 entry_lock_p95_ms=70.770 head_checks=24 advanced=14
+same_completed=174 off n=3 tail_total_qp_ms=227.454 tail_entry_lock_ms=93.258 drain_ms=278.320
+same_completed=174 on n=4 tail_total_qp_ms=238.884 tail_entry_lock_ms=127.188 drain_ms=288.294
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 203 0 610.300 32 54.159 336 672 24.191 24.307 0
+2 on 12 12 174 0 300.910 32 42.096 336 672 24.200 24.340 0
+3 on 12 12 174 0 251.314 32 41.837 336 672 24.191 24.354 0
+4 off 12 12 174 0 253.839 32 40.817 336 672 24.161 24.283 0
+5 on 12 12 174 0 275.678 32 40.919 336 672 24.208 24.208 0
+6 off 12 12 174 0 278.745 32 40.559 336 672 24.323 24.484 0
+7 off 12 12 174 0 278.320 32 40.383 336 672 24.265 24.501 0
+8 on 12 12 174 0 369.547 32 42.033 336 672 24.194 24.466 0
+off: probes=128 probe_p95_ms=40.817 action_probes=48 action_probe_p95_ms=39.340 drain_median_ms=278.533 frame_median_ms=23.804 frame_p99_ms=24.215 alt_frame_p99_ms=24.406
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=375 queued=374 equip_queued=75 equip_queue_p95_ms=24.181 equip_queue_total_ms=1724.898
+  form.haskeyword: executions=653 queued=653 equip_queued=600 equip_queue_p95_ms=46.721 equip_queue_total_ms=15284.537
+on: probes=128 probe_p95_ms=41.842 action_probes=48 action_probe_p95_ms=40.645 drain_median_ms=288.294 frame_median_ms=23.808 frame_p99_ms=24.200 alt_frame_p99_ms=24.340
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=369 queued=369 equip_queued=72 equip_queue_p95_ms=24.764 equip_queue_total_ms=1638.687
+  form.haskeyword: executions=624 queued=624 equip_queued=576 equip_queue_p95_ms=26.015 equip_queue_total_ms=14029.718

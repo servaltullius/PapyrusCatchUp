@@ -1,0 +1,44 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 / 42 FPS / retry ABBA-BAAB
+Reanalysis of the original in-game capture, build/gameplay-trace/equip-42-retry-ab/vm-events.csv
+Capture SHA256 F662008E717CFE1C880CD17302D24227BD9636E388EF4D5856A832FB94263445
+
+Time origin is the last observed equip/unequip signal in each trial. Times are milliseconds, derived from the capture's 10 MHz QPC. Tail is the latest completed depth-zero equipment handler. All eight trials had zero open traced equipment handlers at the end. Trial 7 matched 11/12 request/signal pairs. Stack IDs identify executions within this capture.
+
+Trial Mode Stack   Handler                                Finish Root Q    Root P    Root Q-P Native Q-P Native body Native N-O Lock misses
+1     off  1485341 HeelsFixCorrectEffect.OnObjectEquipped  270.248     0.672    11.129   10.458   233.113      0.046       0.005     0
+2     on   1486091 HeelsFixCorrectEffect.OnObjectEquipped  322.730     0.710    15.803   15.094   283.182      0.047       0.005     0
+3     on   1486826 condiexp_pctracking.OnObjectEquipped    301.826     0.407    18.560   18.152   258.216      0.018       0.006     0
+4     off  1487343 condiexp_pctracking.OnObjectEquipped    300.673     0.439    17.638   17.199   257.380      0.019       0.008     0
+5     on   1487880 HeelsFixCorrectEffect.OnObjectEquipped  252.940     0.676    17.184   16.509   209.518      0.049       0.005     0
+6     off  1488395 HeelsFixCorrectEffect.OnObjectEquipped  275.956     0.684    18.896   18.212   230.621      0.051       0.007     0
+7     off  1489025 HeelsFixCorrectEffect.OnObjectUnequipped 634.513  -261.510   158.682  420.192   213.412      0.050     237.634    10
+8     on   1489612 HeelsFixCorrectEffect.OnObjectEquipped  585.996     0.860   348.114  347.255   212.877      0.050       0.005     0
+
+Q/P are profiler queue/frame-entry events, matched by stack and depth. Native Q-P sums matched calls below the root. Native body measures synchronous marshal/dispatch. N-O spans from synchronous return to native frame pop and is separate from subsequent tasklet resumption.
+
+Ordering evidence
+- All 26 advanced passes reported success for the original queue head. Zero had a final equipment handler as that head. Zero advanced passes occurred between the final equipment signal and tail completion in any enabled trial.
+- Last advanced pass relative to the final equipment signal: trial 2 -1391.047 ms, trial 3 -793.219 ms, trial 5 -56.795 ms, trial 8 none in the window.
+- From the advance decision to the end of the retry pass (d -> s) was 0.0040 to 0.0099 ms (median 0.00625 ms). In enabled candidate frames the native drain starts after s. This is the time to the point immediately before calling the deferred drain, with the next instruction/call overhead outside the marker.
+
+Long calls on the final equipment stack
+Trial Mode Method                 Q       P       Q-P     S start   s end     Notes
+1     off  Actor.IsSneaking        32.808  80.115  47.307   80.0398   80.1193  Began in stock suspended-stack pass
+2     on   Actor.HasPerk           61.606 155.857  94.251  155.8534  155.8784  Began in stock suspended-stack pass
+3     on   Form.HasKeyword         65.124 158.988  93.864  158.9852  158.9994  Began in stock suspended-stack pass
+4     off  Form.HasKeyword         62.802 158.024  95.222  158.0203  158.0328  Began in stock suspended-stack pass
+6     off  NetImmerse.HasNode      182.529 228.697  46.168      -          -   Outside the marked suspended-stack pass
+
+S/s are entry/exit of stock 104858. For the four marked calls, P is between S and s on the same thread, and the same stack acquired the object (G) within 0.002 ms before P. The stock disassembly shows the path from 104858 to call entry 104853 at RVA 0x144FCEF. The native-message drain is separate (104857). This trace has no per-message pop marker for 104857 and does not timestamp failed lock attempts before native frame entry.
+
+Selected object timelines, relative to final equipment signal
+- Trial 2 Actor.HasPerk: other stack 1486086 acquired at 61.554, before Q at 61.606, and released at 84.687. More contenders acquired the same token. Stack 1486073 released at 109.455, acquired again at 132.474, and stack 1486096 acquired at 132.645. The final stack took the token at 155.856 after 1486096 released it at 155.816. HasPerk dispatch took 0.003 ms and did not miss its return lock.
+- Trial 3 Form.HasKeyword: stack 1486824 released the target at 135.838, 0.127 ms after the stock pass ended at 135.711. The final stack acquired at 158.987, in the next stock pass. Trial 4 shows the analogous pattern with the previous stock pass ending at 134.056, release at 134.182 and acquisition at 158.023. These times place both slow calls before dispatch and show the pattern in both arms.
+- Trial 8: stack 1489612 was queued 347.255 ms before entering, and entered 0.005 ms after the previous HeelsFixCorrectEffect.OnObjectUnequipped stack 1489590 finished. No advance occurred anywhere in trial 8. Trial 7's tail was the preceding unequip handler, entered 0.008 ms after the previous handler of the same class finished, and spent 237.629 ms after Actor.HasSpell returned with ten return lock misses.
+
+Adjacent pairs, matching the lighter 174-completion workload in trials 1-6
+- OFF 1 / ON 2: tail +52.482 ms, sum of tail native queue waits +50.069 ms. Actor.HasPerk alone increased from 24.818 to 94.251 ms while Actor.IsSneaking decreased from 47.307 to 23.611 ms.
+- OFF 4 / ON 3: tail +1.153 ms, sum of tail native queue waits +0.836 ms. The slow Form.HasKeyword wait is present in both modes.
+- OFF 6 / ON 5: tail -23.016 ms, sum of tail native queue waits -21.103 ms. The second NetImmerse.HasNode wait went from 46.168 to 21.643 ms.
+
+The median tail increased in this sample. The largest positive pair difference is in the interval before entering native frames on the final handler. Neither that long wait nor the similar HasKeyword waits overlap an advanced pass. This supports contention and waiting for the stock suspended-stack phase as the observed source of these delays. The capture does not isolate indirect scheduling effects from advances earlier in the workload.

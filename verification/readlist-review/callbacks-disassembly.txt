@@ -1,0 +1,564 @@
+### Actor.GetActorValue id=54675
+@ 9E82B0 id=54675
+009e82b0 mov     qword ptr [rsp + 8], rbx
+009e82b5 mov     qword ptr [rsp + 0x10], rbp
+009e82ba mov     qword ptr [rsp + 0x18], rsi
+009e82bf push    rdi
+009e82c0 sub     rsp, 0x20
+009e82c4 mov     rbp, rcx
+009e82c7 mov     rdi, r9
+009e82ca mov     rcx, qword ptr [r9]
+009e82cd mov     rbx, r8
+009e82d0 mov     esi, edx
+009e82d2 call    0x43bea0 ; id=27203
+009e82d7 mov     edx, eax
+009e82d9 cmp     eax, 0xa4
+009e82de jne     0x9e82fa ; id=None
+009e82e0 mov     rcx, qword ptr [rdi]
+009e82e3 lea     rdx, [rip + 0xf2df66] ; [1916250 id=217381]
+009e82ea mov     r9d, esi
+009e82ed mov     r8, rbp
+009e82f0 call    0x9f6420 ; id=55043
+009e82f5 xorps   xmm0, xmm0
+009e82f8 jmp     0x9e831e ; id=None
+009e82fa mov     eax, dword ptr [rbx + 0x10]
+009e82fd shr     eax, 0xb
+009e8300 test    al, 1
+009e8302 jne     0x9e830d ; id=None
+009e8304 lea     rcx, [rbx + 0xb8]
+009e830b jmp     0x9e8318 ; id=None
+009e830d mov     rcx, qword ptr [rbx + 0x40]
+009e8311 add     rcx, 0xe8
+009e8318 mov     rax, qword ptr [rcx]
+009e831b call    qword ptr [rax + 8]
+009e831e mov     rbx, qword ptr [rsp + 0x30]
+009e8323 mov     rbp, qword ptr [rsp + 0x38]
+009e8328 mov     rsi, qword ptr [rsp + 0x40]
+009e832d add     rsp, 0x20
+009e8331 pop     rdi
+009e8332 ret     
+### Actor.GetActorValuePercentage id=54677
+@ 9E83F0 id=54677
+009e83f0 mov     qword ptr [rsp + 8], rbx
+009e83f5 mov     qword ptr [rsp + 0x10], rbp
+009e83fa mov     qword ptr [rsp + 0x18], rsi
+009e83ff push    rdi
+009e8400 sub     rsp, 0x20
+009e8404 mov     rbp, rcx
+009e8407 mov     rbx, r9
+009e840a mov     rcx, qword ptr [r9]
+009e840d mov     rdi, r8
+009e8410 mov     esi, edx
+009e8412 call    0x43bea0 ; id=27203
+009e8417 cmp     eax, 0xa4
+009e841c jne     0x9e8438 ; id=None
+009e841e mov     rcx, qword ptr [rbx]
+009e8421 lea     rdx, [rip + 0xf2de28] ; [1916250 id=217381]
+009e8428 mov     r9d, esi
+009e842b mov     r8, rbp
+009e842e call    0x9f6420 ; id=55043
+009e8433 xorps   xmm0, xmm0
+009e8436 jmp     0x9e8442 ; id=None
+009e8438 mov     edx, eax
+009e843a mov     rcx, rdi
+009e843d call    0x666f60 ; id=37337
+009e8442 mov     rbx, qword ptr [rsp + 0x30]
+009e8447 mov     rbp, qword ptr [rsp + 0x38]
+009e844c mov     rsi, qword ptr [rsp + 0x40]
+009e8451 add     rsp, 0x20
+009e8455 pop     rdi
+009e8456 ret     
+### Actor.GetBaseActorValue id=54678
+@ 9E8460 id=54678
+009e8460 mov     qword ptr [rsp + 8], rbx
+009e8465 mov     qword ptr [rsp + 0x10], rbp
+009e846a mov     qword ptr [rsp + 0x18], rsi
+009e846f push    rdi
+009e8470 sub     rsp, 0x20
+009e8474 mov     rbp, rcx
+009e8477 mov     rbx, r9
+009e847a mov     rcx, qword ptr [r9]
+009e847d mov     rdi, r8
+009e8480 mov     esi, edx
+009e8482 call    0x43bea0 ; id=27203
+009e8487 mov     edx, eax
+009e8489 cmp     eax, 0xa4
+009e848e jne     0x9e84aa ; id=None
+009e8490 mov     rcx, qword ptr [rbx]
+009e8493 lea     rdx, [rip + 0xf2ddb6] ; [1916250 id=217381]
+009e849a mov     r9d, esi
+009e849d mov     r8, rbp
+009e84a0 call    0x9f6420 ; id=55043
+009e84a5 xorps   xmm0, xmm0
+009e84a8 jmp     0x9e84b7 ; id=None
+009e84aa lea     rcx, [rdi + 0xb8]
+009e84b1 mov     rax, qword ptr [rcx]
+009e84b4 call    qword ptr [rax + 0x18]
+009e84b7 mov     rbx, qword ptr [rsp + 0x30]
+009e84bc mov     rbp, qword ptr [rsp + 0x38]
+009e84c1 mov     rsi, qword ptr [rsp + 0x40]
+009e84c6 add     rsp, 0x20
+009e84ca pop     rdi
+009e84cb ret     
+### Actor.GetEquippedArmorInSlot id=54684
+@ 9E8690 id=54684
+009e8690 mov     qword ptr [rsp + 8], rbx
+009e8695 mov     qword ptr [rsp + 0x10], rbp
+009e869a mov     qword ptr [rsp + 0x18], rsi
+009e869f push    rdi
+009e86a0 sub     rsp, 0x30
+009e86a4 mov     rbp, rcx
+009e86a7 mov     edi, r9d
+009e86aa mov     rcx, r8
+009e86ad mov     rbx, r8
+009e86b0 mov     esi, edx
+009e86b2 call    0x2259d0 ; id=16039
+009e86b7 test    rax, rax
+009e86ba je      0x9e86c8 ; id=None
+009e86bc mov     edx, edi
+009e86be mov     rcx, rax
+009e86c1 call    0x234000 ; id=16113
+009e86c6 jmp     0x9e86e7 ; id=None
+009e86c8 mov     r9d, esi
+009e86cb mov     dword ptr [rsp + 0x20], 2
+009e86d3 mov     r8, rbp
+009e86d6 lea     rdx, [rip + 0xf2dcb3] ; [1916390 id=217391]
+009e86dd mov     rcx, rbx
+009e86e0 call    0x9b7e10 ; id=53824
+009e86e5 xor     eax, eax
+009e86e7 mov     rbx, qword ptr [rsp + 0x40]
+009e86ec mov     rbp, qword ptr [rsp + 0x48]
+009e86f1 mov     rsi, qword ptr [rsp + 0x50]
+009e86f6 add     rsp, 0x30
+009e86fa pop     rdi
+009e86fb ret     
+### Actor.GetEquippedWeapon id=54924
+@ 9F52D0 id=54924
+009f52d0 movzx   edx, r9b
+009f52d4 mov     rcx, r8
+009f52d7 jmp     0x6b76c0 ; id=38574
+### Actor.GetFactionRank id=54686
+@ 9E87A0 id=54686
+009e87a0 sub     rsp, 0x28
+009e87a4 mov     rax, r8
+009e87a7 test    r9, r9
+009e87aa je      0x9e87c6 ; id=None
+009e87ac cmp     rax, qword ptr [rip + 0x274eee5] ; [3137698 id=401069]
+009e87b3 mov     rdx, r9
+009e87b6 mov     rcx, rax
+009e87b9 sete    r8b
+009e87bd add     rsp, 0x28
+009e87c1 jmp     0x68a8a0 ; id=37676
+009e87c6 mov     r10, qword ptr [rcx]
+009e87c9 mov     r8d, edx
+009e87cc mov     r9d, 2
+009e87d2 lea     rdx, [rip + 0xf2dc17] ; [19163F0 id=217393]
+009e87d9 call    qword ptr [r10 + 0x10]
+009e87dd xor     eax, eax
+009e87df add     rsp, 0x28
+009e87e3 ret     
+### Actor.GetRace id=54930
+@ 9F5340 id=54930
+009f5340 mov     rax, qword ptr [r8 + 0x1f8]
+009f5347 ret     
+### Actor.HasMagicEffect id=54649
+@ 9E76B0 id=54649
+009e76b0 sub     rsp, 0x28
+009e76b4 test    r9, r9
+009e76b7 je      0x9e76cc ; id=None
+009e76b9 lea     rcx, [r8 + 0xa0]
+009e76c0 mov     rdx, r9
+009e76c3 add     rsp, 0x28
+009e76c7 jmp     0x5c2b80 ; id=34517
+009e76cc mov     r10, qword ptr [rcx]
+009e76cf mov     r8d, edx
+009e76d2 mov     r9d, 2
+009e76d8 lea     rdx, [rip + 0xf2e919] ; [1915FF8 id=217371]
+009e76df call    qword ptr [r10 + 0x10]
+009e76e3 xor     al, al
+009e76e5 add     rsp, 0x28
+009e76e9 ret     
+### Actor.HasMagicEffectWithKeyword id=54650
+@ 9E76F0 id=54650
+009e76f0 sub     rsp, 0x28
+009e76f4 test    r9, r9
+009e76f7 je      0x9e770f ; id=None
+009e76f9 lea     rcx, [r8 + 0xa0]
+009e7700 mov     rdx, r9
+009e7703 xor     r8d, r8d
+009e7706 add     rsp, 0x28
+009e770a jmp     0x5c2c10 ; id=34518
+009e770f mov     r10, qword ptr [rcx]
+009e7712 mov     r8d, edx
+009e7715 mov     r9d, 2
+009e771b lea     rdx, [rip + 0xf2e906] ; [1916028 id=217372]
+009e7722 call    qword ptr [r10 + 0x10]
+009e7726 xor     al, al
+009e7728 add     rsp, 0x28
+009e772c ret     
+### Actor.HasPerk id=54644
+@ 9E7560 id=54644
+009e7560 sub     rsp, 0x28
+009e7564 test    r9, r9
+009e7567 je      0x9e757e ; id=None
+009e7569 mov     rdx, r9
+009e756c mov     rcx, r8
+009e756f call    0x68cdf0 ; id=37698
+009e7574 test    al, al
+009e7576 setne   al
+009e7579 add     rsp, 0x28
+009e757d ret     
+009e757e mov     r10, qword ptr [rcx]
+009e7581 mov     r8d, edx
+009e7584 mov     r9d, 2
+009e758a lea     rdx, [rip + 0xf2ea17] ; [1915FA8 id=217369]
+009e7591 call    qword ptr [r10 + 0x10]
+009e7595 xor     al, al
+009e7597 add     rsp, 0x28
+009e759b ret     
+### Actor.HasSpell id=54653
+@ 9E7870 id=54653
+009e7870 sub     rsp, 0x38
+009e7874 mov     r10, r9
+009e7877 test    r9, r9
+009e787a je      0x9e78cf ; id=None
+009e787c movzx   r9d, byte ptr [r9 + 0x1a]
+009e7881 cmp     r9b, 0x16
+009e7885 je      0x9e78c0 ; id=None
+009e7887 cmp     r9b, 0x77
+009e788b je      0x9e78b1 ; id=None
+009e788d mov     r9d, edx
+009e7890 mov     dword ptr [rsp + 0x20], 2
+009e7898 mov     r8, rcx
+009e789b lea     rdx, [rip + 0xf2e80e] ; [19160B0 id=217375]
+009e78a2 mov     rcx, r10
+009e78a5 call    0x9b7e10 ; id=53824
+009e78aa xor     al, al
+009e78ac add     rsp, 0x38
+009e78b0 ret     
+009e78b1 mov     rdx, r10
+009e78b4 mov     rcx, r8
+009e78b7 add     rsp, 0x38
+009e78bb jmp     0x6c4c90 ; id=38783
+009e78c0 mov     rdx, r10
+009e78c3 mov     rcx, r8
+009e78c6 add     rsp, 0x38
+009e78ca jmp     0x6c4c50 ; id=38782
+009e78cf mov     rax, qword ptr [rcx]
+009e78d2 mov     r8d, edx
+009e78d5 mov     r9d, 2
+009e78db lea     rdx, [rip + 0xf2e7f6] ; [19160D8 id=217376]
+009e78e2 call    qword ptr [rax + 0x10]
+009e78e5 xor     al, al
+009e78e7 add     rsp, 0x38
+009e78eb ret     
+### Actor.IsDead id=54705
+@ 9E8CA0 id=54705
+009e8ca0 mov     rax, qword ptr [r8]
+009e8ca3 mov     dl, 1
+009e8ca5 mov     rcx, r8
+009e8ca8 jmp     qword ptr [rax + 0x4c8]
+### Actor.IsInCombat id=54945
+@ 9F54A0 id=54945
+009f54a0 mov     rax, qword ptr [r8]
+009f54a3 mov     rcx, r8
+009f54a6 jmp     qword ptr [rax + 0x718]
+### Actor.IsInFaction id=54946
+@ 9F54B0 id=54946
+009f54b0 mov     rax, qword ptr [r8]
+009f54b3 mov     rdx, r9
+009f54b6 mov     rcx, r8
+009f54b9 jmp     qword ptr [rax + 0x7c8]
+### Actor.IsSneaking id=54953
+@ 9F5520 id=54953
+009f5520 mov     qword ptr [rsp + 8], rbx
+009f5525 push    rdi
+009f5526 sub     rsp, 0x20
+009f552a mov     edx, 0x200
+009f552f lea     rcx, [r8 + 0xc0]
+009f5536 mov     rbx, r8
+009f5539 call    0x6cea40 ; id=38986
+009f553e test    al, al
+009f5540 je      0x9f5570 ; id=None
+009f5542 mov     edx, 0x400
+009f5547 lea     rcx, [rbx + 0xc0]
+009f554e call    0x6cea40 ; id=38986
+009f5553 test    al, al
+009f5555 jne     0x9f5570 ; id=None
+009f5557 mov     rcx, rbx
+009f555a call    0x280270 ; id=17965
+009f555f test    al, al
+009f5561 jne     0x9f5570 ; id=None
+009f5563 mov     al, 1
+009f5565 mov     rbx, qword ptr [rsp + 0x30]
+009f556a add     rsp, 0x20
+009f556e pop     rdi
+009f556f ret     
+009f5570 mov     rbx, qword ptr [rsp + 0x30]
+009f5575 xor     al, al
+009f5577 add     rsp, 0x20
+009f557b pop     rdi
+009f557c ret     
+### Actor.WornHasKeyword id=54777
+@ 9EB770 id=54777
+009eb770 mov     qword ptr [rsp + 8], rbx
+009eb775 mov     qword ptr [rsp + 0x10], rbp
+009eb77a mov     qword ptr [rsp + 0x18], rsi
+009eb77f push    rdi
+009eb780 sub     rsp, 0x30
+009eb784 mov     rdi, r9
+009eb787 mov     rsi, r8
+009eb78a mov     ebp, edx
+009eb78c mov     rbx, rcx
+009eb78f test    r9, r9
+009eb792 je      0x9eb7cd ; id=None
+009eb794 mov     rcx, r8
+009eb797 call    0x2259d0 ; id=16039
+009eb79c test    rax, rax
+009eb79f je      0x9eb7ae ; id=None
+009eb7a1 mov     rdx, rdi
+009eb7a4 mov     rcx, rax
+009eb7a7 call    0x225de0 ; id=16046
+009eb7ac jmp     0x9eb7e5 ; id=None
+009eb7ae mov     r9d, ebp
+009eb7b1 mov     dword ptr [rsp + 0x20], 2
+009eb7b9 mov     r8, rbx
+009eb7bc lea     rdx, [rip + 0xf2b6fd] ; [1916EC0 id=217446]
+009eb7c3 mov     rcx, rsi
+009eb7c6 call    0x9b7e10 ; id=53824
+009eb7cb jmp     0x9eb7e3 ; id=None
+009eb7cd mov     rax, qword ptr [rcx]
+009eb7d0 lea     rdx, [rip + 0xf2b729] ; [1916F00 id=217447]
+009eb7d7 mov     r9d, 2
+009eb7dd mov     r8d, ebp
+009eb7e0 call    qword ptr [rax + 0x10]
+009eb7e3 xor     al, al
+009eb7e5 mov     rbx, qword ptr [rsp + 0x40]
+009eb7ea mov     rbp, qword ptr [rsp + 0x48]
+009eb7ef mov     rsi, qword ptr [rsp + 0x50]
+009eb7f4 add     rsp, 0x30
+009eb7f8 pop     rdi
+009eb7f9 ret     
+### ActorBase.GetSex id=56005
+@ A255E0 id=56005
+00a255e0 mov     rcx, r8
+00a255e3 jmp     0x3a8df0 ; id=24374
+### Alias.GetOwningQuest id=55155
+@ 9FD320 id=55155
+009fd320 mov     rax, qword ptr [r8 + 0x10]
+009fd324 ret     
+### Form.HasKeyword id=55870
+@ A1EC50 id=55870
+00a1ec50 mov     qword ptr [rsp + 8], rbx
+00a1ec55 push    rdi
+00a1ec56 sub     rsp, 0x20
+00a1ec5a mov     rcx, r8
+00a1ec5d mov     rdi, r9
+00a1ec60 mov     rbx, r8
+00a1ec63 call    0x1d3390 ; id=14258
+00a1ec68 mov     rcx, rax
+00a1ec6b test    rax, rax
+00a1ec6e je      0xa1ec84 ; id=None
+00a1ec70 mov     rax, qword ptr [rax]
+00a1ec73 mov     rdx, rdi
+00a1ec76 mov     rbx, qword ptr [rsp + 0x30]
+00a1ec7b add     rsp, 0x20
+00a1ec7f pop     rdi
+00a1ec80 jmp     qword ptr [rax + 0x20]
+00a1ec84 mov     rax, qword ptr [rbx]
+00a1ec87 mov     rcx, rbx
+00a1ec8a call    qword ptr [rax + 0x160]
+00a1ec90 mov     rcx, rax
+00a1ec93 test    rax, rax
+00a1ec96 je      0xa1ecaf ; id=None
+00a1ec98 mov     rax, qword ptr [rax]
+00a1ec9b mov     rdx, rdi
+00a1ec9e mov     rbx, qword ptr [rsp + 0x30]
+00a1eca3 add     rsp, 0x20
+00a1eca7 pop     rdi
+00a1eca8 jmp     qword ptr [rax + 0x240]
+00a1ecaf mov     rbx, qword ptr [rsp + 0x30]
+00a1ecb4 add     rsp, 0x20
+00a1ecb8 pop     rdi
+00a1ecb9 ret     
+### Game.GetFormFromFile id=55465
+@ A0C7E0 id=55465
+00a0c7e0 mov     qword ptr [rsp + 8], rbx
+00a0c7e5 mov     qword ptr [rsp + 0x10], rbp
+00a0c7ea mov     qword ptr [rsp + 0x18], rsi
+00a0c7ef mov     dword ptr [rsp + 0x20], r9d
+00a0c7f4 push    rdi
+00a0c7f5 sub     rsp, 0x420
+00a0c7fc mov     rsi, qword ptr [rsp + 0x450]
+00a0c804 mov     ebp, edx
+00a0c806 mov     rdi, rcx
+00a0c809 mov     rcx, qword ptr [rip + 0x16e9b10] ; [20F6320 id=400269]
+00a0c810 mov     rdx, qword ptr [rsi]
+00a0c813 call    0x1b8180 ; id=13731
+00a0c818 mov     rbx, rax
+00a0c81b test    rax, rax
+00a0c81e je      0xa0c84a ; id=None
+00a0c820 mov     rcx, rax
+00a0c823 call    0x1c7040 ; id=13964
+00a0c828 test    al, al
+00a0c82a je      0xa0c84a ; id=None
+00a0c82c lea     rdx, [rsp + 0x448]
+00a0c834 mov     rcx, rbx
+00a0c837 call    0x1c8d70 ; id=14003
+00a0c83c mov     ecx, dword ptr [rsp + 0x448]
+00a0c843 call    0x1e01a0 ; id=14617
+00a0c848 jmp     0xa0c87d ; id=None
+00a0c84a mov     r9, qword ptr [rsi]
+00a0c84d lea     r8, [rip + 0xf13e74] ; [19206C8 id=217901]
+00a0c854 mov     edx, 0x400
+00a0c859 lea     rcx, [rsp + 0x20]
+00a0c85e call    0x18a900 ; id=12920
+00a0c863 mov     r10, qword ptr [rdi]
+00a0c866 lea     rdx, [rsp + 0x20]
+00a0c86b mov     r9d, 2
+00a0c871 mov     r8d, ebp
+00a0c874 mov     rcx, rdi
+00a0c877 call    qword ptr [r10 + 0x10]
+00a0c87b xor     eax, eax
+00a0c87d lea     r11, [rsp + 0x420]
+00a0c885 mov     rbx, qword ptr [r11 + 0x10]
+00a0c889 mov     rbp, qword ptr [r11 + 0x18]
+00a0c88d mov     rsi, qword ptr [r11 + 0x20]
+00a0c891 mov     rsp, r11
+00a0c894 pop     rdi
+00a0c895 ret     
+### Game.GetPlayer id=55469
+@ A0CBB0 id=55469
+00a0cbb0 mov     rax, qword ptr [rip + 0x277a941] ; [31874F8 id=403521]
+00a0cbb7 ret     
+### GlobalVariable.GetValue id=55930
+@ A217F0 id=55930
+00a217f0 movss   xmm0, dword ptr [r8 + 0x34]
+00a217f6 ret     
+### ObjectReference.GetBaseObject id=56168
+@ A2D060 id=56168
+00a2d060 push    rbx
+00a2d062 sub     rsp, 0x20
+00a2d066 lea     rcx, [r8 + 0x70]
+00a2d06a mov     rbx, r8
+00a2d06d call    0x1640e0 ; id=11810
+00a2d072 test    rax, rax
+00a2d075 jne     0xa2d07b ; id=None
+00a2d077 mov     rax, qword ptr [rbx + 0x40]
+00a2d07b add     rsp, 0x20
+00a2d07f pop     rbx
+00a2d080 ret     
+### ObjectReference.GetDistance id=56170
+@ A2D0A0 id=56170
+00a2d0a0 sub     rsp, 0x28
+00a2d0a4 mov     rax, r9
+00a2d0a7 mov     r10, r8
+00a2d0aa test    r9, r9
+00a2d0ad je      0xa2d0c4 ; id=None
+00a2d0af xor     r9d, r9d
+00a2d0b2 mov     r8b, 1
+00a2d0b5 mov     rdx, rax
+00a2d0b8 mov     rcx, r10
+00a2d0bb add     rsp, 0x28
+00a2d0bf jmp     0x2edb90 ; id=19823
+00a2d0c4 mov     rax, qword ptr [rcx]
+00a2d0c7 mov     r8d, edx
+00a2d0ca mov     r9d, 2
+00a2d0d0 lea     rdx, [rip + 0xefee61] ; [192BF38 id=218448]
+00a2d0d7 call    qword ptr [rax + 0x10]
+00a2d0da movss   xmm0, dword ptr [rip + 0xd47316] ; [17743F8 id=187061]
+00a2d0e2 add     rsp, 0x28
+00a2d0e6 ret     
+### ObjectReference.GetPositionX id=56178
+@ A2D2D0 id=56178
+00a2d2d0 movss   xmm0, dword ptr [r8 + 0x54]
+00a2d2d6 ret     
+### ObjectReference.GetPositionY id=56179
+@ A2D2E0 id=56179
+00a2d2e0 movss   xmm0, dword ptr [r8 + 0x58]
+00a2d2e6 ret     
+### ObjectReference.GetPositionZ id=56180
+@ A2D2F0 id=56180
+00a2d2f0 movss   xmm0, dword ptr [r8 + 0x5c]
+00a2d2f6 ret     
+### ObjectReference.GetScale id=56633
+@ A44B70 id=56633
+00a44b70 mov     rcx, r8
+00a44b73 jmp     0x2e09c0 ; id=19664
+### ObjectReference.Is3DLoaded id=56188
+@ A2D550 id=56188
+00a2d550 sub     rsp, 0x28
+00a2d554 mov     rax, qword ptr [r8]
+00a2d557 mov     rcx, r8
+00a2d55a call    qword ptr [rax + 0x380]
+00a2d560 test    rax, rax
+00a2d563 setne   al
+00a2d566 add     rsp, 0x28
+00a2d56a ret     
+### ObjectReference.IsDisabled id=56639
+@ A44BD0 id=56639
+00a44bd0 mov     eax, dword ptr [r8 + 0x10]
+00a44bd4 shr     eax, 0xb
+00a44bd7 and     al, 1
+00a44bd9 ret     
+### ObjectReference.IsInDialogueWithPlayer id=56194
+@ A2D7A0 id=56194
+00a2d7a0 sub     rsp, 0x28
+00a2d7a4 xor     ecx, ecx
+00a2d7a6 cmp     byte ptr [r8 + 0x1a], 0x3e
+00a2d7ab cmove   rcx, r8
+00a2d7af test    rcx, rcx
+00a2d7b2 je      0xa2d7bd ; id=None
+00a2d7b4 add     rsp, 0x28
+00a2d7b8 jmp     0x6603e0 ; id=37199
+00a2d7bd mov     rax, qword ptr [r8 + 0x40]
+00a2d7c1 cmp     byte ptr [rax + 0x1a], 0x19
+00a2d7c5 jne     0xa2d7f2 ; id=None
+00a2d7c7 mov     rax, qword ptr [rip + 0x2709faa] ; [3137778 id=401099]
+00a2d7ce lea     rdx, [rsp + 0x40]
+00a2d7d3 mov     qword ptr [rsp + 0x20], rbx
+00a2d7d8 mov     rcx, r8
+00a2d7db mov     ebx, dword ptr [rax + 0x68]
+00a2d7de call    0x2efac0 ; id=19846
+00a2d7e3 cmp     ebx, dword ptr [rax]
+00a2d7e5 mov     rbx, qword ptr [rsp + 0x20]
+00a2d7ea sete    al
+00a2d7ed add     rsp, 0x28
+00a2d7f1 ret     
+00a2d7f2 xor     al, al
+00a2d7f4 add     rsp, 0x28
+00a2d7f8 ret     
+### ReferenceAlias.GetReference id=55287
+@ A033F0 id=55287
+00a033f0 push    rbx
+00a033f2 sub     rsp, 0x30
+00a033f6 mov     qword ptr [rsp + 0x20], 0xfffffffffffffffe
+00a033ff xor     ebx, ebx
+00a03401 mov     rcx, qword ptr [r8 + 0x10]
+00a03405 test    rcx, rcx
+00a03408 je      0xa03458 ; id=None
+00a0340a mov     r8d, dword ptr [r8 + 0x18]
+00a0340e lea     rdx, [rsp + 0x50]
+00a03413 call    0x3d14d0 ; id=25066
+00a03418 mov     qword ptr [rsp + 0x58], rbx
+00a0341d lea     rdx, [rsp + 0x58]
+00a03422 mov     rcx, rax
+00a03425 call    0x179710 ; id=12332
+00a0342a nop     
+00a0342b mov     rax, qword ptr [rsp + 0x58]
+00a03430 test    rax, rax
+00a03433 cmovne  rbx, rax
+00a03437 je      0xa03458 ; id=None
+00a03439 lea     rcx, [rax + 0x20]
+00a0343d mov     edx, 0xffffffff
+00a03442 lock xadd dword ptr [rcx + 8], edx
+00a03447 dec     edx
+00a03449 test    edx, 0x3ff
+00a0344f jne     0xa03458 ; id=None
+00a03451 mov     rdx, qword ptr [rcx]
+00a03454 call    qword ptr [rdx + 8]
+00a03457 nop     
+00a03458 mov     rax, rbx
+00a0345b add     rsp, 0x30
+00a0345f pop     rbx
+00a03460 ret     

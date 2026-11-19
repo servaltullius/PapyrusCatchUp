@@ -1,0 +1,27 @@
+[08:34:16.993] [38884] [I] AdaptivePapyrusBudget v0-1-0-0
+[08:34:26.977] [38884] [I] Installed gameplay-only budget hook; threshold=50 FPS, cap=1.4x, benchmark=true
+[08:36:38.678] [38884] [I] Benchmark gameplay ready=true
+[08:36:40.114] [38864] [I] stress start: 160 jobs x 48 native slices, BAAB, test=WorkSlice-tasklets
+[08:36:42.351] [38864] [I] stress start: 160 jobs x 48 native slices, BAAB, test=WorkSlice-tasklets
+[08:36:57.381] [50808] [I] stress idle: n=29 p50_ms=44.687 p95_ms=45.592
+[08:37:00.397] [47928] [I] burst capture trial=1 tasklets=true qpc=1364754452293 qpc_hz=10000000
+[08:37:00.397] [47928] [I] burst start trial=1 on=true accepted=160 submit_ms=0.226
+[08:37:00.515] [49452] [I] burst result trial=1 on=true jobs=160 bad=0 probes=1 pending1s=0 pending2s=0 fps=9.123 frame_p99_ms=109.609 budget_mean_ms=1.2000 boosted=0/1 drain_ms=114.811 job_p50_ms=114.862 job_p95_ms=114.919 probe_p50_ms=114.644 probe_p95_ms=114.644
+[08:37:00.515] [49452] [I] burst probe samples trial=1 on=true ms=114.644
+[08:37:00.515] [49452] [I] burst policy trial=1 disabled=1 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=109.609
+[08:37:03.540] [49452] [I] burst capture trial=2 tasklets=false qpc=1364785876711 qpc_hz=10000000
+[08:37:03.540] [49452] [I] burst start trial=2 on=false accepted=160 submit_ms=0.247
+[08:37:30.921] [27864] [I] burst result trial=2 on=false jobs=160 bad=0 probes=105 pending1s=160 pending2s=160 fps=41.998 frame_p99_ms=27.197 budget_mean_ms=1.2000 boosted=0/1149 drain_ms=27377.011 job_p50_ms=27354.237 job_p95_ms=27354.283 probe_p50_ms=592.546 probe_p95_ms=639.216
+[08:37:30.921] [27864] [I] burst probe samples trial=2 on=false ms=43.300,591.321,591.647,591.713,591.793,592.322,615.952,592.256,591.934,614.995,615.890,615.214,615.035,617.172,614.221,613.919,615.892,614.016,639.089,615.602,639.704,615.430,592.268,591.670,592.625,592.245,590.871,593.628,592.021,592.965,590.128,591.960,590.951,592.160,592.224,614.395,614.877,592.264,591.778,615.326,639.216,640.001,640.490,592.049,615.256,616.111,592.628,589.194,590.977,592.586,592.143,614.665,591.602,592.638,591.168,592.546,591.223,592.329,591.127,591.375,591.984,615.740,615.796,615.765,614.011,615.839,615.888,591.739,590.395,591.008,591.961,615.357,615.790,592.795,590.809,615.043,640.048,639.369,615.926,592.178,591.966,591.982,592.002,616.037,615.576,615.514,639.117,614.101,592.091,591.354,616.041,592.557,591.304,591.867,590.818,592.443,590.350,615.270,614.545,614.435,592.140,591.149,592.219,400.905,139.479
+[08:37:30.921] [27864] [I] burst policy trial=2 disabled=1149 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=35.212
+[08:37:33.943] [44908] [I] burst capture trial=3 tasklets=false qpc=1365089914667 qpc_hz=10000000
+[08:37:33.943] [44908] [I] burst start trial=3 on=false accepted=160 submit_ms=0.228
+[08:38:00.753] [44908] [I] burst result trial=3 on=false jobs=160 bad=0 probes=103 pending1s=160 pending2s=160 fps=41.996 frame_p99_ms=27.612 budget_mean_ms=1.2000 boosted=0/1124 drain_ms=26783.842 job_p50_ms=26783.776 job_p95_ms=26783.834 probe_p50_ms=591.874 probe_p95_ms=616.102
+[08:38:00.753] [44908] [I] burst probe samples trial=3 on=false ms=44.908,591.236,592.066,566.723,589.903,591.844,591.820,591.583,590.863,591.094,591.106,592.210,590.836,568.296,592.073,591.855,591.774,591.976,592.314,592.058,591.146,592.293,591.156,591.452,592.140,583.776,591.631,591.983,592.062,591.856,591.328,591.844,568.251,569.826,568.021,593.103,592.060,591.949,591.258,592.353,592.175,615.596,592.296,590.242,591.222,590.801,591.711,591.380,591.929,592.022,592.165,592.422,591.582,592.121,592.333,591.232,584.257,591.947,591.435,591.210,592.102,591.272,592.035,592.163,591.449,591.654,592.005,567.753,593.007,592.332,616.363,615.077,616.102,613.764,591.788,591.957,590.217,593.194,592.805,591.516,591.874,592.052,591.908,591.843,590.674,591.178,592.541,592.188,592.109,590.391,615.518,616.638,591.757,616.209,613.629,592.961,592.061,615.366,616.264,616.409,591.736,352.963,91.509
+[08:38:00.753] [44908] [I] burst policy trial=3 disabled=1124 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=33.823
+[08:38:03.777] [50808] [I] burst capture trial=4 tasklets=true qpc=1365388252668 qpc_hz=10000000
+[08:38:03.777] [50808] [I] burst start trial=4 on=true accepted=160 submit_ms=0.245
+[08:38:03.896] [47928] [I] burst result trial=4 on=true jobs=160 bad=0 probes=1 pending1s=0 pending2s=0 fps=9.054 frame_p99_ms=110.453 budget_mean_ms=1.2000 boosted=0/1 drain_ms=115.806 job_p50_ms=115.865 job_p95_ms=115.917 probe_p50_ms=115.614 probe_p95_ms=115.614
+[08:38:03.896] [47928] [I] burst probe samples trial=4 on=true ms=115.614
+[08:38:03.896] [47928] [I] burst policy trial=4 disabled=1 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=110.453
+[08:38:03.896] [47928] [I] stress complete

@@ -1,0 +1,27 @@
+[08:29:53.701] [41040] [I] AdaptivePapyrusBudget v0-1-0-0
+[08:30:04.025] [41040] [I] Installed gameplay-only budget hook; threshold=50 FPS, cap=1.4x, benchmark=true
+[08:32:19.224] [41040] [I] Benchmark gameplay ready=true
+[08:32:20.560] [44836] [I] stress start: 160 jobs x 48 native slices, ABBA, test=WorkSlice-tasklets
+[08:32:22.808] [45148] [I] stress start: 160 jobs x 48 native slices, ABBA, test=WorkSlice-tasklets
+[08:32:37.809] [44836] [I] stress idle: n=29 p50_ms=44.534 p95_ms=46.187
+[08:32:40.832] [41044] [I] burst capture trial=1 tasklets=false qpc=1362158799483 qpc_hz=10000000
+[08:32:40.832] [41044] [I] burst start trial=1 on=false accepted=160 submit_ms=0.223
+[08:33:07.810] [24012] [I] burst result trial=1 on=false jobs=160 bad=0 probes=103 pending1s=160 pending2s=160 fps=41.996 frame_p99_ms=28.497 budget_mean_ms=1.2000 boosted=0/1131 drain_ms=26951.316 job_p50_ms=26951.265 job_p95_ms=26951.340 probe_p50_ms=591.817 probe_p95_ms=615.758
+[08:33:07.810] [24012] [I] burst probe samples trial=1 on=false ms=44.792,568.130,568.702,568.417,592.795,592.075,592.558,615.053,615.656,614.881,615.818,592.828,591.185,590.558,591.998,614.898,614.593,591.135,591.627,591.234,592.163,592.027,591.393,591.896,591.167,591.567,593.968,591.092,591.912,615.758,615.714,615.494,615.625,616.899,615.380,591.394,593.169,591.496,590.852,592.246,591.375,592.161,591.817,592.304,591.184,591.834,591.976,590.106,591.436,592.816,592.413,591.800,591.494,593.262,592.866,614.636,616.081,615.572,615.442,588.394,589.132,590.888,591.426,591.656,591.770,591.732,591.742,593.685,592.845,590.957,592.794,593.475,592.430,591.189,592.724,591.646,591.145,591.695,591.635,612.191,616.538,615.999,615.269,591.711,593.221,593.339,590.955,590.836,592.476,591.382,591.003,592.920,590.857,591.496,590.785,591.649,591.305,568.090,569.508,591.703,592.049,496.313,250.244
+[08:33:07.810] [24012] [I] burst policy trial=1 disabled=1131 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=34.611
+[08:33:10.814] [45148] [I] burst capture trial=2 tasklets=true qpc=1362458620602 qpc_hz=10000000
+[08:33:10.814] [45148] [I] burst start trial=2 on=true accepted=160 submit_ms=0.241
+[08:33:10.935] [41692] [I] burst result trial=2 on=true jobs=160 bad=0 probes=1 pending1s=0 pending2s=0 fps=9.058 frame_p99_ms=110.403 budget_mean_ms=1.2000 boosted=0/1 drain_ms=118.391 job_p50_ms=118.451 job_p95_ms=118.505 probe_p50_ms=118.192 probe_p95_ms=118.192
+[08:33:10.935] [41692] [I] burst probe samples trial=2 on=true ms=118.192
+[08:33:10.935] [41692] [I] burst policy trial=2 disabled=1 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=110.403
+[08:33:13.959] [24012] [I] burst capture trial=3 tasklets=true qpc=1362490067905 qpc_hz=10000000
+[08:33:13.959] [24012] [I] burst start trial=3 on=true accepted=160 submit_ms=0.257
+[08:33:14.083] [41692] [I] burst result trial=3 on=true jobs=160 bad=0 probes=1 pending1s=0 pending2s=0 fps=8.928 frame_p99_ms=112.005 budget_mean_ms=1.2000 boosted=0/1 drain_ms=120.467 job_p50_ms=120.551 job_p95_ms=120.600 probe_p50_ms=120.246 probe_p95_ms=120.246
+[08:33:14.083] [41692] [I] burst probe samples trial=3 on=true ms=120.246
+[08:33:14.083] [41692] [I] burst policy trial=3 disabled=1 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=112.005
+[08:33:17.094] [24012] [I] burst capture trial=4 tasklets=false qpc=1362521417431 qpc_hz=10000000
+[08:33:17.094] [24012] [I] burst start trial=4 on=false accepted=160 submit_ms=0.222
+[08:33:43.763] [31524] [I] burst result trial=4 on=false jobs=160 bad=0 probes=102 pending1s=160 pending2s=160 fps=41.996 frame_p99_ms=27.946 budget_mean_ms=1.2000 boosted=0/1119 drain_ms=26665.278 job_p50_ms=26641.865 job_p95_ms=26665.266 probe_p50_ms=591.714 probe_p95_ms=614.628
+[08:33:43.763] [31524] [I] burst probe samples trial=4 on=false ms=44.572,568.802,569.187,567.591,567.389,559.728,565.623,591.325,592.872,592.426,592.898,590.871,592.664,592.297,593.006,590.289,591.963,591.689,591.297,591.657,591.597,591.841,591.735,592.480,592.240,590.528,591.873,592.011,591.443,594.527,593.180,591.803,589.641,591.092,591.912,591.178,591.404,591.423,591.083,590.919,592.276,592.278,591.831,588.906,592.857,592.438,591.437,593.157,591.729,589.385,591.097,592.189,592.824,591.496,592.249,591.993,592.311,590.096,593.384,590.440,590.547,591.567,592.469,615.686,615.350,614.130,616.207,607.332,591.384,591.305,614.628,616.893,616.381,593.258,591.347,590.961,592.146,591.112,592.886,588.298,592.207,566.409,568.123,591.442,591.714,591.503,592.336,591.433,592.310,591.155,592.403,591.487,591.766,592.457,594.146,590.825,590.996,591.998,592.133,590.606,472.227,210.481
+[08:33:43.763] [31524] [I] burst policy trial=4 disabled=1119 invalid=0 fast=0 dwell=0 cooldown=0 eligible=0 max_frame_ms=34.072
+[08:33:43.763] [31524] [I] stress complete

@@ -1,0 +1,112 @@
+2026-11-09 Skyrim AE 1.6.1170.0 | Whiterun Save93 | queue headroom A B B A B A A B
+Original and cloned ESS SHA256  87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D
+Original and cloned SKSE SHA256 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA
+First launch excluded: the initial thread-ID guard allowed zero queue samples. The rerun published gameplay state from the probe and kept the native drain on its original caller.
+
+[Render] Framerate limit (game): 42
+[Papyrus] [Patch] [UpdateBudget (game)] Writing..
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+
+Critical-path breakdown from eight prior unpromoted equip windows
+equip-42-profile #2 HeelsFixCorrectEffect wall=396.290ms root_wait=110.113ms nested_wait=260.667ms nested_count=9 median_wait=23.643ms max_enter_leave=0.0061ms remainder=25.510ms
+equip-42-profile #3 HeelsFixCorrectEffect wall=252.655ms root_wait=21.600ms nested_wait=205.351ms nested_count=9 median_wait=23.040ms max_enter_leave=0.0066ms remainder=25.704ms
+equip-42-profile #5 HeelsFixCorrectEffect wall=322.496ms root_wait=34.068ms nested_wait=262.246ms nested_count=9 median_wait=23.920ms max_enter_leave=0.0067ms remainder=26.182ms
+equip-42-profile #8 HeelsFixCorrectEffect wall=367.387ms root_wait=105.996ms nested_wait=235.920ms nested_count=9 median_wait=23.647ms max_enter_leave=0.0064ms remainder=25.471ms
+equip-42-player-ab #1 HeelsFixCorrectEffect wall=252.298ms root_wait=16.296ms nested_wait=210.132ms nested_count=9 median_wait=23.275ms max_enter_leave=0.0054ms remainder=25.869ms
+equip-42-player-ab #4 HeelsFixCorrectEffect wall=252.357ms root_wait=17.009ms nested_wait=211.091ms nested_count=9 median_wait=23.436ms max_enter_leave=0.0054ms remainder=24.257ms
+equip-42-player-ab #6 HeelsFixCorrectEffect wall=275.783ms root_wait=16.195ms nested_wait=209.905ms nested_count=9 median_wait=23.470ms max_enter_leave=0.0052ms remainder=49.682ms
+equip-42-player-ab #7 condiexp_pctracking wall=299.593ms root_wait=15.811ms nested_wait=257.485ms nested_count=8 median_wait=23.703ms max_enter_leave=0.0045ms remainder=26.297ms
+
+Rerun aggregate and individual trials
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 11 202 0 611.605 32 41.428 336 672 24.180 24.266 0
+2 on 12 12 203 0 610.983 32 41.045 336 672 24.164 24.388 0
+3 on 12 12 203 0 610.292 32 40.526 336 672 24.146 24.241 0
+4 off 12 12 202 0 584.895 32 41.014 336 672 24.224 24.341 0
+5 on 12 12 202 0 585.753 32 40.901 337 672 24.264 24.506 0
+6 off 12 12 202 0 633.629 32 40.873 336 672 24.208 24.291 0
+7 off 12 12 202 0 608.755 32 40.899 335 670 25.573 25.644 0
+8 on 12 12 202 0 609.783 32 40.875 336 672 24.674 24.811 0
+off: probes=128 probe_p95_ms=40.932 action_probes=48 action_probe_p95_ms=40.157 drain_median_ms=610.180 frame_median_ms=23.811 frame_p99_ms=24.246 alt_frame_p99_ms=24.381
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=372 queued=372 equip_queued=80 equip_queue_p95_ms=24.755 equip_queue_total_ms=1825.043
+  form.haskeyword: executions=721 queued=721 equip_queued=668 equip_queue_p95_ms=46.873 equip_queue_total_ms=17125.774
+  queue headroom samples=1342 updates=1343 yield_bursts=1338 reserve_frames=409 extended=0 stock_loop_pops=11255 past_base_pops=0 extra_us=0
+on: probes=128 probe_p95_ms=40.875 action_probes=48 action_probe_p95_ms=39.340 drain_median_ms=610.037 frame_median_ms=23.808 frame_p99_ms=24.264 alt_frame_p99_ms=24.421
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=375 queued=375 equip_queued=80 equip_queue_p95_ms=24.396 equip_queue_total_ms=1832.590
+  form.haskeyword: executions=716 queued=716 equip_queued=668 equip_queue_p95_ms=47.126 equip_queue_total_ms=17153.586
+  queue headroom samples=1342 updates=1345 yield_bursts=1338 reserve_frames=438 extended=438 stock_loop_pops=11484 past_base_pops=107 extra_us=328500
+
+Trial 1 had 11 out of 12 timestamp-matched equip requests. Excluding the entire first pair gives drain medians of 608.755 ms off and 609.783 ms on.
+Consecutive same-class handler evidence in the rerun
+trial=2 stack=1486120 queue_to_enter_ms=372.2931 previous_handler_end_to_enter_ms=0.0125
+trial=3 stack=1486903 queue_to_enter_ms=371.4812 previous_handler_end_to_enter_ms=0.0235
+trial=7 stack=1489203 queue_to_enter_ms=370.4982 previous_handler_end_to_enter_ms=0.0061
+
+Rerun terminal handler details
+1 1485359 HeelsFixCorrectEffect OnObjectEquipped after-equip 253.58 own-dur 252.91 queued 226.92 root 18.04 wait-fns []
+1 1485330 HeelsFixCorrectEffect OnObjectUnequipped after-equip 491.52 own-dur 749.78 queued 725.97 root 511.84 wait-fns []
+1 1485273 HeelsFixCorrectEffect OnObjectUnequipped after-equip 611.6 own-dur 1368.37 queued 653.15 root 415.39 wait-fns []
+2 1486112 ht_playeralias OnObjectEquipped after-equip 253.56 own-dur 253.1 queued 227.36 root 18.29 wait-fns []
+2 1486090 HeelsFixCorrectEffect OnObjectUnequipped after-equip 372.98 own-dur 632.21 queued 247.33 root 13.04 wait-fns []
+2 1486120 HeelsFixCorrectEffect OnObjectEquipped after-equip 610.98 own-dur 610.29 queued 584.68 root 372.29 wait-fns []
+3 1486896 condiexp_pctracking OnObjectEquipped after-equip 253.19 own-dur 252.75 queued 227.48 root 17.76 wait-fns []
+3 1486854 HeelsFixCorrectEffect OnObjectEquipped after-equip 372.19 own-dur 871.35 queued 464.87 root 252.21 wait-fns []
+3 1486903 HeelsFixCorrectEffect OnObjectEquipped after-equip 610.29 own-dur 609.56 queued 584.29 root 371.48 wait-fns []
+4 1487436 condiexp_pctracking OnObjectEquipped after-equip 300.17 own-dur 299.74 queued 275.27 root 16.43 wait-fns []
+4 1487418 HeelsFixCorrectEffect OnObjectUnequipped after-equip 442.52 own-dur 681.86 queued 586.25 root 348.2 wait-fns []
+4 1487443 HeelsFixCorrectEffect OnObjectEquipped after-equip 584.9 own-dur 584.23 queued 343.76 root 132.13 wait-fns []
+5 1487984 condiexp_pctracking OnObjectEquipped after-equip 347.74 own-dur 347.32 queued 275.89 root 16.6 wait-fns []
+5 1487991 HeelsFixCorrectEffect OnObjectEquipped after-equip 443.34 own-dur 442.67 queued 343.47 root 132.84 wait-fns []
+5 1487968 HeelsFixCorrectEffect OnObjectUnequipped after-equip 585.75 own-dur 846.85 queued 609.81 root 370.83 wait-fns []
+6 1488539 ht_playeralias OnObjectEquipped after-equip 252.63 own-dur 252.2 queued 227.05 root 16.95 wait-fns []
+6 1488547 HeelsFixCorrectEffect OnObjectEquipped after-equip 419.32 own-dur 418.64 queued 394.38 root 180.82 wait-fns []
+6 1488524 HeelsFixCorrectEffect OnObjectUnequipped after-equip 633.63 own-dur 871.67 queued 632.65 root 396.11 wait-fns []
+7 1489196 condiexp_pctracking OnObjectEquipped after-equip 228.43 own-dur 227.87 queued 201.65 root 16.94 wait-fns []
+7 1489177 HeelsFixCorrectEffect OnObjectUnequipped after-equip 371.34 own-dur 608.38 queued 582.32 root 370.25 wait-fns []
+7 1489203 HeelsFixCorrectEffect OnObjectEquipped after-equip 608.76 own-dur 607.91 queued 582.9 root 370.5 wait-fns []
+8 1489740 condiexp_pctracking OnObjectEquipped after-equip 251.32 own-dur 250.91 queued 225.04 root 15.42 wait-fns []
+8 1489747 HeelsFixCorrectEffect OnObjectEquipped after-equip 441.93 own-dur 441.28 queued 416.02 root 204.83 wait-fns []
+8 1489675 HeelsFixCorrectEffect OnObjectUnequipped after-equip 609.78 own-dur 1373.06 queued 989.53 root 753.04 wait-fns []
+
+Rerun raw VM log
+[10:14:50.901] [30288] [I] APBGameplayTrace v0-1-0-0
+[10:15:00.759] [30288] [I] Installed queue headroom experiment, extra limit 750 us, reserve 1500 us
+[10:15:00.759] [30288] [I] gameplay trace profiler installed=true
+[10:17:38.375] [51672] [I] gameplay trace start form=FEC6580E qpc_hz=10000000
+[10:17:38.375] [51672] [I] gameplay window trial=1 equip=true enabled=false qpc=1425134226990
+[10:17:46.375] [51672] [I] queue headroom samples=336 updates=336 yield_bursts=336 reserve_frames=103 extended=0 stock_loop_pops=3252 past_base_pops=0 extra_us=0 drain_thread=16108 game_thread=16108
+[10:17:46.375] [51672] [I] gameplay end trial=1 qpc=1425214235295
+[10:17:46.390] [51672] [I] gameplay result trial=1 equip=true enabled=false actions=12 events=15539 player=00000000 promoted=0 peak=0 probes=38.831,38.532,40.157,33.734,64.311,39.651,36.065,37.477,34.639,38.662,35.644,39.154,39.324,40.345,40.275,40.907,40.913,40.931,39.634,40.203,38.098,40.779,40.781,39.982,40.627,41.428,40.396,40.647,40.737,41.073,39.904,40.470
+[10:17:48.390] [51672] [I] gameplay window trial=2 equip=true enabled=true qpc=1425234381582
+[10:17:56.391] [51672] [I] queue headroom samples=336 updates=337 yield_bursts=335 reserve_frames=120 extended=120 stock_loop_pops=3252 past_base_pops=59 extra_us=90000 drain_thread=13720 game_thread=20752
+[10:17:56.391] [51672] [I] gameplay end trial=2 qpc=1425314392897
+[10:17:56.409] [51672] [I] gameplay result trial=2 equip=true enabled=true actions=12 events=15286 player=00000000 promoted=0 peak=0 probes=39.194,36.007,39.083,38.138,39.058,40.330,39.066,38.567,37.710,39.085,37.336,38.868,39.819,38.748,39.616,39.016,40.243,39.574,40.146,40.061,40.141,40.057,41.045,38.916,40.174,42.016,39.526,40.867,39.309,39.238,38.950,39.244
+[10:17:58.410] [51672] [I] gameplay window trial=3 equip=true enabled=true qpc=1425334576602
+[10:18:06.410] [51672] [I] queue headroom samples=335 updates=336 yield_bursts=335 reserve_frames=98 extended=98 stock_loop_pops=2843 past_base_pops=45 extra_us=73500 drain_thread=13720 game_thread=20752
+[10:18:06.410] [51672] [I] gameplay end trial=3 qpc=1425414583115
+[10:18:06.424] [51672] [I] gameplay result trial=3 equip=true enabled=true actions=12 events=14142 player=00000000 promoted=0 peak=0 probes=37.529,37.302,39.059,37.222,37.900,38.104,36.640,36.670,36.794,39.240,38.557,38.545,40.069,38.998,39.916,40.257,39.688,39.384,39.862,38.769,40.504,41.619,39.994,40.419,39.811,39.489,39.561,40.294,38.260,40.526,39.179,38.556
+[10:18:08.424] [51672] [I] gameplay window trial=4 equip=true enabled=false qpc=1425434721943
+[10:18:16.425] [51672] [I] queue headroom samples=336 updates=336 yield_bursts=337 reserve_frames=105 extended=0 stock_loop_pops=2524 past_base_pops=0 extra_us=0 drain_thread=16108 game_thread=13720
+[10:18:16.425] [51672] [I] gameplay end trial=4 qpc=1425514733053
+[10:18:16.437] [51672] [I] gameplay result trial=4 equip=true enabled=false actions=12 events=13283 player=00000000 promoted=0 peak=0 probes=36.012,36.765,37.279,37.093,37.221,37.901,35.685,37.960,38.224,37.385,39.544,36.922,41.052,39.597,39.525,40.246,39.834,39.677,40.562,39.834,40.320,39.605,39.389,40.380,39.460,41.014,40.281,40.099,39.668,40.873,39.430,39.281
+[10:18:18.438] [51672] [I] gameplay window trial=5 equip=true enabled=true qpc=1425534856245
+[10:18:26.439] [51672] [I] queue headroom samples=336 updates=337 yield_bursts=336 reserve_frames=120 extended=120 stock_loop_pops=2550 past_base_pops=0 extra_us=90000 drain_thread=20752 game_thread=18572
+[10:18:26.439] [51672] [I] gameplay end trial=5 qpc=1425614869167
+[10:18:26.451] [51672] [I] gameplay result trial=5 equip=true enabled=true actions=12 events=13403 player=00000000 promoted=0 peak=0 probes=37.754,38.575,38.503,36.335,39.746,38.745,38.876,39.340,39.009,37.288,37.609,37.843,40.426,38.874,40.452,38.935,39.755,39.534,39.023,39.789,42.228,40.901,39.924,39.829,40.314,38.900,38.905,40.787,39.310,39.786,38.849,40.121
+[10:18:28.452] [51672] [I] gameplay window trial=6 equip=true enabled=false qpc=1425635000595
+[10:18:36.453] [51672] [I] queue headroom samples=335 updates=336 yield_bursts=336 reserve_frames=96 extended=0 stock_loop_pops=2932 past_base_pops=0 extra_us=0 drain_thread=18572 game_thread=18572
+[10:18:36.453] [51672] [I] gameplay end trial=6 qpc=1425715015981
+[10:18:36.468] [51672] [I] gameplay result trial=6 equip=true enabled=false actions=12 events=15006 player=00000000 promoted=0 peak=0 probes=39.335,35.641,39.737,37.726,38.542,38.540,38.885,38.359,39.100,38.618,38.369,38.590,39.874,40.318,40.932,40.873,40.198,39.716,40.650,40.705,38.836,38.042,39.684,38.909,40.052,39.156,39.264,39.691,39.133,37.886,39.510,39.534
+[10:18:38.469] [51672] [I] gameplay window trial=7 equip=true enabled=false qpc=1425735167804
+[10:18:46.470] [51672] [I] queue headroom samples=335 updates=335 yield_bursts=329 reserve_frames=105 extended=0 stock_loop_pops=2547 past_base_pops=0 extra_us=0 drain_thread=20752 game_thread=38648
+[10:18:46.470] [51672] [I] gameplay end trial=7 qpc=1425815179667
+[10:18:46.483] [51672] [I] gameplay result trial=7 equip=true enabled=false actions=12 events=13224 player=00000000 promoted=0 peak=0 probes=38.033,37.729,38.802,38.155,36.522,40.242,34.729,33.302,37.392,38.323,39.130,37.283,40.950,38.974,40.543,40.010,38.891,37.920,39.605,39.094,37.815,40.260,39.834,40.261,39.902,38.222,40.899,38.585,35.704,40.356,40.008,39.392
+[10:18:48.484] [51672] [I] gameplay window trial=8 equip=true enabled=true qpc=1425835319286
+[10:18:56.485] [51672] [I] queue headroom samples=335 updates=335 yield_bursts=332 reserve_frames=100 extended=100 stock_loop_pops=2839 past_base_pops=3 extra_us=75000 drain_thread=7496 game_thread=16108
+[10:18:56.485] [51672] [I] gameplay end trial=8 qpc=1425915335315
+[10:18:56.500] [51672] [I] gameplay result trial=8 equip=true enabled=true actions=12 events=15580 player=00000000 promoted=0 peak=0 probes=36.271,35.848,38.566,37.265,33.536,39.156,38.015,39.239,38.133,38.440,39.327,36.706,39.450,40.875,40.246,38.650,38.544,39.298,39.369,40.064,39.098,40.415,39.747,40.224,40.435,40.263,40.251,39.500,40.035,40.506,38.813,41.913
+[10:18:58.500] [51672] [I] gameplay trace complete

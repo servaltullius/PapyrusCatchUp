@@ -1,0 +1,73 @@
+Save93 / Whiterun exterior / native FIFO and lock context at tasklet completion / 2026-11-09
+
+Setup and method
+- Skyrim AE 1.6.1170.0, original Save93 copied to the existing disposable profile, SSE Display Tweaks 0.5.16 with its 42 FPS gameplay cap and dynamic Papyrus budget. Frame generation was disabled only in the disposable profile. One save load, four Bannered Mare to WhiterunWorld transitions, 32 Utility.Wait(0.01) probes per trial.
+- Only tag depth-one stock ObjectReference.GetWorldSpace calls from DynDOLOD ObjectEnabler OnCellAttach or OnCellDetach while the stack owns the root Papyrus lock. The verified stock function and query are passed unchanged to the original enqueue. A thread-local tag links publication and original VMProcess return for the same stack. The queue observation compares the original query identity under the stock funcQueueLock and reads current root-lock ownership without modifying it.
+- Compare render frame, actual FIFO head and its next stock pop, caller RVA, stock VM::Update boundary, owner of frozenStacksLock, and whether the return executes inside the stock native phase. Separately observe the direct local VM::UpdateTasklets boundary, if taken.
+- Live executable 104767 acquires frozenStacksLock at RVA 0x144428B before calling the native drain at 0x144430F. Observed tasklet return RVA 0xCF7888 follows the indirect callback at 0xCF7885 in the job dispatcher. The dispatcher accounts for job completion with its decrement at 0xCF78A7, after the individual tasklet observer returns. The direct VM::UpdateTasklets call site returns at 0x14449BF and was not observed in the measured windows.
+- Initial launch stopped before Save93 loaded because the tracer exhausted its trampoline allocation. The completed build reserves 512 bytes for this diagnostic mode only. Exact runtime byte and vtable checks, xmake test build, budget policy checks, and synthetic finish/FIFO/frame/thread/lock validation passed.
+- Completed capture build/gameplay-trace/cell-42-getworldspace-finish-observe-retry. DLL SHA256 E734A2720C6C38EE740D5866D20B3B5184E55101DD9439F95CB7066DA9BBDA64.
+
+Tasklet completion analysis
+trial=1 dyn_tail=1485898 stock_drains=377 observed_tasklet_ends=40 local_tasklet_batches=0 holder_calls={'budget_deferred': 3, 'after_budget_stop': 1, 'after_empty_drain': 20} finish_gate={'another_head': 21}
+trial=2 dyn_tail=1487660 stock_drains=363 observed_tasklet_ends=40 local_tasklet_batches=0 holder_calls={'budget_deferred': 1, 'after_budget_stop': 2, 'after_empty_drain': 17} finish_gate={'another_head': 18, 'missing_vm_freeze_guard': 1}
+trial=3 dyn_tail=1489024 stock_drains=392 observed_tasklet_ends=40 local_tasklet_batches=0 holder_calls={'after_budget_stop': 2, 'after_empty_drain': 19} finish_gate={'another_head': 21}
+trial=4 dyn_tail=1490384 stock_drains=387 observed_tasklet_ends=40 local_tasklet_batches=0 holder_calls={'budget_deferred': 1, 'after_empty_drain': 18} finish_gate={'another_head': 18}
+queue_classification after_budget_stop count=5
+queue_classification after_empty_drain count=74
+queue_classification budget_deferred count=5
+finish_gate another_head count=78
+finish_gate missing_vm_freeze_guard count=1
+frame matches_earlier_drain count=79
+thread ('same_frame_locked_head', 'same_thread') count=1
+thread other_thread count=60
+thread same_thread count=19
+lock stock_drain_owns_freeze count=1520
+lock stock_drain_starts count=1520
+lock tasklet_exact_fifo_head count=1
+lock tasklet_exact_head_with_root_lock count=1
+lock tasklet_inside_native_phase count=0
+lock tasklet_owns_vm_freeze count=0
+caller_rva 0xCF7888 BSJobs_callback count=79
+outer_update ('after_Update', 'other_thread') count=60
+outer_update ('after_Update', 'same_thread') count=19
+all_tagged_finishes exact_fifo_head count=1
+all_tagged_finishes exact_head_with_root_lock count=1
+all_tagged_finishes inside_native_phase count=0
+all_tagged_finishes owns_vm_freeze count=0
+fifo first_in_next_drain count=1
+fifo snapshot_head_is_first_in_next_drain count=79
+publication_to_tasklet_finish calls=79 p50_ms=0.001 p95_ms=0.003
+tasklet_finish_to_next_stock_drain calls=79 p50_ms=16.528 p95_ms=26.092
+messages_popped_ahead_in_next_drain calls=79 min=0 p50=9.0 p95=34.0 max=65
+
+Independent stock drain and render validation
+trial=1 mode=off tail=1485898 drains=377 budget_stops=32 frames_first_2s_after_arrival=78 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=3 after_budget_stop=1 after_empty_drain=20
+trial=2 mode=off tail=1487660 drains=363 budget_stops=34 frames_first_2s_after_arrival=66 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=1 after_budget_stop=2 after_empty_drain=17
+trial=3 mode=off tail=1489024 drains=392 budget_stops=21 frames_first_2s_after_arrival=93 frames_last_2s=84 unpaired_drain_starts=0 after_budget_stop=2 after_empty_drain=19
+trial=4 mode=off tail=1490384 drains=387 budget_stops=28 frames_first_2s_after_arrival=92 frames_last_2s=82 unpaired_drain_starts=1 budget_deferred=1 after_empty_drain=18
+drain_end_reasons {'empty': 1404, 'budget': 115} original_budget_ms_median=0.433 min=0.408 max=0.436
+after_budget_stop calls=5 lock_hold_overlap_ms=80.338 Q_to_P_p50_ms=17.701 Q_to_P_p95_ms=26.280
+after_empty_drain calls=74 lock_hold_overlap_ms=1305.832 Q_to_P_p50_ms=16.604 Q_to_P_p95_ms=23.528
+budget_deferred calls=5 lock_hold_overlap_ms=215.872 Q_to_P_p50_ms=70.968 Q_to_P_p95_ms=121.398
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.103 p95_ms=0.151
+after_empty_drain enqueue_done_to_drain_p50_ms=16.494 p95_ms=23.511
+after_empty_drain drain_start_to_pop_p50_ms=0.083 p95_ms=0.184
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.173 p95_ms=0.196
+after_budget_stop enqueue_done_to_drain_p50_ms=17.536 p95_ms=26.094
+after_budget_stop drain_start_to_pop_p50_ms=0.265 p95_ms=0.433
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=1 original_budget_ms=0.435415
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=56 original_budget_ms=0.435739
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=12 original_budget_ms=0.436225
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=14 original_budget_ms=0.435780
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=9 original_budget_ms=0.428611
+off_metrics probes=128 response_p95_ms=39.740 steady_frame_p50_ms=23.808 steady_frame_p99_ms=24.742 early_frame_p99_ms=75.770 arrival_to_drain_median_ms=1986.305 total_median_ms=10036.802 tail_wait_median_ms=8509.483 at_return_wait_median_ms=803.700 holder_queue_median_ms=348.778
+
+Interpretation
+- Of 84 holder GetWorldSpace calls, 79 were published after a previous drain's last decision. All 79 were traced through same-render-frame VMProcess completion and BSJobs callback return, after the preceding VM::Update exited. Sixty ran on a different thread from the drain; nineteen ran on the same thread.
+- For 78 of the 79, another native message was first at tasklet return. The observed head remained the first stack popped at the following stock drain in every case. The one exact head also retained its original root lock and ran on the preceding drain thread (trial 2, stack 1487727), but owned neither the stock VM freeze guard nor the stock native execution phase. It waited 15.1997 ms from tasklet return to the next drain. None of the 160 tagged tasklet completions owned the freeze guard or were in the original native phase. All 1520 observed stock drain starts owned that guard.
+- The individual tasklet completion point produced zero candidates satisfying both FIFO and existing native context. The direct local tasklet batch route was not used. The observation does not establish a later synchronized BSJobs batch-completion site. No accelerated path was installed, and the four stock metrics are a baseline only.
+
+Restoration
+- Original MO2 profile restored. Disposable profile and trace mod archived under build/gameplay-trace/getworldspace-finish-fixture.
+- Original Save93 ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA matched. Original SkyrimUpscaler.ini SHA256 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E matched.

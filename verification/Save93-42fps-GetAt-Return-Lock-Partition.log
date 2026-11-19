@@ -1,0 +1,69 @@
+Save93 / Whiterun exterior / DynDOLOD FormList.GetAt return lock / 2026-11-09
+
+Measurement
+- Use the last completing DynDOLOD ObjectEnabler stack per exterior return. In some trials a different script is last overall. Each identified target had eight completed GetAt calls. The measured return span is from completed native marshalling (N) to VM frame completion (O).
+- Pair the failed return acquire and later successful acquire (L/A) on the same stack, depth and object token. Reconstruct the token timeline from successful acquisition (G), full release (X), release with flag (Z) and flag setting (B). Intersect the observed spans with N->O. A free span requires a full release followed by an acquisition without a contradictory intervening failure. Conflicting or incomplete transitions remain unknown.
+- 'free_to_other' ends with another stack acquiring the token. 'free_to_target' ends with the selected waiting stack acquiring it. These buckets describe the observed scheduling and do not prove that the target was first in the scheduler's eligible queue.
+- For each time span when another DynDOLOD stack held the token, intersect its actual depth-1 Q->P native call waits. Percentages are computed per trial and summarized by median. This overlap identifies what the lock holder was waiting for.
+- Rows are per-trial sums. Their medians can differ from the sum of the individual median buckets.
+- Prior raw inputs: the two off trials from cell-42-continuation-budget-ab (normal render configuration), and eight off trials from cell-42-continuation-replication-no-fg and its reverse launch. Same Save93, SSE Display Tweaks 42 FPS cap and dynamic Papyrus budget. The second group had SkyrimUpscaler frame generation disabled in the disposable profile.
+- New observation mode getat-return-observe logs the original suspended-stack retry pass boundary, float budget, and both queue heads under the engine's queue lock. It uses the existing stock VM scheduling. Neither the native drain nor the suspended queue order is edited. The capture checks whether a >5 ms final free interval overlapped an already-running pass that hit its budget, left the target first and did not try it. This gate excludes any case requiring a new pass, queue swap, or overtaking.
+- Build SHA256 5D2E058BE8957D159DD80A6960775F0997A164DE99EE1023257C3D501790E836. Build and budget policy tests passed. Synthetic partitions exercised held/free classification, contradictory transitions, an ordered budget candidate and exclusions.
+- First new observation launch stopped during the first exterior return. Windows reported c0000005 at SkyrimSE.exe+CC90CF (Address Library AE ID 68233 +0xF, BSReadWriteLock::LockForRead). No finished window was collected and attribution is undetermined.
+
+Historical stock lock partition
+cell-42-continuation-budget-ab
+  off trial=1 stack=1485698 getat_calls=8 failed_acquires=45 total_ms=874.486 other_dyn_ms=443.734 other_ms=0.000 free_total_ms=430.747 free_to_other_ms=430.557 free_to_target_ms=0.190 own_ms=0.001 no_miss_ms=0.004 unknown_ms=0.000
+  off trial=4 stack=1490030 getat_calls=8 failed_acquires=55 total_ms=1085.271 other_dyn_ms=591.007 other_ms=0.000 free_total_ms=494.259 free_to_other_ms=470.861 free_to_target_ms=23.398 own_ms=0.001 no_miss_ms=0.005 unknown_ms=0.000
+cell-42-continuation-replication-no-fg
+  off trial=1 stack=1485876 getat_calls=8 failed_acquires=56 total_ms=1079.730 other_dyn_ms=660.218 other_ms=0.000 free_total_ms=419.502 free_to_other_ms=396.716 free_to_target_ms=22.786 own_ms=0.001 no_miss_ms=0.009 unknown_ms=0.000
+  off trial=4 stack=1490362 getat_calls=8 failed_acquires=52 total_ms=965.231 other_dyn_ms=559.530 other_ms=0.000 free_total_ms=405.696 free_to_other_ms=374.500 free_to_target_ms=31.196 own_ms=0.001 no_miss_ms=0.004 unknown_ms=0.000
+  off trial=6 stack=1493059 getat_calls=8 failed_acquires=58 total_ms=1195.300 other_dyn_ms=718.586 other_ms=0.000 free_total_ms=476.710 free_to_other_ms=451.857 free_to_target_ms=24.853 own_ms=0.000 no_miss_ms=0.005 unknown_ms=0.000
+  off trial=7 stack=1494533 getat_calls=8 failed_acquires=57 total_ms=1145.445 other_dyn_ms=687.893 other_ms=0.000 free_total_ms=457.543 free_to_other_ms=430.833 free_to_target_ms=26.710 own_ms=0.001 no_miss_ms=0.008 unknown_ms=0.000
+cell-42-continuation-replication-no-fg-reverse
+  off trial=2 stack=1487521 getat_calls=8 failed_acquires=57 total_ms=1070.311 other_dyn_ms=608.794 other_ms=0.000 free_total_ms=461.512 free_to_other_ms=442.426 free_to_target_ms=19.086 own_ms=0.000 no_miss_ms=0.006 unknown_ms=0.000
+  off trial=3 stack=1488960 getat_calls=8 failed_acquires=48 total_ms=949.978 other_dyn_ms=548.228 other_ms=0.000 free_total_ms=401.740 free_to_other_ms=401.629 free_to_target_ms=0.111 own_ms=0.000 no_miss_ms=0.010 unknown_ms=0.000
+  off trial=5 stack=1491733 getat_calls=8 failed_acquires=49 total_ms=878.413 other_dyn_ms=514.232 other_ms=0.000 free_total_ms=364.172 free_to_other_ms=364.153 free_to_target_ms=0.020 own_ms=0.000 no_miss_ms=0.008 unknown_ms=0.000
+  off trial=8 stack=1496135 getat_calls=8 failed_acquires=45 total_ms=776.681 other_dyn_ms=403.632 other_ms=0.000 free_total_ms=373.044 free_to_other_ms=372.876 free_to_target_ms=0.168 own_ms=0.000 no_miss_ms=0.005 unknown_ms=0.000
+off tails 10 median ms
+  total median=1017.771 min=776.681 max=1195.300
+  other_dyn median=575.269 min=403.632 max=718.586
+  other median=0.000 min=0.000 max=0.000
+  free_total median=425.125 min=364.172 max=494.259
+  free_to_other median=416.093 min=364.153 max=470.861
+  free_to_target median=20.936 min=0.020 max=31.196
+  own median=0.000 min=0.000 max=0.001
+  no_miss median=0.005 min=0.004 max=0.010
+  unknown median=0.000 min=0.000 max=0.000
+  free_to_other gaps=236 p50_ms=16.603 p95_ms=26.212 max_ms=70.770 over_5ms=219
+  free_to_target gaps=19 p50_ms=0.091 p95_ms=31.105 max_ms=31.105 over_5ms=6
+  other_dyn_hold_inside_native_queue_median_percent=87.967 ObjectReference.GetWorldSpace_total_ms=5035.028
+
+New stock-only retry observation (four completed windows)
+cell-42-getat-return-observe-retry
+  off trial=1 stack=1486049 getat_calls=8 failed_acquires=46 total_ms=932.875 other_dyn_ms=564.159 other_ms=0.000 free_total_ms=368.712 free_to_other_ms=368.506 free_to_target_ms=0.206 own_ms=0.000 no_miss_ms=0.004 unknown_ms=0.000
+  off trial=2 stack=1487641 getat_calls=8 failed_acquires=43 total_ms=832.611 other_dyn_ms=414.544 other_ms=0.000 free_total_ms=418.063 free_to_other_ms=417.895 free_to_target_ms=0.168 own_ms=0.000 no_miss_ms=0.004 unknown_ms=0.000
+  off trial=3 stack=1489034 getat_calls=8 failed_acquires=43 total_ms=782.252 other_dyn_ms=396.034 other_ms=0.000 free_total_ms=386.214 free_to_other_ms=386.200 free_to_target_ms=0.014 own_ms=0.000 no_miss_ms=0.004 unknown_ms=0.000
+  off trial=4 stack=1490453 getat_calls=8 failed_acquires=48 total_ms=888.496 other_dyn_ms=523.437 other_ms=0.000 free_total_ms=365.053 free_to_other_ms=364.853 free_to_target_ms=0.200 own_ms=0.000 no_miss_ms=0.006 unknown_ms=0.000
+  stock_retry passes=1499 unpaired_starts=0 long_final_gaps=0 acquired_during_stock_retry=0 passes_ended_while_free=0 ordered_budget_candidate=0 long_retaken_gaps=81 retaken_pass_ended_while_free=0
+  stock_metrics response_p95_ms=39.864 probes=128 drain_median_ms=2162.775 total_median_ms=9372.739 frame_p50_ms=23.809 frame_p99_ms=24.155
+off tails 4 median ms
+  total median=860.554 min=782.252 max=932.875
+  other_dyn median=468.991 min=396.034 max=564.159
+  other median=0.000 min=0.000 max=0.000
+  free_total median=377.463 min=365.053 max=418.063
+  free_to_other median=377.353 min=364.853 max=417.895
+  free_to_target median=0.184 min=0.014 max=0.206
+  own median=0.000 min=0.000 max=0.000
+  no_miss median=0.004 min=0.004 max=0.006
+  unknown median=0.000 min=0.000 max=0.000
+  free_to_other gaps=87 p50_ms=16.506 p95_ms=24.430 max_ms=80.121 over_5ms=81
+  free_to_target gaps=6 p50_ms=0.026 p95_ms=0.200 max_ms=0.200 over_5ms=0
+  other_dyn_hold_inside_native_queue_median_percent=85.725 ObjectReference.GetWorldSpace_total_ms=1631.767
+
+Decision and cleanup
+- The four new stock windows completed all 128 probes. All 1499 observed stock retry starts paired with an end and queue snapshot. Each tail's final free time summed to 0.014–0.206 ms. None had a final free gap over 5 ms. Among 81 longer gaps ending in another stack's acquisition, no stock retry pass ended before the other acquisition. The already-running-pass budget gate produced zero candidates.
+- The long free gaps are observed latency. Letting the selected tail take the token during a gap which ended in a different owner would change the recorded acquisition sequence. Rescheduling or adding another pass is outside the ordering constraint for this comparison.
+- The principal remaining engine investigation is the lock holder's own stock GetWorldSpace Q->P. Its overlap represented 87.967% of the other-DynDOLOD hold time by median in the previous ten trials, and 85.725% in the fresh four trials. This identifies a queue wait rather than native callback cost. It does not yet identify whether the native message was available during an earlier stock drain.
+- Prior comparable stock baseline (eight frame-generation-off trials): arrival-to-drain 2236.275 ms, response p95 39.913 ms, steady render p99 24.268 ms. Fresh stock observation has the values printed above. Both are stock baselines. No acceleration A/B was run because an eligible order-preserving opportunity was not observed.
+- The re-run completed. PresentMon exited with code 0. The original MO2 selection was restored and the disposable fixture archived. Save93 hashes remain ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA. Original SkyrimUpscaler.ini SHA256 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E.

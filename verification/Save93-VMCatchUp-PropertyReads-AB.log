@@ -1,0 +1,1271 @@
+Save93 equipment runs with the 2026-11-10 17:26 build (reviewed reads: 43 natives + auto-property getters) / AE 1.6.1170 / limiter 30 FPS, DynamicUpdateBudget=false / Papyrus bEnableLogging=0, bEnableProfiling=1
+Test DLL APBGameplayTrace.dll sha256 febf340f79dcd5126c1613839027da1fe65cf69ac3b6256807ca9fcb9d943c71 (release DLL of the same source 12a6debe...). APB_CATCHUP_MODE=accelerate, target 60, engage below 50.
+  gc-30   catchup-census: catch-up on in every trial; census with the verdict per call and the reasons the queue front waited.
+  gg-30-1, gg-30-2   catchup-getter: catch-up on in every trial; "on" = reading an auto property is a read (release), "off" = a change.
+  gab-30-1, gab-30-2   catchup-ab: "on" = catch-up on with the release rule, "off" = catch-up off. The concurrent control the earlier runs lacked.
+foreground_pct 100.0 in all 40 trials; guard_violations and overrun_pauses 0 in all.
+
+RESULT, drain of the equipment handlers (ms after the last signal; trials with the same handler count):
+  catch-up off vs on (gab): 174 handlers off 1289, 1290, 1322 (mean 1301) / on 1058-1193 (6 trials, mean 1135, -12.7%); 202-203 handlers off 1958-2024 (5 trials, mean 2002) / on 1825, 1855 (-8.1%).
+  property reads off vs on (gg): 174-176 handlers off 1122-1258 (4 trials, mean 1166) / on 1058-1256 (4 trials, mean 1182); 202-203 handlers off 1753-1922 (4 trials, mean 1839) / on 1590-1821 (4 trials, mean 1698, -7.7%).
+RESULT, queue wait of every queued native call of every script (verification/readlist-review/all_waits.py; pairs each queue entry with the start of its call):
+  see "all scripts" below: catch-up off mean 36.5-39.7 ms, on 28.2-31.4 ms; property reads off 33.4 ms, on 28.5 ms (gg-30-1); name rule 28.1 ms against reviewed rule without property reads 32.1 ms (rr-30-1).
+RESULT, census (gc-30): property accesses judged read 6980, change 248; no native had both verdicts, no listed native was rejected in any call and no unlisted one accepted.
+RESULT, why the queue front waited (gc-30, 1640 front checks): Form.RegisterForSingleUpdate 21.8%, script started this frame 10.2%, UI.IsMenuOpen 9.2%, ObjectReference.GetAnimationVariableBool 5.9%, Actor.RemoveSpell 5.7%, Quest.GetCurrentStageID 4.7%, MfgConsoleFunc.SetPhonemeModifier 4.4%, Actor.GetActorValue 3.2%, Actor.GetBaseActorValue 3.0%, ObjectReference.GetItemCount 1.5%, Keyword.GetKeyword 1.2%, NetImmerse.HasNode 0.7%.
+
+=== all scripts: queue waits per trial and per condition
+gab-30-1 trial 1 off: queued calls=2648 mean_wait_ms=39.3 median=33.0 same_frame=8.0% two_plus=8.7% total_wait_s=104.1
+gab-30-1 trial 2 on: queued calls=2668 mean_wait_ms=29.0 median=32.8 same_frame=18.4% two_plus=2.5% total_wait_s=77.5
+gab-30-1 trial 3 on: queued calls=2414 mean_wait_ms=27.9 median=32.9 same_frame=20.3% two_plus=2.3% total_wait_s=67.4
+gab-30-1 trial 4 off: queued calls=2348 mean_wait_ms=41.8 median=32.9 same_frame=9.5% two_plus=4.5% total_wait_s=98.2
+gab-30-1 trial 5 on: queued calls=2262 mean_wait_ms=28.4 median=32.7 same_frame=19.4% two_plus=2.3% total_wait_s=64.2
+gab-30-1 trial 6 off: queued calls=2574 mean_wait_ms=39.3 median=33.1 same_frame=8.6% two_plus=7.7% total_wait_s=101.2
+gab-30-1 trial 7 off: queued calls=2179 mean_wait_ms=38.4 median=32.9 same_frame=10.3% two_plus=3.3% total_wait_s=83.6
+gab-30-1 trial 8 on: queued calls=2390 mean_wait_ms=27.5 median=32.7 same_frame=22.3% two_plus=2.3% total_wait_s=65.8
+gab-30-1 off: calls=9749 mean_wait_ms=39.71 same_frame=9.0% two_plus=6.2%
+gab-30-1 on: calls=9734 mean_wait_ms=28.24 same_frame=20.1% two_plus=2.4%
+gab-30-2 trial 1 off: queued calls=2637 mean_wait_ms=39.1 median=33.0 same_frame=7.9% two_plus=6.4% total_wait_s=103.0
+gab-30-2 trial 2 on: queued calls=2708 mean_wait_ms=30.0 median=33.0 same_frame=18.7% two_plus=2.0% total_wait_s=81.2
+gab-30-2 trial 3 on: queued calls=2616 mean_wait_ms=31.9 median=32.7 same_frame=18.5% two_plus=3.8% total_wait_s=83.5
+gab-30-2 trial 4 off: queued calls=2316 mean_wait_ms=35.0 median=33.0 same_frame=9.7% two_plus=3.2% total_wait_s=81.1
+gab-30-2 trial 5 on: queued calls=2257 mean_wait_ms=29.7 median=32.7 same_frame=22.4% two_plus=2.4% total_wait_s=67.0
+gab-30-2 trial 6 off: queued calls=2507 mean_wait_ms=38.7 median=33.0 same_frame=8.7% two_plus=5.5% total_wait_s=97.0
+gab-30-2 trial 7 off: queued calls=2123 mean_wait_ms=32.2 median=33.0 same_frame=10.7% two_plus=2.4% total_wait_s=68.3
+gab-30-2 trial 8 on: queued calls=2511 mean_wait_ms=33.8 median=32.8 same_frame=20.5% two_plus=4.1% total_wait_s=85.0
+gab-30-2 off: calls=9583 mean_wait_ms=36.47 same_frame=9.2% two_plus=4.5%
+gab-30-2 on: calls=10092 mean_wait_ms=31.38 same_frame=19.9% two_plus=3.1%
+gg-30-1 trial 1 off: queued calls=2891 mean_wait_ms=33.4 median=33.0 same_frame=15.9% two_plus=3.4% total_wait_s=96.5
+gg-30-1 trial 2 on: queued calls=3016 mean_wait_ms=30.3 median=32.8 same_frame=20.0% two_plus=2.9% total_wait_s=91.4
+gg-30-1 trial 3 on: queued calls=2524 mean_wait_ms=27.2 median=32.8 same_frame=21.8% two_plus=1.9% total_wait_s=68.7
+gg-30-1 trial 4 off: queued calls=2478 mean_wait_ms=34.2 median=32.7 same_frame=20.6% two_plus=4.4% total_wait_s=84.7
+gg-30-1 trial 5 on: queued calls=2319 mean_wait_ms=27.3 median=32.7 same_frame=21.4% two_plus=1.9% total_wait_s=63.4
+gg-30-1 trial 6 off: queued calls=2763 mean_wait_ms=32.0 median=32.9 same_frame=17.4% two_plus=4.5% total_wait_s=88.4
+gg-30-1 trial 7 off: queued calls=2446 mean_wait_ms=34.3 median=32.7 same_frame=19.3% two_plus=3.3% total_wait_s=83.8
+gg-30-1 trial 8 on: queued calls=2537 mean_wait_ms=28.8 median=32.8 same_frame=18.8% two_plus=2.5% total_wait_s=73.0
+gg-30-1 off: calls=10578 mean_wait_ms=33.41 same_frame=18.2% two_plus=3.9%
+gg-30-1 on: calls=10396 mean_wait_ms=28.52 same_frame=20.5% two_plus=2.3%
+gg-30-2 trial 1 off: queued calls=2848 mean_wait_ms=33.4 median=32.8 same_frame=15.8% two_plus=2.2% total_wait_s=95.1
+gg-30-2 trial 2 on: queued calls=2799 mean_wait_ms=31.1 median=32.9 same_frame=20.2% two_plus=2.9% total_wait_s=87.0
+gg-30-2 trial 3 on: queued calls=2559 mean_wait_ms=29.0 median=32.8 same_frame=19.9% two_plus=3.3% total_wait_s=74.1
+gg-30-2 trial 4 off: queued calls=2315 mean_wait_ms=32.1 median=32.8 same_frame=21.6% two_plus=3.0% total_wait_s=74.2
+gg-30-2 trial 5 on: queued calls=2399 mean_wait_ms=30.4 median=32.7 same_frame=20.6% two_plus=3.5% total_wait_s=72.9
+gg-30-2 trial 6 off: queued calls=2718 mean_wait_ms=28.6 median=32.8 same_frame=18.9% two_plus=2.5% total_wait_s=77.7
+gg-30-2 trial 7 off: queued calls=2494 mean_wait_ms=35.5 median=32.8 same_frame=21.2% two_plus=3.3% total_wait_s=88.5
+gg-30-2 trial 8 on: queued calls=2478 mean_wait_ms=28.3 median=32.8 same_frame=20.3% two_plus=2.1% total_wait_s=70.1
+gg-30-2 off: calls=10375 mean_wait_ms=32.34 same_frame=19.2% two_plus=2.8%
+gg-30-2 on: calls=10235 mean_wait_ms=29.72 same_frame=20.2% two_plus=2.9%
+rr-30-1 trial 1 off: queued calls=2840 mean_wait_ms=26.8 median=32.7 same_frame=23.1% two_plus=2.4% total_wait_s=76.0
+rr-30-1 trial 2 on: queued calls=2760 mean_wait_ms=35.8 median=33.0 same_frame=16.7% two_plus=3.2% total_wait_s=98.7
+rr-30-1 trial 3 on: queued calls=2507 mean_wait_ms=27.7 median=32.7 same_frame=21.1% two_plus=2.6% total_wait_s=69.4
+rr-30-1 trial 4 off: queued calls=2415 mean_wait_ms=28.9 median=32.6 same_frame=25.4% two_plus=3.4% total_wait_s=69.9
+rr-30-1 trial 5 on: queued calls=2289 mean_wait_ms=31.6 median=32.7 same_frame=22.0% two_plus=2.5% total_wait_s=72.4
+rr-30-1 trial 6 off: queued calls=2679 mean_wait_ms=29.4 median=32.7 same_frame=21.9% two_plus=3.6% total_wait_s=78.7
+rr-30-1 trial 7 off: queued calls=2176 mean_wait_ms=27.1 median=32.5 same_frame=27.8% two_plus=3.0% total_wait_s=59.0
+rr-30-1 trial 8 on: queued calls=2404 mean_wait_ms=32.9 median=32.8 same_frame=20.3% two_plus=2.8% total_wait_s=79.0
+rr-30-1 off: calls=10110 mean_wait_ms=28.05 same_frame=24.3% two_plus=3.1%
+rr-30-1 on: calls=9960 mean_wait_ms=32.07 same_frame=19.9% two_plus=2.8%
+rr-30-2 trial 1 off: queued calls=2714 mean_wait_ms=31.5 median=32.7 same_frame=20.3% two_plus=3.8% total_wait_s=85.5
+rr-30-2 trial 2 on: queued calls=2814 mean_wait_ms=30.6 median=32.7 same_frame=17.0% two_plus=4.7% total_wait_s=86.1
+rr-30-2 trial 3 on: queued calls=2484 mean_wait_ms=29.2 median=32.7 same_frame=17.4% two_plus=2.9% total_wait_s=72.6
+rr-30-2 trial 4 off: queued calls=2463 mean_wait_ms=31.8 median=32.5 same_frame=24.6% two_plus=3.8% total_wait_s=78.3
+rr-30-2 trial 5 on: queued calls=2207 mean_wait_ms=27.6 median=32.6 same_frame=22.5% two_plus=1.9% total_wait_s=60.8
+rr-30-2 trial 6 off: queued calls=2759 mean_wait_ms=29.2 median=32.7 same_frame=23.4% two_plus=3.4% total_wait_s=80.7
+rr-30-2 trial 7 off: queued calls=2427 mean_wait_ms=31.6 median=32.6 same_frame=24.6% two_plus=3.2% total_wait_s=76.6
+rr-30-2 trial 8 on: queued calls=2370 mean_wait_ms=27.2 median=32.6 same_frame=21.4% two_plus=2.0% total_wait_s=64.5
+rr-30-2 off: calls=10363 mean_wait_ms=30.98 same_frame=23.1% two_plus=3.5%
+rr-30-2 on: calls=9875 mean_wait_ms=28.77 same_frame=19.4% two_plus=3.0%
+
+=== events of the handler that ends last in gab-30-1 trial 3 (catch-up on): Q = queued, P = function starts; d = call depth
+gab-30-1 trial 3: last handler stack 1486764, 532 ms
+  +    0.0 ms  d=0 P HeelsFixCorrectEffect.OnObjectEquipped 0
+  +    0.2 ms  d=1 Q . 0
+  +   34.9 ms  d=1 P Form.GetName 0
+  +   35.0 ms  d=1 P HeelsFixCorrectEffect.DebugLog 0
+  +   35.0 ms  d=2 P HeelsFix.EnableDebugLog 0
+  +   35.1 ms  d=1 P HeelsFixCorrectEffect.CheckHeelsHeight 0
+  +   35.1 ms  d=2 Q . 0
+  +   65.6 ms  d=2 P Actor.IsSneaking 0
+  +  265.7 ms  d=2 P HeelsFixCorrectEffect.NINODE_ROOT 0
+  +  265.7 ms  d=2 P HeelsFixCorrectEffect.INTERNAL_KEY 0
+  +  265.7 ms  d=2 P NiOverride.HasNodeTransformPosition 0
+  +  265.7 ms  d=2 Q . 0
+  +  298.8 ms  d=2 P Actor.HasPerk 0
+  +  298.9 ms  d=2 Q . 0
+  +  332.4 ms  d=2 P Actor.HasSpell 0
+  +  332.6 ms  d=2 P HeelsFix.CorrectScaledNoHeel 0
+  +  332.6 ms  d=2 P HeelsFixCorrectEffect.GetTrueActorScale 0
+  +  332.6 ms  d=3 Q . 0
+  +  366.9 ms  d=3 P ObjectReference.GetScale 0
+  +  367.1 ms  d=3 P HeelsFixCorrectEffect.NINODE_ROOT 0
+  +  367.1 ms  d=3 Q . 0
+  +  399.5 ms  d=3 P NetImmerse.HasNode 0
+  +  399.7 ms  d=3 P HeelsFixCorrectEffect.NINODE_ROOT 0
+  +  399.7 ms  d=3 Q . 0
+  +  432.7 ms  d=3 P NetImmerse.GetNodeScale 0
+  +  432.8 ms  d=3 P HeelsFixCorrectEffect.NINODE_ALT_ROOT 0
+  +  432.8 ms  d=3 Q . 0
+  +  465.6 ms  d=3 P NetImmerse.HasNode 0
+  +  465.8 ms  d=3 P HeelsFixCorrectEffect.NINODE_ALT_ROOT 0
+  +  465.8 ms  d=3 Q . 0
+  +  499.1 ms  d=3 P NetImmerse.GetNodeScale 0
+  +  499.2 ms  d=2 P HeelsFix.CorrectScaledNoHeel 0
+  +  499.2 ms  d=2 P HeelsFixCorrectEffect.UseAdvancedFix 0
+  +  499.3 ms  d=3 P HeelsFix.AdvancedPlayer 0
+  +  499.3 ms  d=2 P Math.abs 0
+  +  499.3 ms  d=2 P HeelsFix.ScalingDeviation 0
+
+=== gab-30-1
+APBGameplayTrace.dll SHA-256 FEBF340F79DCD5126C1613839027DA1FE65CF69AC3B6256807CA9FCB9D943C71
+FramerateLimit 30, catch-up mode accelerate, target 60, trace mode catchup-ab
+"on" = catch-up on, "off" = catch-up off
+modlist: -TulliusNovelistProbe-0.0.6; +Sandbox When Idle
+papyrus: bEnableLogging=0; bEnableProfiling=1; bEnableTrace=0
+== foreground
+gameplay end trial=1 qpc=2558975364833 foreground_pct=100.0
+gameplay end trial=2 qpc=2559075672208 foreground_pct=100.0
+gameplay end trial=3 qpc=2559176041256 foreground_pct=100.0
+gameplay end trial=4 qpc=2559276353870 foreground_pct=100.0
+gameplay end trial=5 qpc=2559376669038 foreground_pct=100.0
+gameplay end trial=6 qpc=2559477007690 foreground_pct=100.0
+gameplay end trial=7 qpc=2559577337174 foreground_pct=100.0
+gameplay end trial=8 qpc=2559677625620 foreground_pct=100.0
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets extra_calls leftover_tasklets blocked_stops blocked_skips change_call_holds idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 174 0 1289.304 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+2 on 12 12 174 0 1155.635 239 33.334 115 111 386 0 107 83 0 0 0 0.0498 0.472
+3 on 12 12 174 0 1058.020 239 33.332 125 120 362 0 118 100 0 0 0 0.0565 0.495
+4 off 12 12 202 0 1958.268 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+5 on 12 12 174 0 1193.100 239 33.339 115 108 259 0 110 77 0 0 0 0.0461 0.332
+6 off 12 12 202 0 1989.223 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+7 off 12 12 174 0 1290.268 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+8 on 12 12 174 0 1156.319 239 33.336 133 126 327 1 124 88 0 0 0 0.0558 0.402
+off: drain_median_ms=1624.268 min=1289.304 max=1989.223 n=4
+on: drain_median_ms=1155.977 min=1058.020 max=1193.100 n=4
+drain median change on vs off: -28.8%
+== tests/analyze_wait_buckets.py
+trial mode handlers frame_ms waits same_frame one_frame two_plus same% two_plus%
+1 off 174 32.8 637 0 598 39 0.0 6.1
+2 on 174 32.4 639 47 551 41 7.4 6.4
+3 on 174 32.6 633 50 543 40 7.9 6.3
+4 off 202 32.8 737 0 670 67 0.0 9.1
+5 on 174 32.6 638 34 567 37 5.3 5.8
+6 off 202 33.0 743 0 666 77 0.0 10.4
+7 off 174 32.7 637 0 604 33 0.0 5.2
+8 on 174 32.5 635 52 549 34 8.2 5.4
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 239 33.325 33.280 35.298 35.462 35.934
+2 on 240 33.333 33.255 35.310 35.688 35.834
+3 on 240 33.326 33.334 35.198 35.598 35.737
+4 off 240 33.335 33.336 35.256 35.586 35.894
+5 on 240 33.337 33.276 35.286 35.551 35.638
+6 off 240 33.337 33.245 35.284 35.483 35.632
+7 off 240 33.335 33.251 35.391 35.603 35.954
+8 on 240 33.336 33.240 35.394 35.718 35.959
+off: frames=959 avg_ms=33.333 median_ms=33.285 p95_ms=35.298 p99_ms=35.586 max_ms=35.954
+on: frames=960 avg_ms=33.333 median_ms=33.276 p95_ms=35.320 p99_ms=35.621 max_ms=35.959
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 1289.304 32 60.145 240 480 33.748 33.800 0
+2 on 12 12 174 0 1155.635 32 60.872 241 482 33.692 33.908 0
+3 on 12 12 174 0 1058.020 32 59.440 241 482 33.771 33.768 0
+4 off 12 12 202 0 1958.268 32 59.596 241 482 33.724 33.714 0
+5 on 12 12 174 0 1193.100 32 59.471 241 482 33.663 33.910 0
+6 off 12 12 202 0 1989.223 32 92.439 241 482 33.773 33.823 0
+7 off 12 12 174 0 1290.268 32 59.749 241 482 33.784 33.840 0
+8 on 12 12 174 0 1156.319 32 59.804 241 482 33.906 33.894 0
+off: probes=128 probe_p95_ms=59.844 action_probes=48 action_probe_p95_ms=59.113 drain_median_ms=1624.268 frame_median_ms=33.334 frame_p99_ms=33.760 alt_frame_p99_ms=33.800
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=354 queued=353 equip_queued=76 equip_queue_p95_ms=35.451 equip_queue_total_ms=2527.712
+  form.haskeyword: executions=670 queued=670 equip_queued=622 equip_queue_p95_ms=65.289 equip_queue_total_ms=21913.841
+on: probes=128 probe_p95_ms=60.252 action_probes=48 action_probe_p95_ms=58.507 drain_median_ms=1155.977 frame_median_ms=33.331 frame_p99_ms=33.721 alt_frame_p99_ms=33.894
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=351 queued=349 equip_queued=72 equip_queue_p95_ms=34.639 equip_queue_total_ms=2394.885
+  form.haskeyword: executions=623 queued=623 equip_queued=576 equip_queue_p95_ms=66.126 equip_queue_total_ms=17122.525
+== vm.log catch-up lines
+[17:44:39.532] [29876] [I] VM catch-up reads: 29 game natives and 14 SKSE natives count as reads
+[17:44:39.532] [29876] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[17:44:39.532] [29876] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[17:47:22.504] [8032 ] [I] catch-up trial=1 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:47:32.535] [8032 ] [I] catch-up trial=2 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.334 cycles=115 with_tasklets=111 extra_calls=386 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=107 blocked_skips=83 guard_violations=0 direct_changes=335 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.908 extra_ms_per_frame=0.0498 max_frame_extra_ms=0.472 max_update_ms=0.228 max_batch_ms=0.255
+[17:47:42.570] [8032 ] [I] catch-up trial=3 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.332 cycles=125 with_tasklets=120 extra_calls=362 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=118 blocked_skips=100 guard_violations=0 direct_changes=332 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=13.497 extra_ms_per_frame=0.0565 max_frame_extra_ms=0.495 max_update_ms=0.244 max_batch_ms=0.248
+[17:47:52.602] [8032 ] [I] catch-up trial=4 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:48:02.632] [8032 ] [I] catch-up trial=5 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.339 cycles=115 with_tasklets=108 extra_calls=259 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=110 blocked_skips=77 guard_violations=0 direct_changes=333 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.027 extra_ms_per_frame=0.0461 max_frame_extra_ms=0.332 max_update_ms=0.310 max_batch_ms=0.140
+[17:48:12.669] [8032 ] [I] catch-up trial=6 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:48:22.699] [8032 ] [I] catch-up trial=7 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:48:32.730] [8032 ] [I] catch-up trial=8 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.336 cycles=133 with_tasklets=126 extra_calls=327 leftover_tasklets=1 idle_stops=0 time_stops=0 blocked_stops=124 blocked_skips=88 guard_violations=0 direct_changes=764 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=13.326 extra_ms_per_frame=0.0558 max_frame_extra_ms=0.402 max_update_ms=0.300 max_batch_ms=0.157
+
+=== gab-30-2
+APBGameplayTrace.dll SHA-256 FEBF340F79DCD5126C1613839027DA1FE65CF69AC3B6256807CA9FCB9D943C71
+FramerateLimit 30, catch-up mode accelerate, target 60, trace mode catchup-ab
+"on" = catch-up on, "off" = catch-up off
+modlist: -TulliusNovelistProbe-0.0.6; +Sandbox When Idle
+papyrus: bEnableLogging=0; bEnableProfiling=1; bEnableTrace=0
+== foreground
+gameplay end trial=1 qpc=2561946645125 foreground_pct=100.0
+gameplay end trial=2 qpc=2562046928113 foreground_pct=100.0
+gameplay end trial=3 qpc=2562147242310 foreground_pct=100.0
+gameplay end trial=4 qpc=2562247570562 foreground_pct=100.0
+gameplay end trial=5 qpc=2562347894116 foreground_pct=100.0
+gameplay end trial=6 qpc=2562448235772 foreground_pct=100.0
+gameplay end trial=7 qpc=2562548562314 foreground_pct=100.0
+gameplay end trial=8 qpc=2562648948908 foreground_pct=100.0
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets extra_calls leftover_tasklets blocked_stops blocked_skips change_call_holds idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 203 0 2018.227 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+2 on 12 12 174 0 1124.208 239 33.333 128 123 554 0 118 79 0 0 0 0.0593 0.618
+3 on 12 11 202 0 1855.067 239 33.344 120 116 376 0 112 93 0 0 0 0.0520 0.664
+4 off 12 12 202 0 2021.116 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+5 on 12 12 174 0 1125.256 239 33.328 120 116 315 0 112 78 0 0 0 0.0490 0.242
+6 off 12 12 202 0 2024.171 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+7 off 12 12 174 0 1322.064 0 0.000 0 0 0 0 0 0 0 0 0 0.0000 0.000
+8 on 12 12 202 0 1825.036 239 33.336 124 121 310 2 123 69 0 0 0 0.0528 0.300
+off: drain_median_ms=2019.672 min=1322.064 max=2024.171 n=4
+on: drain_median_ms=1475.146 min=1124.208 max=1855.067 n=4
+drain median change on vs off: -27.0%
+== tests/analyze_wait_buckets.py
+trial mode handlers frame_ms waits same_frame one_frame two_plus same% two_plus%
+1 off 203 33.0 739 0 644 95 0.0 12.9
+2 on 174 32.6 636 52 555 29 8.2 4.6
+3 on 202 32.8 740 50 606 84 6.8 11.4
+4 off 202 32.9 742 0 686 56 0.0 7.5
+5 on 174 32.6 633 55 550 28 8.7 4.4
+6 off 202 33.0 739 13 657 69 1.8 9.3
+7 off 174 32.8 634 0 603 31 0.0 4.9
+8 on 202 32.6 740 68 603 69 9.2 9.3
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 240 33.334 33.333 35.202 35.629 35.728
+2 on 240 33.332 33.217 35.594 36.006 36.226
+3 on 239 33.336 33.306 35.302 35.593 36.156
+4 off 239 33.337 33.401 35.316 35.777 35.859
+5 on 239 33.328 33.238 35.361 35.574 35.731
+6 off 239 33.331 33.283 35.168 35.401 35.528
+7 off 239 33.332 33.276 35.296 35.693 35.822
+8 on 240 33.333 33.223 35.723 35.988 36.150
+off: frames=957 avg_ms=33.334 median_ms=33.306 p95_ms=35.208 p99_ms=35.664 max_ms=35.859
+on: frames=958 avg_ms=33.332 median_ms=33.248 p95_ms=35.468 p99_ms=35.838 max_ms=36.226
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 203 0 2018.227 32 60.784 241 482 33.724 34.012 0
+2 on 12 12 174 0 1124.208 32 59.691 241 482 33.924 33.989 0
+3 on 12 11 202 0 1855.067 32 61.915 240 480 33.815 33.803 0
+4 off 12 12 202 0 2021.116 32 60.015 240 480 33.720 33.750 0
+5 on 12 12 174 0 1125.256 32 60.005 240 480 33.612 33.625 0
+6 off 12 12 202 0 2024.171 32 59.938 240 480 33.682 33.874 0
+7 off 12 12 174 0 1322.064 32 59.720 240 480 33.775 33.744 0
+8 on 12 12 202 0 1825.036 32 60.513 241 482 33.677 33.775 0
+off: probes=128 probe_p95_ms=60.078 action_probes=48 action_probe_p95_ms=58.544 drain_median_ms=2019.672 frame_median_ms=33.330 frame_p99_ms=33.721 alt_frame_p99_ms=33.819
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=341 queued=338 equip_queued=78 equip_queue_p95_ms=35.438 equip_queue_total_ms=2634.475
+  form.haskeyword: executions=692 queued=692 equip_queued=645 equip_queue_p95_ms=37.253 equip_queue_total_ms=23001.507
+on: probes=128 probe_p95_ms=60.408 action_probes=48 action_probe_p95_ms=60.607 drain_median_ms=1475.146 frame_median_ms=33.331 frame_p99_ms=33.772 alt_frame_p99_ms=33.803
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=358 queued=357 equip_queued=76 equip_queue_p95_ms=34.471 equip_queue_total_ms=2484.078
+  form.haskeyword: executions=668 queued=668 equip_queued=622 equip_queue_p95_ms=65.915 equip_queue_total_ms=18141.424
+== vm.log catch-up lines
+[17:49:35.123] [16116] [I] VM catch-up reads: 29 game natives and 14 SKSE natives count as reads
+[17:49:35.123] [16116] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[17:49:35.123] [16116] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[17:52:19.633] [67592] [I] catch-up trial=1 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:52:29.662] [67592] [I] catch-up trial=2 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.333 cycles=128 with_tasklets=123 extra_calls=554 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=118 blocked_skips=79 guard_violations=0 direct_changes=334 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=14.180 extra_ms_per_frame=0.0593 max_frame_extra_ms=0.618 max_update_ms=0.492 max_batch_ms=0.281
+[17:52:39.693] [67592] [I] catch-up trial=3 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.344 cycles=120 with_tasklets=116 extra_calls=376 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=112 blocked_skips=93 guard_violations=0 direct_changes=360 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.421 extra_ms_per_frame=0.0520 max_frame_extra_ms=0.664 max_update_ms=0.393 max_batch_ms=0.268
+[17:52:49.726] [67592] [I] catch-up trial=4 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:52:59.756] [67592] [I] catch-up trial=5 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.328 cycles=120 with_tasklets=116 extra_calls=315 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=112 blocked_skips=78 guard_violations=0 direct_changes=329 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.711 extra_ms_per_frame=0.0490 max_frame_extra_ms=0.242 max_update_ms=0.141 max_batch_ms=0.140
+[17:53:09.792] [67592] [I] catch-up trial=6 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:53:19.827] [67592] [I] catch-up trial=7 enabled=false target_hz=60 frames=0 slow=0 engaged=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[17:53:29.863] [67592] [I] catch-up trial=8 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.336 cycles=124 with_tasklets=121 extra_calls=310 leftover_tasklets=2 idle_stops=0 time_stops=0 blocked_stops=123 blocked_skips=69 guard_violations=0 direct_changes=779 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.629 extra_ms_per_frame=0.0528 max_frame_extra_ms=0.300 max_update_ms=0.155 max_batch_ms=0.230
+
+=== gg-30-1
+APBGameplayTrace.dll SHA-256 FEBF340F79DCD5126C1613839027DA1FE65CF69AC3B6256807CA9FCB9D943C71
+FramerateLimit 30, catch-up mode accelerate, target 60, trace mode catchup-getter
+catch-up is on in every trial under the reviewed rule: "on" = reading an auto property counts as a read (release behaviour), "off" = as a change
+modlist: -TulliusNovelistProbe-0.0.6; +Sandbox When Idle
+papyrus: bEnableLogging=0; bEnableProfiling=1; bEnableTrace=0
+== foreground
+gameplay end trial=1 qpc=2553117692436 foreground_pct=100.0
+gameplay end trial=2 qpc=2553218033270 foreground_pct=100.0
+gameplay end trial=3 qpc=2553318391707 foreground_pct=100.0
+gameplay end trial=4 qpc=2553418718651 foreground_pct=100.0
+gameplay end trial=5 qpc=2553519048837 foreground_pct=100.0
+gameplay end trial=6 qpc=2553619365305 foreground_pct=100.0
+gameplay end trial=7 qpc=2553719680887 foreground_pct=100.0
+gameplay end trial=8 qpc=2553820007556 foreground_pct=100.0
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets extra_calls leftover_tasklets blocked_stops blocked_skips change_call_holds idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 176 0 1122.180 239 33.334 102 96 378 0 99 99 0 0 0 0.0479 0.663
+2 on 12 12 202 0 1821.176 239 33.334 134 129 534 0 128 99 0 0 0 0.0629 0.561
+3 on 12 12 174 0 1188.997 239 33.334 145 137 410 0 134 88 0 0 0 0.0647 0.513
+4 off 12 12 202 0 1855.379 239 33.331 113 108 314 0 104 87 0 0 0 0.0501 0.304
+5 on 12 12 174 0 1057.780 239 33.337 125 118 319 0 112 89 0 0 0 0.0535 0.425
+6 off 12 11 203 0 1753.417 239 33.331 117 110 419 0 114 79 0 0 0 0.0509 0.516
+7 off 12 12 202 0 1921.893 239 33.336 113 104 279 0 112 84 0 0 0 0.0469 0.368
+8 on 12 12 174 0 1255.633 239 33.331 113 106 277 1 111 72 0 0 0 0.0481 0.329
+off: drain_median_ms=1804.398 min=1122.180 max=1921.893 n=4
+on: drain_median_ms=1222.315 min=1057.780 max=1821.176 n=4
+drain median change on vs off: -32.3%
+== tests/analyze_wait_buckets.py
+trial mode handlers frame_ms waits same_frame one_frame two_plus same% two_plus%
+1 off 176 32.6 660 46 553 61 7.0 9.2
+2 on 202 32.6 742 66 607 69 8.9 9.3
+3 on 174 32.1 635 64 542 29 10.1 4.6
+4 off 202 32.6 740 67 604 69 9.1 9.3
+5 on 174 32.5 639 51 562 26 8.0 4.1
+6 off 203 32.9 740 62 581 97 8.4 13.1
+7 off 202 32.5 739 48 642 49 6.5 6.6
+8 on 174 32.7 632 33 556 43 5.2 6.8
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 240 33.322 33.098 35.339 35.541 35.740
+2 on 240 33.336 33.222 35.501 35.660 35.980
+3 on 240 33.335 33.254 35.289 35.479 35.905
+4 off 240 33.328 33.096 35.328 35.600 35.999
+5 on 240 33.323 33.229 35.227 35.339 35.789
+6 off 240 33.338 33.260 35.342 35.861 36.040
+7 off 240 33.330 33.210 35.450 35.885 36.193
+8 on 240 33.339 33.256 35.369 35.749 35.870
+off: frames=960 avg_ms=33.330 median_ms=33.188 p95_ms=35.366 p99_ms=35.740 max_ms=36.193
+on: frames=960 avg_ms=33.333 median_ms=33.246 p95_ms=35.339 p99_ms=35.697 max_ms=35.980
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 176 0 1122.180 32 60.163 241 482 33.728 33.834 0
+2 on 12 12 202 0 1821.176 32 60.877 241 482 33.717 34.053 0
+3 on 12 12 174 0 1188.997 32 59.531 241 482 33.770 33.798 0
+4 off 12 12 202 0 1855.379 32 60.049 241 482 33.803 33.872 0
+5 on 12 12 174 0 1057.780 32 59.653 241 482 33.855 33.883 0
+6 off 12 11 203 0 1753.417 32 59.778 241 482 33.769 33.806 0
+7 off 12 12 202 0 1921.893 32 59.294 241 482 33.943 33.993 0
+8 on 12 12 174 0 1255.633 32 60.724 241 482 33.760 33.898 0
+off: probes=128 probe_p95_ms=59.853 action_probes=48 action_probe_p95_ms=59.853 drain_median_ms=1804.398 frame_median_ms=33.327 frame_p99_ms=33.803 alt_frame_p99_ms=33.893
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=349 queued=349 equip_queued=78 equip_queue_p95_ms=34.437 equip_queue_total_ms=2463.187
+  form.haskeyword: executions=696 queued=696 equip_queued=645 equip_queue_p95_ms=65.581 equip_queue_total_ms=19757.659
+on: probes=128 probe_p95_ms=60.570 action_probes=48 action_probe_p95_ms=59.417 drain_median_ms=1222.315 frame_median_ms=33.333 frame_p99_ms=33.784 alt_frame_p99_ms=33.909
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=349 queued=347 equip_queued=74 equip_queue_p95_ms=34.014 equip_queue_total_ms=2381.843
+  form.haskeyword: executions=646 queued=646 equip_queued=599 equip_queue_p95_ms=65.527 equip_queue_total_ms=17757.296
+== vm.log catch-up lines
+[17:34:51.381] [63460] [I] VM catch-up reads: 29 game natives and 14 SKSE natives count as reads
+[17:34:51.381] [63460] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[17:34:51.381] [63460] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[17:37:36.738] [35296] [I] catch-up trial=1 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.334 cycles=102 with_tasklets=96 extra_calls=378 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=99 blocked_skips=99 guard_violations=0 direct_changes=846 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.455 extra_ms_per_frame=0.0479 max_frame_extra_ms=0.663 max_update_ms=0.499 max_batch_ms=0.286
+[17:37:46.774] [35296] [I] catch-up trial=2 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.334 cycles=134 with_tasklets=129 extra_calls=534 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=128 blocked_skips=99 guard_violations=0 direct_changes=364 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=15.040 extra_ms_per_frame=0.0629 max_frame_extra_ms=0.561 max_update_ms=0.493 max_batch_ms=0.252
+[17:37:56.806] [35296] [I] catch-up trial=3 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.334 cycles=145 with_tasklets=137 extra_calls=410 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=134 blocked_skips=88 guard_violations=0 direct_changes=342 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=15.470 extra_ms_per_frame=0.0647 max_frame_extra_ms=0.513 max_update_ms=0.388 max_batch_ms=0.262
+[17:38:06.839] [35296] [I] catch-up trial=4 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.331 cycles=113 with_tasklets=108 extra_calls=314 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=104 blocked_skips=87 guard_violations=0 direct_changes=934 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.982 extra_ms_per_frame=0.0501 max_frame_extra_ms=0.304 max_update_ms=0.183 max_batch_ms=0.151
+[17:38:16.871] [35296] [I] catch-up trial=5 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.337 cycles=125 with_tasklets=118 extra_calls=319 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=112 blocked_skips=89 guard_violations=0 direct_changes=299 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.792 extra_ms_per_frame=0.0535 max_frame_extra_ms=0.425 max_update_ms=0.320 max_batch_ms=0.116
+[17:38:26.906] [35296] [I] catch-up trial=6 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.331 cycles=117 with_tasklets=110 extra_calls=419 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=114 blocked_skips=79 guard_violations=0 direct_changes=1046 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.157 extra_ms_per_frame=0.0509 max_frame_extra_ms=0.516 max_update_ms=0.257 max_batch_ms=0.257
+[17:38:36.935] [35296] [I] catch-up trial=7 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.336 cycles=113 with_tasklets=104 extra_calls=279 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=112 blocked_skips=84 guard_violations=0 direct_changes=918 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.216 extra_ms_per_frame=0.0469 max_frame_extra_ms=0.368 max_update_ms=0.339 max_batch_ms=0.155
+[17:38:46.970] [35296] [I] catch-up trial=8 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.331 cycles=113 with_tasklets=106 extra_calls=277 leftover_tasklets=1 idle_stops=0 time_stops=0 blocked_stops=111 blocked_skips=72 guard_violations=0 direct_changes=765 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.495 extra_ms_per_frame=0.0481 max_frame_extra_ms=0.329 max_update_ms=0.141 max_batch_ms=0.238
+
+=== gg-30-2
+APBGameplayTrace.dll SHA-256 FEBF340F79DCD5126C1613839027DA1FE65CF69AC3B6256807CA9FCB9D943C71
+FramerateLimit 30, catch-up mode accelerate, target 60, trace mode catchup-getter
+catch-up is on in every trial under the reviewed rule: "on" = reading an auto property counts as a read (release behaviour), "off" = as a change
+modlist: -TulliusNovelistProbe-0.0.6; +Sandbox When Idle
+papyrus: bEnableLogging=0; bEnableProfiling=1; bEnableTrace=0
+== foreground
+gameplay end trial=1 qpc=2556030287703 foreground_pct=100.0
+gameplay end trial=2 qpc=2556130601180 foreground_pct=100.0
+gameplay end trial=3 qpc=2556230969706 foreground_pct=100.0
+gameplay end trial=4 qpc=2556331264368 foreground_pct=100.0
+gameplay end trial=5 qpc=2556431574922 foreground_pct=100.0
+gameplay end trial=6 qpc=2556531938474 foreground_pct=100.0
+gameplay end trial=7 qpc=2556632316581 foreground_pct=100.0
+gameplay end trial=8 qpc=2556732655072 foreground_pct=100.0
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets extra_calls leftover_tasklets blocked_stops blocked_skips change_call_holds idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 174 0 1157.038 239 33.340 105 100 409 0 103 85 0 0 0 0.0496 0.665
+2 on 12 12 203 0 1590.281 239 33.330 131 123 482 0 118 94 0 0 0 0.0606 0.538
+3 on 12 12 202 0 1721.613 239 33.323 129 125 367 1 113 72 0 0 0 0.0585 0.522
+4 off 12 12 174 0 1125.097 239 33.331 125 119 310 0 118 93 0 0 0 0.0560 0.384
+5 on 12 12 202 0 1656.894 239 33.334 127 125 316 0 117 67 0 0 0 0.0521 0.207
+6 off 12 12 174 0 1257.754 239 33.329 134 122 427 0 130 86 0 0 0 0.0569 0.488
+7 off 12 12 202 0 1824.312 239 33.342 122 118 337 0 115 75 0 0 0 0.0519 0.421
+8 on 12 12 174 0 1225.568 239 33.327 119 116 312 2 115 98 0 0 0 0.0499 0.295
+off: drain_median_ms=1207.396 min=1125.097 max=1824.312 n=4
+on: drain_median_ms=1623.588 min=1225.568 max=1721.613 n=4
+drain median change on vs off: +34.5%
+== tests/analyze_wait_buckets.py
+trial mode handlers frame_ms waits same_frame one_frame two_plus same% two_plus%
+1 off 174 32.5 635 37 570 28 5.8 4.4
+2 on 203 32.8 742 77 600 65 10.4 8.8
+3 on 202 32.4 737 77 595 65 10.4 8.8
+4 off 174 32.7 638 45 556 37 7.1 5.8
+5 on 202 32.7 739 51 624 64 6.9 8.7
+6 off 174 32.7 641 45 546 50 7.0 7.8
+7 off 202 32.6 741 57 630 54 7.7 7.3
+8 on 174 32.5 637 44 562 31 6.9 4.9
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 239 33.330 33.194 35.363 35.636 35.924
+2 on 239 33.340 33.314 35.357 35.745 36.105
+3 on 239 33.335 33.281 35.215 35.440 35.474
+4 off 239 33.332 33.325 35.193 35.420 35.547
+5 on 239 33.341 33.203 35.346 35.553 35.645
+6 off 239 33.332 33.323 35.213 35.516 35.915
+7 off 239 33.344 33.310 35.356 35.772 35.900
+8 on 239 33.321 33.212 35.614 35.980 36.268
+off: frames=956 avg_ms=33.334 median_ms=33.272 p95_ms=35.299 p99_ms=35.639 max_ms=35.924
+on: frames=956 avg_ms=33.334 median_ms=33.240 p95_ms=35.375 p99_ms=35.755 max_ms=36.268
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 1157.038 32 60.652 240 480 33.728 33.780 0
+2 on 12 12 203 0 1590.281 32 60.276 240 480 33.848 33.970 0
+3 on 12 12 202 0 1721.613 32 60.303 240 480 33.822 33.830 0
+4 off 12 12 174 0 1125.097 32 59.822 240 480 33.807 33.865 0
+5 on 12 12 202 0 1656.894 32 60.564 240 480 33.832 33.928 0
+6 off 12 12 174 0 1257.754 32 60.597 240 480 33.787 33.772 0
+7 off 12 12 202 0 1824.312 32 60.044 240 480 33.714 33.836 0
+8 on 12 12 174 0 1225.568 32 59.521 240 480 33.709 33.781 0
+off: probes=128 probe_p95_ms=60.188 action_probes=48 action_probe_p95_ms=58.834 drain_median_ms=1207.396 frame_median_ms=33.330 frame_p99_ms=33.757 alt_frame_p99_ms=33.826
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=351 queued=350 equip_queued=74 equip_queue_p95_ms=34.126 equip_queue_total_ms=2403.225
+  form.haskeyword: executions=651 queued=651 equip_queued=599 equip_queue_p95_ms=65.660 equip_queue_total_ms=17588.101
+on: probes=128 probe_p95_ms=60.190 action_probes=48 action_probe_p95_ms=58.587 drain_median_ms=1623.588 frame_median_ms=33.331 frame_p99_ms=33.832 alt_frame_p99_ms=33.870
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=347 queued=345 equip_queued=78 equip_queue_p95_ms=34.453 equip_queue_total_ms=2514.266
+  form.haskeyword: executions=690 queued=690 equip_queued=645 equip_queue_p95_ms=65.784 equip_queue_total_ms=19477.702
+== vm.log catch-up lines
+[17:39:47.445] [68968] [I] VM catch-up reads: 29 game natives and 14 SKSE natives count as reads
+[17:39:47.445] [68968] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[17:39:47.445] [68968] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[17:42:27.998] [69072] [I] catch-up trial=1 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.340 cycles=105 with_tasklets=100 extra_calls=409 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=103 blocked_skips=85 guard_violations=0 direct_changes=835 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.864 extra_ms_per_frame=0.0496 max_frame_extra_ms=0.665 max_update_ms=0.489 max_batch_ms=0.262
+[17:42:38.034] [69072] [I] catch-up trial=2 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.330 cycles=131 with_tasklets=123 extra_calls=482 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=118 blocked_skips=94 guard_violations=0 direct_changes=312 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=14.481 extra_ms_per_frame=0.0606 max_frame_extra_ms=0.538 max_update_ms=0.489 max_batch_ms=0.283
+[17:42:48.067] [69072] [I] catch-up trial=3 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.323 cycles=129 with_tasklets=125 extra_calls=367 leftover_tasklets=1 idle_stops=0 time_stops=0 blocked_stops=113 blocked_skips=72 guard_violations=0 direct_changes=347 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=13.972 extra_ms_per_frame=0.0585 max_frame_extra_ms=0.522 max_update_ms=0.391 max_batch_ms=0.261
+[17:42:58.095] [69072] [I] catch-up trial=4 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.331 cycles=125 with_tasklets=119 extra_calls=310 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=118 blocked_skips=93 guard_violations=0 direct_changes=841 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=13.385 extra_ms_per_frame=0.0560 max_frame_extra_ms=0.384 max_update_ms=0.210 max_batch_ms=0.313
+[17:43:08.125] [69072] [I] catch-up trial=5 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.334 cycles=127 with_tasklets=125 extra_calls=316 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=117 blocked_skips=67 guard_violations=0 direct_changes=346 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.449 extra_ms_per_frame=0.0521 max_frame_extra_ms=0.207 max_update_ms=0.131 max_batch_ms=0.139
+[17:43:18.165] [69072] [I] catch-up trial=6 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.329 cycles=134 with_tasklets=122 extra_calls=427 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=130 blocked_skips=86 guard_violations=0 direct_changes=977 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=13.597 extra_ms_per_frame=0.0569 max_frame_extra_ms=0.488 max_update_ms=0.265 max_batch_ms=0.259
+[17:43:28.200] [69072] [I] catch-up trial=7 enabled=false target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.342 cycles=122 with_tasklets=118 extra_calls=337 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=115 blocked_skips=75 guard_violations=0 direct_changes=907 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=12.405 extra_ms_per_frame=0.0519 max_frame_extra_ms=0.421 max_update_ms=0.389 max_batch_ms=0.137
+[17:43:38.235] [69072] [I] catch-up trial=8 enabled=true target_hz=60 frames=239 slow=239 engaged=239 avg_frame_ms=33.327 cycles=119 with_tasklets=116 extra_calls=312 leftover_tasklets=2 idle_stops=0 time_stops=0 blocked_stops=115 blocked_skips=98 guard_violations=0 direct_changes=764 change_call_holds=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=11.932 extra_ms_per_frame=0.0499 max_frame_extra_ms=0.295 max_update_ms=0.138 max_batch_ms=0.216
+
+=== gc-30 census and blockers
+census natives=740
+census class=Game name=GetLightModName kind=native runtime_read=3086 runtime_change=0 queued=1900 extra=617 direct=0 other=569 name_rule=read without_pt_list=read reviewed=read
+census class=ReferenceAlias name=GetReference kind=native runtime_read=2287 runtime_change=0 queued=0 extra=0 direct=2287 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=StringUtil name=GetNthChar kind=native runtime_read=2203 runtime_change=0 queued=0 extra=0 direct=2203 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=GlobalVariable name=GetValue kind=native runtime_read=1925 runtime_change=0 queued=0 extra=0 direct=1925 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=IsInFaction kind=native runtime_read=1579 runtime_change=0 queued=1033 extra=131 direct=0 other=415 name_rule=read without_pt_list=read reviewed=read
+census class=Form name=HasKeyword kind=native runtime_read=1479 runtime_change=0 queued=1113 extra=231 direct=0 other=135 name_rule=read without_pt_list=read reviewed=read
+census class=Alias name=RegisterForSingleUpdate kind=native runtime_read=0 runtime_change=1210 queued=0 extra=0 direct=1210 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=Wait kind=native runtime_read=0 runtime_change=1196 queued=807 extra=47 direct=0 other=342 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForSingleUpdate kind=native runtime_read=0 runtime_change=1028 queued=622 extra=58 direct=0 other=348 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=getplayer kind=native runtime_read=999 runtime_change=0 queued=690 extra=27 direct=0 other=282 name_rule=read without_pt_list=read reviewed=read
+census class=MCM_ConfigBase name=LoadConfig kind=native runtime_read=0 runtime_change=945 queued=358 extra=272 direct=0 other=315 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=HasMagicEffect kind=native runtime_read=704 runtime_change=0 queued=407 extra=95 direct=0 other=202 name_rule=read without_pt_list=read reviewed=read
+census class=Form name=RegisterForModEvent kind=native runtime_read=0 runtime_change=677 queued=0 extra=0 direct=677 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=GlobalVariable name=SetValue kind=native runtime_read=0 runtime_change=607 queued=0 extra=0 direct=607 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=GetCurrentStageID kind=native runtime_read=0 runtime_change=570 queued=382 extra=20 direct=0 other=168 name_rule=change without_pt_list=read reviewed=change
+census class=ReferenceAlias name=ForceRefTo kind=native runtime_read=0 runtime_change=558 queued=0 extra=0 direct=558 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=getDistance kind=native runtime_read=504 runtime_change=0 queued=297 extra=29 direct=0 other=178 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetActorValue kind=native runtime_read=0 runtime_change=492 queued=310 extra=28 direct=0 other=154 name_rule=read without_pt_list=read reviewed=change
+census class=Game name=GetFormFromFile kind=native runtime_read=464 runtime_change=0 queued=0 extra=0 direct=464 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Alias name=GetOwningQuest kind=native runtime_read=454 runtime_change=0 queued=0 extra=0 direct=454 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=erbwmanager name=HudEffect kind=property runtime_read=438 runtime_change=0 queued=0 extra=0 direct=438 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=debugSLAC kind=property runtime_read=433 runtime_change=0 queued=0 extra=0 direct=433 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetAnimationVariableBool kind=native runtime_read=0 runtime_change=412 queued=380 extra=10 direct=0 other=22 name_rule=change without_pt_list=read reviewed=change
+census class=MfgConsoleFunc name=SetPhonemeModifier kind=native runtime_read=0 runtime_change=397 queued=204 extra=64 direct=0 other=129 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetModName kind=native runtime_read=390 runtime_change=0 queued=0 extra=0 direct=390 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=UI name=IsMenuOpen kind=native runtime_read=0 runtime_change=370 queued=257 extra=0 direct=0 other=113 name_rule=change without_pt_list=read reviewed=change
+census class=ObjectReference name=Is3DLoaded kind=native runtime_read=361 runtime_change=0 queued=193 extra=46 direct=0 other=122 name_rule=read without_pt_list=read reviewed=read
+census class=UI name=InvokeFloat kind=native runtime_read=0 runtime_change=355 queued=0 extra=0 direct=355 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=GetCurrentRealTime kind=native runtime_read=0 runtime_change=311 queued=223 extra=10 direct=0 other=78 name_rule=change without_pt_list=read reviewed=change
+census class=StringUtil name=GetLength kind=native runtime_read=310 runtime_change=0 queued=0 extra=0 direct=310 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=FormList name=HasForm kind=native runtime_read=302 runtime_change=0 queued=196 extra=72 direct=0 other=34 name_rule=read without_pt_list=read reviewed=read
+census class=UI name=InvokeInt kind=native runtime_read=0 runtime_change=296 queued=0 extra=0 direct=296 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=IsRunning kind=native runtime_read=0 runtime_change=290 queued=217 extra=2 direct=0 other=71 name_rule=change without_pt_list=read reviewed=change
+census class=Shout name=SetNthSpell kind=native runtime_read=0 runtime_change=288 queued=0 extra=0 direct=288 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Shout name=SetNthWordOfPower kind=native runtime_read=0 runtime_change=288 queued=0 extra=0 direct=288 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=lastCombatState kind=property runtime_read=286 runtime_change=1 queued=1 extra=0 direct=285 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetPositionX kind=native runtime_read=283 runtime_change=0 queued=180 extra=2 direct=0 other=101 name_rule=read without_pt_list=read reviewed=read
+census class=MCM_ConfigBase name=GetModSettingInt kind=native runtime_read=0 runtime_change=278 queued=0 extra=0 direct=278 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetPositionY kind=native runtime_read=276 runtime_change=0 queued=99 extra=76 direct=0 other=101 name_rule=read without_pt_list=read reviewed=read
+census class=Shout name=GetNthWordOfPower kind=native runtime_read=267 runtime_change=0 queued=0 extra=0 direct=267 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Form name=GetName kind=native runtime_read=267 runtime_change=0 queued=188 extra=18 direct=0 other=61 name_rule=read without_pt_list=read reviewed=read
+census class=Shout name=GetNthSpell kind=native runtime_read=267 runtime_change=0 queued=0 extra=0 direct=267 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetEquippedWeapon kind=native runtime_read=266 runtime_change=0 queued=234 extra=28 direct=0 other=4 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=IsInCombat kind=native runtime_read=264 runtime_change=0 queued=141 extra=35 direct=0 other=88 name_rule=read without_pt_list=read reviewed=read
+census class=ObjectReference name=GetItemCount kind=native runtime_read=0 runtime_change=260 queued=154 extra=41 direct=0 other=65 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=IsInMenuMode kind=native runtime_read=0 runtime_change=236 queued=149 extra=0 direct=0 other=87 name_rule=change without_pt_list=read reviewed=change
+census class=UI name=InvokeFloatA kind=native runtime_read=0 runtime_change=234 queued=0 extra=0 direct=234 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=CanResolvePath kind=native runtime_read=0 runtime_change=234 queued=0 extra=0 direct=234 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=RemoveSpell kind=native runtime_read=0 runtime_change=229 queued=199 extra=1 direct=0 other=29 name_rule=change without_pt_list=change reviewed=change
+census class=Debug name=Trace kind=native runtime_read=229 runtime_change=0 queued=0 extra=0 direct=229 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetBaseActorValue kind=native runtime_read=0 runtime_change=222 queued=148 extra=2 direct=0 other=72 name_rule=read without_pt_list=read reviewed=change
+census class=erbwmanager name=HudVisible kind=property runtime_read=219 runtime_change=2 queued=0 extra=0 direct=221 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=IsDisabled kind=native runtime_read=220 runtime_change=0 queued=111 extra=17 direct=0 other=92 name_rule=read without_pt_list=read reviewed=read
+census class=erbwmanager name=value kind=property runtime_read=217 runtime_change=1 queued=0 extra=0 direct=218 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MCM_ConfigBase name=GetModSettingBool kind=native runtime_read=0 runtime_change=217 queued=0 extra=0 direct=217 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=SetNthTintMaskColor kind=native runtime_read=0 runtime_change=216 queued=0 extra=0 direct=216 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=SetNthTintMaskTexturePath kind=native runtime_read=0 runtime_change=216 queued=0 extra=0 direct=216 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=CorrectScaledNoHeel kind=property runtime_read=213 runtime_change=0 queued=0 extra=0 direct=213 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NetImmerse name=GetNodeScale kind=native runtime_read=0 runtime_change=212 queued=209 extra=1 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=NetImmerse name=HasNode kind=native runtime_read=0 runtime_change=212 queued=201 extra=9 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=Keyword name=GetKeyword kind=native runtime_read=0 runtime_change=211 queued=135 extra=19 direct=0 other=57 name_rule=read without_pt_list=read reviewed=change
+census class=erbwmanager name=SurgeEffect kind=property runtime_read=208 runtime_change=1 queued=0 extra=0 direct=209 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForControl kind=native runtime_read=0 runtime_change=208 queued=0 extra=0 direct=208 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MfgConsoleFuncExt name=SetPhonemeModifierSmooth kind=native runtime_read=0 runtime_change=198 queued=136 extra=3 direct=0 other=59 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=HasPerk kind=native runtime_read=196 runtime_change=0 queued=103 extra=2 direct=0 other=91 name_rule=read without_pt_list=read reviewed=read
+census class=GameData name=GetAllIngredients kind=native runtime_read=0 runtime_change=193 queued=0 extra=0 direct=0 other=193 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=GetCurrentGameTime kind=native runtime_read=0 runtime_change=190 queued=108 extra=0 direct=0 other=82 name_rule=change without_pt_list=read reviewed=change
+census class=MCM name=GetModSettingBool kind=native runtime_read=0 runtime_change=189 queued=0 extra=0 direct=189 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=Floor kind=native runtime_read=189 runtime_change=0 queued=0 extra=0 direct=189 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=slac_config name=weaponsPreventAutoEngagement kind=property runtime_read=188 runtime_change=0 queued=0 extra=0 direct=188 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetPositionZ kind=native runtime_read=186 runtime_change=0 queued=92 extra=24 direct=0 other=70 name_rule=read without_pt_list=read reviewed=read
+census class=dialoguefollowerscript name=pFollowerAlias kind=property runtime_read=176 runtime_change=0 queued=0 extra=0 direct=175 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=dialoguefollowerscript name=pAnimalAlias kind=property runtime_read=176 runtime_change=0 queued=0 extra=0 direct=176 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetBaseObject kind=native runtime_read=167 runtime_change=0 queued=80 extra=10 direct=0 other=77 name_rule=read without_pt_list=read reviewed=read
+census class=PapyrusUtil name=StringSplit kind=native runtime_read=0 runtime_change=165 queued=0 extra=0 direct=165 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=GetNthAlias kind=native runtime_read=0 runtime_change=162 queued=11 extra=1 direct=0 other=150 name_rule=change without_pt_list=read reviewed=change
+census class=Alias name=RegisterForAnimationEvent kind=native runtime_read=0 runtime_change=156 queued=0 extra=0 direct=156 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MfgConsoleFuncExt name=IsInDialogue kind=native runtime_read=0 runtime_change=155 queued=85 extra=6 direct=0 other=64 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=CreateBoolArray kind=native runtime_read=0 runtime_change=152 queued=0 extra=0 direct=152 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=HasSpell kind=native runtime_read=0 runtime_change=142 queued=114 extra=15 direct=0 other=13 name_rule=read without_pt_list=read reviewed=change
+census class=StorageUtil name=CountObjIntValuePrefix kind=native runtime_read=0 runtime_change=141 queued=0 extra=0 direct=141 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Math name=abs kind=native runtime_read=140 runtime_change=0 queued=0 extra=0 direct=140 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Game name=GetModByName kind=native runtime_read=139 runtime_change=0 queued=0 extra=0 direct=139 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=MiscUtil name=PrintConsole kind=native runtime_read=0 runtime_change=137 queued=0 extra=0 direct=137 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Armor name=GetMaskForSlot kind=native runtime_read=136 runtime_change=0 queued=98 extra=2 direct=0 other=36 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=WornHasKeyword kind=native runtime_read=130 runtime_change=0 queued=68 extra=16 direct=0 other=46 name_rule=read without_pt_list=read reviewed=read
+census class=ObjectReference name=IsInDialogueWithPlayer kind=native runtime_read=0 runtime_change=129 queued=78 extra=0 direct=0 other=51 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_questcontroller_main name=Config kind=property runtime_read=128 runtime_change=0 queued=0 extra=0 direct=128 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetActorValuePercentage kind=native runtime_read=0 runtime_change=127 queued=70 extra=13 direct=0 other=44 name_rule=read without_pt_list=read reviewed=change
+census class=MfgConsoleFuncExt name=GetPlayerSpeechTarget kind=native runtime_read=0 runtime_change=125 queued=75 extra=6 direct=0 other=44 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_questconfig_main name=DebugMode kind=property runtime_read=120 runtime_change=0 queued=0 extra=0 direct=120 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=Util kind=property runtime_read=119 runtime_change=0 queued=0 extra=0 direct=119 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=CreateStringArray kind=native runtime_read=0 runtime_change=119 queued=0 extra=0 direct=119 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=RandomInt kind=native runtime_read=0 runtime_change=118 queued=65 extra=1 direct=0 other=52 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsSneaking kind=native runtime_read=117 runtime_change=0 queued=108 extra=3 direct=0 other=6 name_rule=read without_pt_list=read reviewed=read
+census class=NiOverride name=GetNodeOverrideString kind=native runtime_read=0 runtime_change=116 queued=0 extra=0 direct=116 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=HeelsFix name=EnableDebugLog kind=property runtime_read=115 runtime_change=0 queued=0 extra=0 direct=115 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetWornForm kind=native runtime_read=114 runtime_change=0 queued=101 extra=8 direct=0 other=5 name_rule=read without_pt_list=read reviewed=read
+census class=erbwmanager name=HudX kind=property runtime_read=109 runtime_change=2 queued=0 extra=0 direct=111 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=HasNodeTransformPosition kind=native runtime_read=0 runtime_change=111 queued=0 extra=0 direct=111 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=erbwmanager name=HudY kind=property runtime_read=109 runtime_change=2 queued=0 extra=0 direct=111 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=currentValue kind=property runtime_read=110 runtime_change=0 queued=0 extra=0 direct=110 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=HudWidth kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=FlaskX kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=FlaskY kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SolventX kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SolventY kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=FlaskScale kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SolventScale kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=RemoveFromFaction kind=native runtime_read=0 runtime_change=108 queued=101 extra=3 direct=0 other=4 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=HudHeight kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=ShowNumbers kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=HudPreset kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=EffectStrength kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SurgeStyle kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=ShowFlask kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=ShowSolvent kind=property runtime_read=106 runtime_change=2 queued=0 extra=0 direct=108 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActiveMagicEffect name=RegisterForSingleUpdate kind=native runtime_read=0 runtime_change=107 queued=92 extra=8 direct=0 other=7 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=PreviewPercent kind=property runtime_read=106 runtime_change=1 queued=0 extra=0 direct=107 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetPathStringValue kind=native runtime_read=0 runtime_change=107 queued=0 extra=0 direct=107 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=GetScale kind=native runtime_read=106 runtime_change=0 queued=105 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=read
+census class=HeelsFix name=ScalingDeviation kind=property runtime_read=106 runtime_change=0 queued=1 extra=0 direct=105 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetEquippedObject kind=native runtime_read=106 runtime_change=0 queued=97 extra=7 direct=0 other=2 name_rule=read without_pt_list=read reviewed=read
+census class=erbwmanager name=SkillCost kind=property runtime_read=104 runtime_change=1 queued=0 extra=0 direct=105 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=AdvancedPlayer kind=property runtime_read=105 runtime_change=0 queued=1 extra=0 direct=104 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=FlaskItem kind=property runtime_read=104 runtime_change=1 queued=0 extra=0 direct=105 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SolventItem kind=property runtime_read=104 runtime_change=1 queued=0 extra=0 direct=105 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=maximum kind=property runtime_read=104 runtime_change=1 queued=0 extra=0 direct=105 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=FactionExposed kind=property runtime_read=104 runtime_change=0 queued=0 extra=0 direct=104 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetDisplayName kind=native runtime_read=0 runtime_change=104 queued=98 extra=6 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=slac_config name=modActive kind=property runtime_read=103 runtime_change=0 queued=0 extra=0 direct=103 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetCombatState kind=native runtime_read=0 runtime_change=101 queued=97 extra=0 direct=0 other=4 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=IsDead kind=native runtime_read=99 runtime_change=0 queued=45 extra=15 direct=0 other=39 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetRace kind=native runtime_read=96 runtime_change=0 queued=89 extra=5 direct=0 other=2 name_rule=read without_pt_list=read reviewed=read
+census class=slac_config name=pcAllowWeapons kind=property runtime_read=94 runtime_change=0 queued=0 extra=0 direct=94 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=suitorsPCAllowWeapons kind=property runtime_read=94 runtime_change=0 queued=0 extra=0 direct=94 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetCameraState kind=native runtime_read=0 runtime_change=94 queued=0 extra=0 direct=94 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Critter name=bKilled kind=property runtime_read=94 runtime_change=0 queued=0 extra=0 direct=94 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsWeaponDrawn kind=native runtime_read=0 runtime_change=94 queued=92 extra=1 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=slac_config name=suitorsMaxPC kind=property runtime_read=94 runtime_change=0 queued=0 extra=0 direct=94 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetEquippedArmorInSlot kind=native runtime_read=93 runtime_change=0 queued=76 extra=16 direct=0 other=1 name_rule=read without_pt_list=read reviewed=read
+census class=StorageUtil name=StringListAdd kind=native runtime_read=0 runtime_change=93 queued=0 extra=0 direct=93 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_Pursuit_00 kind=property runtime_read=93 runtime_change=0 queued=1 extra=0 direct=92 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=RemoveNodeOverride kind=native runtime_read=0 runtime_change=92 queued=0 extra=0 direct=92 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MCM_ConfigBase name=GetModSettingFloat kind=native runtime_read=0 runtime_change=89 queued=0 extra=0 direct=89 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=SetIntValue kind=native runtime_read=0 runtime_change=83 queued=0 extra=0 direct=83 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListCount kind=native runtime_read=0 runtime_change=83 queued=0 extra=0 direct=83 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MfgConsoleFuncExt name=ResetMFGSmooth kind=native runtime_read=0 runtime_change=82 queued=56 extra=2 direct=0 other=24 name_rule=change without_pt_list=change reviewed=change
+census class=ActorBase name=GetSex kind=native runtime_read=80 runtime_change=0 queued=45 extra=4 direct=0 other=31 name_rule=read without_pt_list=read reviewed=read
+census class=PO3_SKSEFunctions name=RemoveAddedSpells kind=native runtime_read=0 runtime_change=79 queued=74 extra=3 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForAllModEvents kind=native runtime_read=0 runtime_change=77 queued=0 extra=0 direct=77 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ReferenceAlias name=Clear kind=native runtime_read=0 runtime_change=76 queued=0 extra=0 direct=76 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=UnsetIntValue kind=native runtime_read=0 runtime_change=76 queued=0 extra=0 direct=76 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Critter name=_bQueued kind=property runtime_read=19 runtime_change=57 queued=0 extra=0 direct=76 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=FloatListCount kind=native runtime_read=0 runtime_change=75 queued=0 extra=0 direct=75 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=ClearAllObjPrefix kind=native runtime_read=0 runtime_change=75 queued=0 extra=0 direct=0 other=75 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListGet kind=native runtime_read=0 runtime_change=74 queued=0 extra=0 direct=74 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SKSE name=GetVersionRelease kind=native runtime_read=72 runtime_change=0 queued=0 extra=0 direct=72 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Form name=UnregisterForUpdate kind=native runtime_read=0 runtime_change=71 queued=32 extra=2 direct=0 other=37 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=CreateFloatArray kind=native runtime_read=0 runtime_change=70 queued=0 extra=0 direct=70 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=RegisterForModEvent kind=native runtime_read=0 runtime_change=69 queued=0 extra=0 direct=69 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Debug name=SendAnimationEvent kind=native runtime_read=0 runtime_change=69 queued=48 extra=1 direct=0 other=20 name_rule=change without_pt_list=change reviewed=change
+census class=SPELL name=GetNthEffectMagicEffect kind=native runtime_read=65 runtime_change=0 queued=0 extra=0 direct=65 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=OSLArousedNative name=IsInScene kind=native runtime_read=0 runtime_change=64 queued=41 extra=6 direct=0 other=17 name_rule=read without_pt_list=read reviewed=change
+census class=JArray name=addInt kind=native runtime_read=0 runtime_change=58 queued=0 extra=0 direct=58 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=FloatListSlice kind=native runtime_read=0 runtime_change=58 queued=0 extra=0 direct=58 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForUpdate kind=native runtime_read=0 runtime_change=58 queued=41 extra=1 direct=0 other=16 name_rule=change without_pt_list=change reviewed=change
+census class=FormList name=Find kind=native runtime_read=56 runtime_change=0 queued=50 extra=6 direct=0 other=0 name_rule=change without_pt_list=change reviewed=read
+census class=condiexp_mcm name=Condiexp_PO3ExtenderInstalled kind=property runtime_read=54 runtime_change=0 queued=0 extra=0 direct=54 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MagicEffect name=GetCastingArt kind=native runtime_read=54 runtime_change=0 queued=0 extra=0 direct=54 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=PO3_SKSEFunctions name=GenerateRandomInt kind=native runtime_read=0 runtime_change=54 queued=0 extra=0 direct=54 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MagicEffect name=GetHitEffectArt kind=native runtime_read=54 runtime_change=0 queued=0 extra=0 direct=54 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetFactionRank kind=native runtime_read=53 runtime_change=0 queued=35 extra=0 direct=0 other=18 name_rule=read without_pt_list=read reviewed=read
+census class=utility name=RandomFloat kind=native runtime_read=0 runtime_change=51 queued=34 extra=0 direct=0 other=17 name_rule=change without_pt_list=change reviewed=change
+census class=condiexp_mcm name=currentExpression kind=property runtime_read=0 runtime_change=51 queued=2 extra=0 direct=49 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MagicEffect name=GetLight kind=native runtime_read=51 runtime_change=0 queued=0 extra=0 direct=51 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=HasMagicEffectWithKeyword kind=native runtime_read=48 runtime_change=0 queued=39 extra=9 direct=0 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Form name=RegisterForMenu kind=native runtime_read=0 runtime_change=48 queued=0 extra=0 direct=48 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MagicEffect name=SetCastingArt kind=native runtime_read=0 runtime_change=48 queued=0 extra=0 direct=48 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetLeveledActorBase kind=native runtime_read=0 runtime_change=47 queued=27 extra=1 direct=0 other=19 name_rule=read without_pt_list=read reviewed=change
+census class=Quest name=IsStopped kind=native runtime_read=0 runtime_change=47 queued=26 extra=0 direct=0 other=21 name_rule=change without_pt_list=read reviewed=change
+census class=dse_sgo_questdatabase_main name=OutputFiles kind=property runtime_read=45 runtime_change=1 queued=0 extra=0 direct=46 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=InvokeString kind=native runtime_read=0 runtime_change=46 queued=0 extra=0 direct=46 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JMap name=setStr kind=native runtime_read=0 runtime_change=46 queued=0 extra=0 direct=46 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StormLightningPluginScript name=SetIntValue kind=native runtime_read=0 runtime_change=45 queued=0 extra=0 direct=0 other=45 name_rule=change without_pt_list=change reviewed=change
+census class=condiexp_mcm name=CondiExpFollowerQuest kind=property runtime_read=45 runtime_change=0 queued=0 extra=0 direct=45 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetIntValue kind=native runtime_read=0 runtime_change=45 queued=0 extra=0 direct=45 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=DoroCollision name=SetCharacterCollisionDisabled kind=native runtime_read=0 runtime_change=44 queued=26 extra=5 direct=0 other=13 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=AddSpell kind=native runtime_read=0 runtime_change=44 queued=9 extra=0 direct=0 other=35 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetParentCell kind=native runtime_read=0 runtime_change=44 queued=25 extra=7 direct=0 other=12 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=IsDeleted kind=native runtime_read=0 runtime_change=43 queued=27 extra=1 direct=0 other=15 name_rule=change without_pt_list=change reviewed=change
+census class=LeveledItem name=AddForm kind=native runtime_read=0 runtime_change=41 queued=0 extra=0 direct=0 other=41 name_rule=change without_pt_list=change reviewed=change
+census class=cfconfigmenu name=DbgOutputLog kind=property runtime_read=41 runtime_change=0 queued=0 extra=0 direct=41 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=cfconfigmenu name=DbgOutputConsole kind=property runtime_read=41 runtime_change=0 queued=0 extra=0 direct=41 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Weather name=GetCurrentWeather kind=native runtime_read=0 runtime_change=39 queued=23 extra=4 direct=0 other=12 name_rule=read without_pt_list=read reviewed=change
+census class=Weather name=GetClassification kind=native runtime_read=0 runtime_change=39 queued=27 extra=0 direct=0 other=12 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=getStr kind=native runtime_read=0 runtime_change=38 queued=0 extra=0 direct=38 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Game name=IsPluginInstalled kind=native runtime_read=0 runtime_change=37 queued=0 extra=0 direct=0 other=37 name_rule=read without_pt_list=read reviewed=change
+census class=ActorValueInfo name=GetSkillUseMult kind=native runtime_read=0 runtime_change=36 queued=0 extra=0 direct=36 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=MagicEffect name=SetHitEffectArt kind=native runtime_read=0 runtime_change=36 queued=0 extra=0 direct=36 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MagicEffect name=SetLight kind=native runtime_read=0 runtime_change=36 queued=0 extra=0 direct=36 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=CalamityAffixes_ModEventEmitter name=Send kind=native runtime_read=0 runtime_change=36 queued=24 extra=0 direct=0 other=12 name_rule=change without_pt_list=change reviewed=change
+census class=SKSE name=GetPluginVersion kind=native runtime_read=0 runtime_change=35 queued=0 extra=0 direct=35 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=StorageUtil name=GetStringValue kind=native runtime_read=0 runtime_change=35 queued=0 extra=0 direct=35 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=PapyrusUtil name=MergeFormArray kind=native runtime_read=0 runtime_change=34 queued=0 extra=0 direct=34 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetSleepState kind=native runtime_read=0 runtime_change=34 queued=7 extra=14 direct=0 other=13 name_rule=read without_pt_list=read reviewed=change
+census class=JArray name=findStr kind=native runtime_read=0 runtime_change=33 queued=0 extra=0 direct=33 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=nextKey kind=native runtime_read=0 runtime_change=33 queued=0 extra=0 direct=33 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MCM name=GetModSettingFloat kind=native runtime_read=0 runtime_change=32 queued=0 extra=0 direct=32 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StringUtil name=Substring kind=native runtime_read=32 runtime_change=0 queued=0 extra=0 direct=32 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=StorageUtil name=SetStringValue kind=native runtime_read=0 runtime_change=32 queued=0 extra=0 direct=32 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=CondiExp_StartMod name=pctracking kind=property runtime_read=32 runtime_change=0 queued=0 extra=0 direct=29 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=RegisterForMenu kind=native runtime_read=0 runtime_change=31 queued=0 extra=0 direct=31 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=SetLightRadius kind=native runtime_read=0 runtime_change=30 queued=0 extra=0 direct=0 other=30 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=SetLightFade kind=native runtime_read=0 runtime_change=30 queued=0 extra=0 direct=0 other=30 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_Queue kind=property runtime_read=30 runtime_change=0 queued=0 extra=0 direct=30 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Debug name=TraceUser kind=native runtime_read=0 runtime_change=29 queued=0 extra=0 direct=29 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questdatabase_main name=RaceIdFiles kind=property runtime_read=27 runtime_change=1 queued=0 extra=0 direct=28 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=LogicalAnd kind=native runtime_read=28 runtime_change=0 queued=0 extra=0 direct=28 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Alias name=UnregisterForModEvent kind=native runtime_read=0 runtime_change=27 queued=0 extra=0 direct=0 other=27 name_rule=change without_pt_list=change reviewed=change
+census class=condiexp_mcm name=Condiexp_Verbose kind=property runtime_read=27 runtime_change=0 queued=0 extra=0 direct=27 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=IsStageDone kind=native runtime_read=0 runtime_change=27 queued=15 extra=0 direct=0 other=12 name_rule=change without_pt_list=read reviewed=change
+census class=StormLightningPluginScript name=SetFloatValue kind=native runtime_read=0 runtime_change=26 queued=0 extra=0 direct=0 other=26 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=findInt kind=native runtime_read=0 runtime_change=26 queued=0 extra=0 direct=26 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Debug name=OpenUserLog kind=native runtime_read=0 runtime_change=25 queued=0 extra=0 direct=25 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=AddNodeOverrideString kind=native runtime_read=0 runtime_change=25 queued=0 extra=0 direct=25 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=SetINIBool kind=native runtime_read=0 runtime_change=25 queued=0 extra=0 direct=0 other=25 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForKey kind=native runtime_read=0 runtime_change=24 queued=0 extra=0 direct=24 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=GetInt kind=native runtime_read=0 runtime_change=24 queued=0 extra=0 direct=24 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SPELL name=GetNumEffects kind=native runtime_read=0 runtime_change=24 queued=0 extra=0 direct=24 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=condiexp_mcm name=ArousalExpr kind=property runtime_read=23 runtime_change=0 queued=0 extra=0 direct=23 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=HasNodeOverride kind=native runtime_read=0 runtime_change=23 queued=0 extra=0 direct=23 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Quest name=Start kind=native runtime_read=0 runtime_change=23 queued=7 extra=7 direct=0 other=9 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=Stop kind=native runtime_read=0 runtime_change=23 queued=17 extra=1 direct=0 other=5 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=RootHeight kind=property runtime_read=23 runtime_change=0 queued=0 extra=0 direct=23 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SLIF_Menu name=CrossHairRef kind=property runtime_read=0 runtime_change=23 queued=0 extra=0 direct=23 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetEquippedItemType kind=native runtime_read=0 runtime_change=22 queued=20 extra=0 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=SetINIFloat kind=native runtime_read=0 runtime_change=22 queued=0 extra=0 direct=0 other=22 name_rule=change without_pt_list=change reviewed=change
+census class=LeveledItem name=GetNthForm kind=native runtime_read=0 runtime_change=21 queued=0 extra=0 direct=21 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Cell name=IsInterior kind=native runtime_read=0 runtime_change=20 queued=16 extra=0 direct=0 other=4 name_rule=read without_pt_list=read reviewed=change
+census class=JArray name=count kind=native runtime_read=0 runtime_change=20 queued=0 extra=0 direct=20 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JMap name=GetInt kind=native runtime_read=0 runtime_change=20 queued=0 extra=0 direct=20 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Form name=GetFormID kind=native runtime_read=0 runtime_change=20 queued=4 extra=2 direct=0 other=14 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=GetCurrentPackage kind=native runtime_read=0 runtime_change=19 queued=11 extra=2 direct=0 other=6 name_rule=read without_pt_list=read reviewed=change
+census class=iwant_widgets_native name=IsHudReady kind=native runtime_read=0 runtime_change=19 queued=0 extra=0 direct=19 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Form name=UnregisterForUpdateGameTime kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=0 other=18 name_rule=change without_pt_list=change reviewed=change
+census class=MfgConsoleFuncExt name=ApplyExpressionPreset kind=native runtime_read=0 runtime_change=18 queued=11 extra=1 direct=0 other=6 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=asin kind=native runtime_read=18 runtime_change=0 queued=0 extra=0 direct=18 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=HeelsFix name=HandHeight kind=property runtime_read=18 runtime_change=0 queued=0 extra=0 direct=18 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=InvokeStringA kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=18 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=IsResetting kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=18 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActorValueInfo name=GetActorValueInfoByID kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=18 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=PapyrusUtil name=ClampInt kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=18 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActorValueInfo name=SetSkillUseMult kind=native runtime_read=0 runtime_change=18 queued=0 extra=0 direct=18 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsSwimming kind=native runtime_read=0 runtime_change=17 queued=14 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=MCM name=GetModSettingInt kind=native runtime_read=0 runtime_change=17 queued=0 extra=0 direct=17 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=condiexp_mcm name=RandomExpr kind=property runtime_read=17 runtime_change=0 queued=0 extra=0 direct=17 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusUtil name=ActorArray kind=native runtime_read=0 runtime_change=17 queued=0 extra=0 direct=17 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=FootHeight kind=property runtime_read=17 runtime_change=0 queued=0 extra=0 direct=17 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=condiexp_mcm name=Condiexp_GlobalRandom kind=property runtime_read=17 runtime_change=0 queued=0 extra=0 direct=17 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=GetRelationshipRank kind=native runtime_read=0 runtime_change=17 queued=8 extra=0 direct=0 other=9 name_rule=read without_pt_list=read reviewed=change
+census class=Math name=LogicalNot kind=native runtime_read=16 runtime_change=0 queued=0 extra=0 direct=16 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Game name=GetForm kind=native runtime_read=0 runtime_change=16 queued=0 extra=0 direct=16 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=CreateIntArray kind=native runtime_read=0 runtime_change=16 queued=0 extra=0 direct=16 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=object kind=native runtime_read=0 runtime_change=16 queued=0 extra=0 direct=16 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListClear kind=native runtime_read=0 runtime_change=16 queued=0 extra=0 direct=16 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActiveMagicEffect name=RegisterForAnimationEvent kind=native runtime_read=0 runtime_change=16 queued=2 extra=0 direct=0 other=14 name_rule=change without_pt_list=change reviewed=change
+census class=LeveledItem name=Revert kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=0 other=15 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForAllKeys kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=SendModEvent kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Enchantment name=GetNthEffectMagicEffect kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=PapyrusUtil name=GetVersion kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JValue name=addToPool kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sslThreadModel name=DestroyInstance kind=native runtime_read=0 runtime_change=15 queued=0 extra=0 direct=15 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_utility name=CreatureDialogueForcedRef kind=property runtime_read=14 runtime_change=0 queued=1 extra=1 direct=11 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=SetGameSettingFloat kind=native runtime_read=0 runtime_change=14 queued=0 extra=0 direct=14 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusIniManipulator name=PullBoolFromIni kind=native runtime_read=0 runtime_change=14 queued=0 extra=0 direct=0 other=14 name_rule=change without_pt_list=change reviewed=change
+census class=skyprompt name=RegisterForSkyPromptEvent kind=native runtime_read=0 runtime_change=14 queued=7 extra=1 direct=0 other=6 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=MJFKneeFactor kind=property runtime_read=14 runtime_change=0 queued=0 extra=0 direct=14 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=SetActorValue kind=native runtime_read=0 runtime_change=13 queued=6 extra=0 direct=0 other=7 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListToArray kind=native runtime_read=0 runtime_change=13 queued=0 extra=0 direct=13 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetCurrentLocation kind=native runtime_read=0 runtime_change=13 queued=5 extra=3 direct=0 other=5 name_rule=read without_pt_list=read reviewed=change
+census class=SLIF_Menu name=nioverride_json kind=property runtime_read=13 runtime_change=0 queued=0 extra=0 direct=13 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=PathCount kind=native runtime_read=0 runtime_change=12 queued=0 extra=0 direct=12 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetAnimationVariableInt kind=native runtime_read=0 runtime_change=12 queued=4 extra=0 direct=0 other=8 name_rule=change without_pt_list=read reviewed=change
+census class=Alias name=RegisterForKey kind=native runtime_read=0 runtime_change=12 queued=0 extra=0 direct=12 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Critter name=_fLastPlayerDist kind=property runtime_read=0 runtime_change=12 queued=0 extra=0 direct=12 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=sqrt kind=native runtime_read=12 runtime_change=0 queued=0 extra=0 direct=12 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=utility name=GetINIFloat kind=native runtime_read=0 runtime_change=12 queued=0 extra=0 direct=12 other=0 name_rule=change without_pt_list=read reviewed=change
+census class=SKSE name=GetVersion kind=native runtime_read=0 runtime_change=11 queued=0 extra=0 direct=11 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JsonUtil name=HasIntValue kind=native runtime_read=0 runtime_change=11 queued=0 extra=0 direct=11 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=ApplyNodeOverrides kind=native runtime_read=0 runtime_change=11 queued=0 extra=0 direct=11 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StringUtil name=Find kind=native runtime_read=11 runtime_change=0 queued=0 extra=0 direct=11 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=JsonUtil name=SetIntValue kind=native runtime_read=0 runtime_change=11 queued=0 extra=0 direct=11 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=FormList name=AddForm kind=native runtime_read=0 runtime_change=11 queued=1 extra=0 direct=0 other=10 name_rule=change without_pt_list=change reviewed=change
+census class=JMap name=getObj kind=native runtime_read=0 runtime_change=11 queued=0 extra=0 direct=11 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_questdatabase_main name=StartingStatsFiles kind=property runtime_read=9 runtime_change=1 queued=0 extra=0 direct=10 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MiscUtil name=FileExists kind=native runtime_read=0 runtime_change=10 queued=0 extra=0 direct=10 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusIniManipulator name=PullIntFromIni kind=native runtime_read=0 runtime_change=10 queued=0 extra=0 direct=0 other=10 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=SetVisible kind=native runtime_read=0 runtime_change=10 queued=0 extra=0 direct=10 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetFloatValue kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SanguineSymphony name=GetSSVersion kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=0 other=9 name_rule=read without_pt_list=read reviewed=change
+census class=JsonUtil name=HasFloatValue kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=RegisterForCrosshairRef kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=SetFloatValue kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=FormListCount kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetPathIntValue kind=native runtime_read=0 runtime_change=9 queued=0 extra=0 direct=9 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=FormList name=GetAt kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=0 other=8 name_rule=read without_pt_list=read reviewed=change
+census class=FormList name=GetSize kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=0 other=8 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=ApplySkinOverrides kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=8 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_utility name=ActorTypeCreature kind=property runtime_read=8 runtime_change=0 queued=2 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusIniManipulator name=PullStringFromIni kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=0 other=8 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetGameSettingFloat kind=native runtime_read=0 runtime_change=8 queued=6 extra=1 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetStringValue kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=8 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=ApplyOverrides kind=native runtime_read=0 runtime_change=8 queued=0 extra=0 direct=8 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=ListBookVendors kind=property runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=atan kind=native runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Math name=sin kind=native runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Quest name=UpdateCurrentInstanceGlobal kind=native runtime_read=0 runtime_change=7 queued=0 extra=0 direct=0 other=7 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetAngleZ kind=native runtime_read=0 runtime_change=7 queued=2 extra=3 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=Quest name=GetQuest kind=native runtime_read=0 runtime_change=7 queued=0 extra=0 direct=0 other=7 name_rule=change without_pt_list=read reviewed=change
+census class=ModEvent name=PushFloat kind=native runtime_read=0 runtime_change=7 queued=0 extra=0 direct=7 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=SplineTranslateTo kind=native runtime_read=0 runtime_change=7 queued=5 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=SetMotionType kind=native runtime_read=0 runtime_change=7 queued=5 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=cos kind=native runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=HeelsFix name=MuJointFixFound kind=property runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=IsCamSwitchControlsEnabled kind=native runtime_read=0 runtime_change=7 queued=3 extra=3 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=HeelsFix name=MJFFurnitureDisable kind=property runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=LeanBackFactor kind=property runtime_read=7 runtime_change=0 queued=0 extra=0 direct=7 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=retain kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=KudasaiMCM name=iAssaultKey kind=property runtime_read=6 runtime_change=0 queued=0 extra=0 direct=5 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=CritterSpawn name=fStartSpawnTime kind=property runtime_read=6 runtime_change=0 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=TNG_PapyrusUtil name=GetIntValue kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=0 other=6 name_rule=read without_pt_list=read reviewed=change
+census class=JsonUtil name=PathMembers kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=UpdateNodeTransform kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=JsonInFolder kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=0 other=6 name_rule=change without_pt_list=change reviewed=change
+census class=CritterSpawn name=fEndSpawnTime kind=property runtime_read=6 runtime_change=0 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetWorldSpace kind=native runtime_read=0 runtime_change=6 queued=4 extra=0 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=valueType kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MCM_ConfigBase name=SetModSettingInt kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=DismemberingFramework name=GetDFVersion kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=0 other=6 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=IsPlayerTeammate kind=native runtime_read=0 runtime_change=6 queued=3 extra=1 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=HeelsFix name=ThighFactor kind=property runtime_read=6 runtime_change=0 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ReferenceAlias name=AddInventoryEventFilter kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=getObj kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=UI name=InvokeBool kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=LeveledItem name=GetNumForms kind=native runtime_read=0 runtime_change=6 queued=0 extra=0 direct=6 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_QuestWidgetBase_Main name=items kind=property runtime_read=4 runtime_change=1 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=oslaroused_conditions name=OSLAroused_PlayerTimeRate kind=property runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=oslaroused_conditions name=OSLAroused_PlayerArousal kind=property runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JFormDB name=getObj kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=UnregisterForAllMenus kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=PlayerRef kind=property runtime_read=5 runtime_change=0 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Math name=RightShift kind=native runtime_read=5 runtime_change=0 queued=0 extra=0 direct=5 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=StorageUtil name=StringListHas kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForKey kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=GetINIInt kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=read reviewed=change
+census class=JsonUtil name=IsGood kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_QuestWidgetBase_Main name=iWant kind=property runtime_read=4 runtime_change=1 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=EquipItem kind=native runtime_read=0 runtime_change=5 queued=3 extra=1 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsFlying kind=native runtime_read=0 runtime_change=5 queued=4 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_questcontroller_main name=BODY kind=property runtime_read=5 runtime_change=0 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForAllKeys kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=GetNumAliases kind=native runtime_read=0 runtime_change=5 queued=2 extra=0 direct=0 other=3 name_rule=change without_pt_list=read reviewed=change
+census class=dse_sgo_QuestWidgetBase_Main name=TitleShadow kind=property runtime_read=2 runtime_change=3 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=Destroy kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_QuestWidgetBase_Main name=title kind=property runtime_read=2 runtime_change=3 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForAnimationEvent kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=5 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForModEvent kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=0 other=5 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=GetBool kind=native runtime_read=0 runtime_change=5 queued=0 extra=0 direct=0 other=5 name_rule=change without_pt_list=read reviewed=change
+census class=ModEvent name=Send kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=SetName kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=change without_pt_list=change reviewed=change
+census class=StringUtil name=AsOrd kind=native runtime_read=4 runtime_change=0 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Location name=IsChild kind=native runtime_read=0 runtime_change=4 queued=3 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=PapyrusUtil name=GetMatchingString kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=HasNodeTransformRotation kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=StorageUtil name=GetIntValue kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=StorageUtil name=FormListFind kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForAnimationEvent kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=InvokeIntA kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StringUtil name=Split kind=native runtime_read=4 runtime_change=0 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=read
+census class=Actor name=GetSitState kind=native runtime_read=0 runtime_change=4 queued=4 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Game name=GetModDescription kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ReferenceAlias name=RemoveAllInventoryEventFilters kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsEquipped kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=read without_pt_list=read reviewed=change
+census class=ModEvent name=Create kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_utility name=playerEngaged kind=property runtime_read=4 runtime_change=0 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=KudasaiMCM name=iSurrenderKey kind=property runtime_read=4 runtime_change=0 queued=0 extra=0 direct=3 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=LeanForwardFactor kind=property runtime_read=4 runtime_change=0 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusUtil name=SortStringArray kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=Reset kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsRunning kind=native runtime_read=0 runtime_change=4 queued=0 extra=1 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=getFlt kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SPELL name=SetNthEffectMagnitude kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=GetEditorLocation kind=native runtime_read=0 runtime_change=4 queued=1 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=JsonUtil name=IsPathArray kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=count kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Acheron name=HasOption kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=read without_pt_list=read reviewed=change
+census class=Location name=GetKeywordData kind=native runtime_read=0 runtime_change=4 queued=1 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=UICallback name=PushString kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Debug name=Notification kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=0 other=4 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=AddNodeOverrideFloat kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PapyrusUtil name=RemoveString kind=native runtime_read=0 runtime_change=4 queued=0 extra=0 direct=4 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_utility name=ActorTypeHorse kind=property runtime_read=3 runtime_change=0 queued=1 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=SetAnimationVariableInt kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=MiscUtil name=FilesInFolder kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sslSystemConfig name=GetSettingBool kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=GetWeight kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=MiscUtil name=readFromFile kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_QuestWidgetBase_Main name=busy kind=property runtime_read=1 runtime_change=2 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=CritterSpawn name=fMaxPlayerDistance kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sslSystemConfig name=GetSettingInt kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=cloakRadius kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=ClearAllPrefix kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=SetObjectiveDisplayed kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=ht_mcm name=HT_EnableFollowers kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=Book02 kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=FormListGet kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=CritterSpawn name=fExtraViableDistance kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForAnimationEvent kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=CritterSpawn name=bFull kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=SetGhost kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=SetPlayerTeammate kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=cfconfigmenu name=PrfTimeout kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=GetInt kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=read reviewed=change
+census class=LocationAlias name=GetLocation kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=GetLevel kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=LeveledActor name=AddForm kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=ski_questbase name=CurrentVersion kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Race name=IsRaceFlagSet kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=HasIntValue kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JMap name=object kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=Book01 kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=addObj kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=WornObject name=GetItemHealthPercent kind=native runtime_read=0 runtime_change=3 queued=3 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=JDB name=solveObj kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=targetKey kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=readFromFile kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=MCM name=IsInstalled kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=SetFactionRank kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForCrosshairRef kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=inviteTargetKey kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=Release kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActorBase name=GetRace kind=native runtime_read=0 runtime_change=3 queued=2 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=RegisterForControl kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=GetType kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=read without_pt_list=read reviewed=change
+census class=LeveledActor name=Revert kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=DATA kind=property runtime_read=3 runtime_change=0 queued=0 extra=0 direct=3 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=GetFloat kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=0 other=3 name_rule=change without_pt_list=read reviewed=change
+census class=Enchantment name=GetNumEffects kind=native runtime_read=0 runtime_change=3 queued=0 extra=0 direct=3 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=PO3_Events_Alias name=RegisterForWeaponHit kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=RemoveNodeTransformRotation kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=HudOpacity kind=property runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=IsStopping kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=read reviewed=change
+census class=JMap name=allKeys kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetErrors kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=utility name=WaitMenuMode kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=MCM_ConfigBase name=SetModSettingBool kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetModCount kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=UpdateWeight kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=GetNodeTransformNames kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Quest name=GetAlias kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=read reviewed=change
+census class=ActiveMagicEffect name=RegisterForModEvent kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ccbgssse001_fishplaquescript name=PlaqueFishAlias kind=property runtime_read=2 runtime_change=0 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=eraseIndex kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=SendModEvent kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=IsStarting kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=read reviewed=change
+census class=OSLArousedNativeConfig name=SetMinLibidoValue kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForNiNodeUpdate kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=DispelSpell kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=SexLabRegistry name=SceneExists kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=GetNumFeetOverlays kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=RegisterForActorAction kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsInKillMove kind=native runtime_read=0 runtime_change=2 queued=2 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=IsOnMount kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=erbwmanager name=HudLayoutVersion kind=property runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=SetINIUnsigned kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Scene name=IsPlaying kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=QueueNiNodeUpdate kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=GetPathFormValue kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=Disable kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sr_inflateConfig name=defKey kind=property runtime_read=2 runtime_change=0 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sr_inflateConfig name=logging kind=property runtime_read=2 runtime_change=0 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JFormMap name=getObj kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ColorForm name=SetColor kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForAllModEvents kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=InInitMaintenance kind=property runtime_read=1 runtime_change=1 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=StringListCount kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=BattleNecklace kind=property runtime_read=2 runtime_change=0 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=RemoveNodeTransformScale kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=GetNumFaceOverlays kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=UnregisterForUpdate kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=HitInterval kind=property runtime_read=1 runtime_change=1 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=Load kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=ClearExpressionOverride kind=native runtime_read=0 runtime_change=2 queued=2 extra=0 direct=0 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SoundCategory name=SetVolume kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=MusicType name=Remove kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=SKSE name=GetVersionMinor kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ActorBase name=SetHairColor kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sslSystemConfig name=GetSettingFlt kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SKSE name=GetVersionBeta kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=RemoveNodeTransformPosition kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetNumTintMasks kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=GetFlyingState kind=native runtime_read=0 runtime_change=2 queued=2 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=GetCurrentScene kind=native runtime_read=0 runtime_change=2 queued=2 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=cfconfigmenu name=GenAroused kind=property runtime_read=2 runtime_change=0 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=EnabledNPCs kind=property runtime_read=2 runtime_change=0 queued=1 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=Unload kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=JContainers name=APIVersion kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=GetNumBodyOverlays kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=GetNumHandOverlays kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ConsoleUtil name=PrintMessage kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=0 other=2 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=AddNodeOverrideInt kind=native runtime_read=0 runtime_change=2 queued=0 extra=0 direct=2 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetPerformanceMode kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetNippleSlidersORefitEnabled kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=cleanPool kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetEnableCrouchSlide kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Game name=UsingGamepad kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_Pursuit00ForceComplete kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetCustomParkourKey kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=OBodyNative name=SetRespectfulMorphApplication kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slaframeworkscr name=slaArousal kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=SetRelationshipRank kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JContainers name=__isInstalled kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Survival_Json name=Exists kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetLegacyStorageUtilUsageEnabled kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=SKI_WidgetBase name=RequireExtend kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_Events_Alias name=UnregisterForWeaponHit kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ModEvent name=PushString kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=RegisterForOBodyEvent kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ht_mcm name=HT_EnableHelmet kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetDistributionKey kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=GetUpdateIntervalRealTimeSeconds kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=StorageUtil name=GetFormValue kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SkyParkourPapyrus name=GetBaseStaminaDamage kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=NiOverride name=HasOverlays kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=HeelsFix name=CorrectThirdPerson kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetParkourDelay kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SFEAE_scrMCM name=booPapyrusUtil kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=mzinbathemcmmenu name=cachedSoftCheck kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SLIF_Menu name=modlist_json kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questdatabase_main name=OutputFileCount kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=mzinutility name=Menu kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=GetPapyrusExtenderVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=read reviewed=change
+census class=SkyParkourPapyrus name=GetSmartSteps kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=SetDragonDistance kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForTrackedStatsEvent kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=MiscUtil name=writeToFile kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ht_mcm name=HT_HotkeyType kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNative name=GetRegisteredKeywords kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=mzinbathemcmmenu name=LogTrace kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=rapeTattoos_mcm name=debugEnabled kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sr_inflateConfig name=Enabled kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=zbfplayercontrol name=modName kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNative name=GetArousal kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=AddItem kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=EC_SS_Updater name=runningVersion kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_Events_Alias name=RegisterForHitEventEx kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JContainers name=featureVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HotkeyReminder_Config name=iActivateKey kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=IsPluginFound kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=read reviewed=change
+census class=ObjectReference name=EnableNoWait kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=Reset kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=WarSkillGain kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=lastCombatStateChange kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=asStringArray kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForCameraState kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=GetGoldValue kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=OSLArousedNativeConfig name=SetSceneViewingBaseline kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=utility name=CreateFormArray kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=AllowBleedoutDialogue kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=GetAllSpells kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=Actor name=AddPerk kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=dlc1referencealiasarrayscript name=AliasArray kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=RemovePerk kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetSmartVault kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=byohhousebuildingscript name=bInitializedOtherDLC kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=ImmersiveHorsesLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetGenitalRand kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=RegisterForTrackedStatsEvent kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetSceneVictimGainsArousal kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=AutoToggleKey kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=UnregisterForAllMenus kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=RegisterForSingleUpdateGameTime kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ht_mcm name=HT_HotkeyState kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ht_mcm name=HT_EnableMask kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JMap name=setFlt kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=KudasaiMCM name=bHunterAssault kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SKI_FavoritesManager name=ButtonHelpEnabled kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Input name=GetMappedKey kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=read reviewed=change
+census class=dse_sgo_questdatabase_main name=RaceIdFileCount kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SexLabRegistry name=GetRaceKeyByRace kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ActiveMagicEffect name=UnregisterForAllModEvents kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=DynamicArmor name=ResetVariant kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=UnregisterForCrosshairRef kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=IsCompleted kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=belethorSisterQuest01Script name=Alias_necromancerBoss kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SLIF_Menu name=config_json kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_CreatureDialogueScene kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListRemove kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=StorageUtil name=StringListInsert kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=unique kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=followerstats_mcm name=iHotkey kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetBeingNudeBaseline kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=SetGlowMultiple kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=byohhousebuildingscript name=iMinIntroLetterLevel kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetEroticArmorBaseline kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=ClearBodyMorphKeys kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slaframeworkscr name=IsOSLArousedStub kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=ObjectReference name=Enable kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=StringListFind kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=AhzMoreHud name=GetVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=OSLArousedNativeConfig name=SetLibidoChangeRate kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=inMaintenance kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=NiOverride name=UpdateModelWeight kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetSceneParticipantBaseline kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=AdvancedNPCs kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNative name=IsActorNaked kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=erbwmanager name=DataVersion kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=DHLPIsSuspended kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=usleep_versiontrackingscript name=LastVersion kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=PotionRestore kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=DrainGiven kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=RecoverySpell kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=NecklaceGivenV4 kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=StarterGiven kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=BaseMaximum kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=GrowthPerLevel kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetViewingNudeBaseline kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JFormDB name=GetInt kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=slac_config name=TargetActor kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slw_config name=slw_stopped kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=belethorSisterQuest01Script name=Alias_BanditBoss kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=GetLastMessage kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=FormList name=AddForms kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_Pursuit01ForceComplete kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=GetVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=GetSuccessful kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=OSLArousedNativeConfig name=SetDeviceTypesBaseline1 kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetDeviceTypesBaseline2 kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ERBWMCM name=manager kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetSLADefaultExposureRate kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OSLArousedNativeConfig name=SetSLATimeRateHalfLife kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=SetWeight kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=iwsyquestmcmscript name=EnableMaid kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=DoTransitionByTime kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=ConvenientHorsesLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=Save kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Game name=GetLightModCount kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Alias name=UnregisterForMenu kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Form name=SetGoldValue kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ModEvent name=PushForm kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetPresetParkourKey kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=GetDescription kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=HeelsFix name=SPIDMode kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetNippleRand kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=iwant_widgets_native name=DrawShapeLine kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JFormDB name=SetInt kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Quest name=GetAliasByName kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=ConsoleUtil name=ExecuteCommand kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=SetObjectiveText kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=FormList name=Revert kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_SKSEFunctions name=GetAllEnchantments kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=PO3_Events_Alias name=RegisterForItemCrafted kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UI name=SetInt kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_FollowerDialogueSignal kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=GetSKSEVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=dse_sgo_questdatabase_main name=StartingStatsFileCount kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetAutoParkour kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=PapyrusIniManipulator name=GetVersion kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=JValue name=readFromDirectory kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetEnableStaminaSystem kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=ht_mcm name=HT_EnableDialogue kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=dse_sgo_questcontroller_main name=GemUI kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=zeroLifetime kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=cfconfigmenu name=PupTargetKey kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=pursuit01LastStartTime kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=FollowerDialogueLastStartTime kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=CreatureDialogueLastStartTime kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetShowIndicators kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Game name=GetPlayersLastRiddenHorse kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SHESON_DynDOLOD_Plugin name=GetPluginLimit kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SkyParkourPapyrus name=GetPlaybackSpeed kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Form name=UnregisterForMenu kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=Enabled kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SexLabRegistry name=GetAllRaceKeys kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SkyParkourPapyrus name=GetEnableDebug kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Actor name=GetEquippedShield kind=native runtime_read=0 runtime_change=1 queued=0 extra=1 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=UI name=GetString kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=read reviewed=change
+census class=UICallback name=Send kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=submitLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=defeatLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=DeviousDevicesLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=NakedDefeatLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=ToysLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=deviouslyHelplessLoaded kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=oslaroused_mcm name=EroticArmorKeyword kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=IsPathObject kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Survival_Json name=Load kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=ActorBase name=SetCombatStyle kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=sslSystemConfig name=SetSettingBool kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetEnableMod kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=KudasaiMCM name=iFrameSL kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=followerstats_mcm name=iDisplay kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=slac_config name=slac_FollowerDialogueScene kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ObjectReference name=SetAnimationVariableBool kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=asIntArray kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=ActorBase name=SetClass kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=QuickItemTransfer_Script name=iHotkey kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetMustHaveStamina kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=quickLootIENative name=SetFrameworkQuest kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=OBodyNative name=SetORefit kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsChild kind=native runtime_read=0 runtime_change=1 queued=1 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=OSLArousedNativeConfig name=SetArousalChangeRate kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Actor name=IsGhost kind=native runtime_read=0 runtime_change=1 queued=1 extra=0 direct=0 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=Quest name=SetCurrentStageID kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Mus3BPhysicsManager name=Version kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=Keyword name=GetString kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=Acheron name=RegisterForHunterPrideSelect kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=DynamicArmor name=ApplyVariant kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=ClearAll kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SkyParkourPapyrus name=GetSmartClimb kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=read without_pt_list=read reviewed=change
+census class=SLIF_Menu name=presets_json kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=UICallback name=Create kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=HeelsFix name=ThighFactorSS kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JArray name=GetForm kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=DismemberingFramework name=RequestVariablesUpdate kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=SexLabRegistry name=MapRaceKeyToID kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=fadeTattoos_mcm name=alphaDropOffMode kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JFormDB name=getStr kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=SkyParkourPapyrus name=GetUsePresetKey kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=0 other=1 name_rule=change without_pt_list=change reviewed=change
+census class=Alias name=RegisterForSingleUpdateGameTime kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=slw_config name=widget_controller kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=SLIF_Menu name=currentActor kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JValue name=isMap kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=read without_pt_list=read reviewed=change
+census class=slac_config name=pursuit00LastStartTime kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=JsonUtil name=FormListToArray kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=PO3_Events_Alias name=UnregisterForItemHarvested kind=native runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=erbwmanager name=SpellRestore kind=property runtime_read=0 runtime_change=1 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+census class=KudasaiMCM name=bHunterStrip kind=property runtime_read=1 runtime_change=0 queued=0 extra=0 direct=1 other=0 name_rule=change without_pt_list=change reviewed=change
+blockers reasons=80
+blocker checks=357 reason=Form.RegisterForSingleUpdate
+blocker checks=168 reason=(script started this frame)
+blocker checks=151 reason=UI.IsMenuOpen
+blocker checks=96 reason=ObjectReference.GetAnimationVariableBool
+blocker checks=93 reason=Actor.RemoveSpell
+blocker checks=77 reason=Quest.GetCurrentStageID
+blocker checks=72 reason=MfgConsoleFunc.SetPhonemeModifier
+blocker checks=53 reason=Actor.GetActorValue
+blocker checks=49 reason=Actor.GetBaseActorValue
+blocker checks=36 reason=ActiveMagicEffect.RegisterForSingleUpdate
+blocker checks=35 reason=Debug.SendAnimationEvent
+blocker checks=31 reason=utility.IsInMenuMode
+blocker checks=30 reason=MfgConsoleFuncExt.IsInDialogue
+blocker checks=25 reason=ObjectReference.GetItemCount
+blocker checks=22 reason=Actor.GetActorValuePercentage
+blocker checks=20 reason=Keyword.GetKeyword
+blocker checks=20 reason=Form.RegisterForUpdate
+blocker checks=17 reason=MfgConsoleFuncExt.GetPlayerSpeechTarget
+blocker checks=17 reason=ObjectReference.IsInDialogueWithPlayer
+blocker checks=17 reason=Actor.GetLeveledActorBase
+blocker checks=15 reason=MfgConsoleFuncExt.SetPhonemeModifierSmooth
+blocker checks=13 reason=Actor.RemoveFromFaction
+blocker checks=12 reason=utility.RandomInt
+blocker checks=12 reason=NetImmerse.HasNode
+blocker checks=10 reason=MfgConsoleFuncExt.ResetMFGSmooth
+blocker checks=10 reason=utility.GetCurrentRealTime
+blocker checks=9 reason=Actor.GetEquippedItemType
+blocker checks=9 reason=Alias.RegisterForSingleUpdate
+blocker checks=8 reason=OSLArousedNative.IsInScene
+blocker checks=8 reason=Quest.IsStopped
+blocker checks=8 reason=utility.GetCurrentGameTime
+blocker checks=8 reason=ObjectReference.GetParentCell
+blocker checks=8 reason=Weather.GetClassification
+blocker checks=8 reason=utility.RandomFloat
+blocker checks=7 reason=Weather.GetCurrentWeather
+blocker checks=7 reason=Quest.IsRunning
+blocker checks=6 reason=DoroCollision.SetCharacterCollisionDisabled
+blocker checks=5 reason=NetImmerse.GetNodeScale
+blocker checks=5 reason=Cell.IsInterior
+blocker checks=5 reason=Form.UnregisterForUpdate
+blocker checks=4 reason=Actor.AddSpell
+blocker checks=4 reason=Actor.HasSpell
+blocker checks=4 reason=Quest.IsStageDone
+blocker checks=4 reason=Actor.GetSleepState
+blocker checks=4 reason=NiOverride.RemoveNodeOverride
+blocker checks=4 reason=GlobalVariable.SetValue
+blocker checks=4 reason=Actor.GetCurrentPackage
+blocker checks=3 reason=Actor.IsWeaponDrawn
+blocker checks=3 reason=Actor.SetActorValue
+blocker checks=3 reason=Actor.IsSwimming
+blocker checks=3 reason=PO3_SKSEFunctions.RemoveAddedSpells
+blocker checks=2 reason=Actor.GetRelationshipRank
+blocker checks=2 reason=NiOverride.HasNodeTransformPosition
+blocker checks=2 reason=UI.InvokeInt
+blocker checks=2 reason=skyprompt.RegisterForSkyPromptEvent
+blocker checks=2 reason=MCM_ConfigBase.LoadConfig
+blocker checks=2 reason=ObjectReference.SetAnimationVariableInt
+blocker checks=2 reason=ObjectReference.GetCurrentScene
+blocker checks=2 reason=Game.GetGameSettingFloat
+blocker checks=2 reason=Quest.Stop
+blocker checks=2 reason=ObjectReference.GetAnimationVariableInt
+blocker checks=2 reason=ObjectReference.GetCurrentLocation
+blocker checks=2 reason=Game.IsCamSwitchControlsEnabled
+blocker checks=1 reason=Actor.GetSitState
+blocker checks=1 reason=Actor.GetCombatState
+blocker checks=1 reason=StorageUtil.CountObjIntValuePrefix
+blocker checks=1 reason=Actor.SetGhost
+blocker checks=1 reason=Actor.SetPlayerTeammate
+blocker checks=1 reason=Actor.ClearExpressionOverride
+blocker checks=1 reason=Actor.EquipItem
+blocker checks=1 reason=ObjectReference.SplineTranslateTo
+blocker checks=1 reason=ObjectReference.GetDisplayName
+blocker checks=1 reason=PO3_SKSEFunctions.GenerateRandomInt
+blocker checks=1 reason=PapyrusUtil.ClampInt
+blocker checks=1 reason=Actor.SetFactionRank
+blocker checks=1 reason=Race.IsRaceFlagSet
+blocker checks=1 reason=Actor.IsInKillMove
+blocker checks=1 reason=Actor.IsFlying
+blocker checks=1 reason=ObjectReference.GetWorldSpace
+blocker checks=1 reason=MfgConsoleFuncExt.ApplyExpressionPreset

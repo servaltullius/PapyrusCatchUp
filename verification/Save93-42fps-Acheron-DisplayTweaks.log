@@ -1,0 +1,71 @@
+SSEDisplayTweaks version 0.5.16 (runtime 1.6.1170.0)
+Custom configuration loaded
+[Events] Installed event hooks
+[Events] Registering SKSE message listener..
+[Events] OK
+[Dispatcher] Initializing: Input
+[Dispatcher] Initializing: Render
+[Render] Framerate limit (game): 42
+[Render] Framerate limit (Loading screen): 60 (VSync off: false)
+[Render] Refresh rate patch applied (max 240 Hz)
+[Render] Framerate limiter installed, mode: pre
+[Render] [Patch] [IDXGISwapChain::ResizeBuffers] Writing..
+[Render] [Patch] [IDXGISwapChain::ResizeBuffers] OK
+[Dispatcher] Initializing: OSD
+[Dispatcher] Initializing: HAVOK
+[HAVOK] [Patch] [PhysicsDamagePatch] Writing..
+[HAVOK] [Patch] [PhysicsDamagePatch] OK
+[Dispatcher] Initializing: Window
+[Window] Ghosting disabled
+[Window] Cursor locking enabled
+[Dispatcher] Initializing: Controls
+[Controls] [Patch] [ThirdPersonMovementFix1] Writing..
+[Controls] [Patch] [ThirdPersonMovementFix1] OK
+[Controls] [Patch] [ThirdPersonMovementFix2] Writing..
+[Controls] [Patch] [ThirdPersonMovementFix2] OK
+[Controls] [Patch] [SittingHorizontalLookSensitivityFix] Writing..
+[Controls] [Patch] [SittingHorizontalLookSensitivityFix] OK
+[Controls] [Patch] [MapMoveKeyboardSpeedFix] Writing..
+[Controls] [Patch] [MapMoveKeyboardSpeedFix] OK
+[Controls] [Patch] [AutoVanityCameraSpeedFix] Writing..
+[Controls] [Patch] [AutoVanityCameraSpeedFix] OK
+[Controls] [Patch] [DialogueLookSpeedFix] Writing..
+[Controls] [Patch] [DialogueLookSpeedFix] OK
+[Controls] [Patch] [LockpickRotationSpeedFix] Writing..
+[Controls] [Patch] [LockpickRotationSpeedFix] OK
+[Controls] [Patch] [VerticalLookSensitivity (ThirdPerson)] Writing..
+[Controls] [Patch] [VerticalLookSensitivity (ThirdPerson)] OK
+[Controls] [Patch] [VerticalLookSensitivity (Dragon)] Writing..
+[Controls] [Patch] [VerticalLookSensitivity (Dragon)] OK
+[Controls] [Patch] [VerticalLookSensitivity (Horse)] Writing..
+[Controls] [Patch] [VerticalLookSensitivity (Horse)] OK
+[Dispatcher] Initializing: Miscellaneous
+[Miscellaneous] Disabling processing of missing plugin INIs
+[Miscellaneous] Skip missing ini patch applied
+[Miscellaneous] Loadscreen filter installed
+[Miscellaneous] Actor fade patch applied
+[Miscellaneous] Player fade patch applied
+[Dispatcher] Initializing: Papyrus
+[Papyrus] UpdateBudgetBase: 1.2 ms (0.3 - 1.2)
+[Papyrus] Actor.SetExpressionOverride patch applied
+[Papyrus] [Patch] [UpdateBudget (game)] Writing..
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+[Papyrus] [Patch] [UpdateBudget (UI)] Writing..
+[Papyrus] [Patch] [UpdateBudget (UI)] OK
+[Render] [Patch] [IDXGISwapChain::Present] Writing..
+[Render] [Patch] [IDXGISwapChain::Present] OK
+[Render] Installed present hook (pre:2 post:1)
+[Dispatcher] 8 driver(s) initialized
+[Trampoline] branch: 258/512, codegen: 921/1536
+[Controls] [Patch] [SlowTimeCameraMovement] Writing..
+[Controls] [Patch] [SlowTimeCameraMovement] OK
+[Window] [0x91316] Message hook installed
+[Window] [0x91316] Window created [Skyrim Special Edition] (0,0,3840,2160)
+[Render] Adapter: NVIDIA GeForce RTX 4090
+[Render] [D3D] Requesting mode: 3840x2160@0 | VSync: 0 | Windowed: 1
+[Render] [D3D] SwapEffect: flip_discard | SwapBufferCount: 3 | Tearing: 1 | Flags: 0x00000802
+[Render] [D3D] Windowed hardware composition support: no
+[HAVOK] (DYNAMIC) fMaxTime=0.00416667-0.0166667 fMaxTimeComplexOffset=30 (Max FPS = 240)
+[OSD] Initialized
+[Events] Added menu event sink
+[Input] Added input event sink

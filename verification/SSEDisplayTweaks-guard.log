@@ -1,0 +1,7 @@
+[03:36:03.110] [16108] [I] AdaptivePapyrusBudget v0-1-0-0
+[03:36:12.920] [16108] [W] SSE Display Tweaks DynamicUpdateBudget is enabled; no hook installed
+[Papyrus] UpdateBudgetBase: 1.2 ms (0.3 - 1.2)
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+[Papyrus] [Patch] [UpdateBudget (UI)] OK
+ 90   9c0b80 ff25864063ff           jmp qword ptr [rip - 0x9cbf7a]
+ ba   9c0baa e8d1f50000             call 0x9d0180

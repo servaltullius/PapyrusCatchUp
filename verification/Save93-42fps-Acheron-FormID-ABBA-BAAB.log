@@ -1,0 +1,30 @@
+[09:11:18.724] [42160] [I] AdaptivePapyrusBudget v0-2-0-0
+[09:11:28.784] [42160] [I] SSE Display Tweaks DynamicUpdateBudget is enabled; leaving its budget in control
+[09:11:28.784] [42160] [I] Installed native pacing for stock Form.GetFormID, limit=96 per gameplay VM update
+[09:11:28.784] [42160] [I] Installed gameplay VM hook; budget correction=false, native pacing=true, benchmark=true
+[09:13:47.146] [42160] [I] Benchmark gameplay ready=true
+[09:14:08.816] [5152 ] [I] real capture trial=1 on=false qpc=1387038641324 hz=10000000 jobs=160 actors=48
+[09:14:10.125] [9580 ] [I] real result trial=1 on=false jobs=160 bad=0 pending250=160 probes=5 probe_p95_ms=67.644 first_ms=40.726 drain_ms=1305.895 vm_fps=42.032 budget_min=0.060000 budget_max=0.060000 candidates=42 promoted=0 fallback=42 peak=0
+[09:14:10.125] [9580 ] [I] real probes trial=1 ms=40.726,44.046,67.644,44.050,44.194
+[09:14:13.125] [4252 ] [I] real capture trial=2 on=true qpc=1387081731500 hz=10000000 jobs=160 actors=48
+[09:14:14.221] [5152 ] [I] real result trial=2 on=true jobs=160 bad=0 pending250=159 probes=5 probe_p95_ms=44.862 first_ms=41.333 drain_ms=1068.169 vm_fps=41.986 budget_min=0.060000 budget_max=0.060000 candidates=2070 promoted=2057 fallback=13 peak=96
+[09:14:14.221] [5152 ] [I] real probes trial=2 ms=41.333,44.862,43.224,44.097,44.372
+[09:14:17.245] [20732] [I] real capture trial=3 on=true qpc=1387122935192 hz=10000000 jobs=160 actors=48
+[09:14:18.293] [20732] [I] real result trial=3 on=true jobs=160 bad=0 pending250=160 probes=4 probe_p95_ms=45.375 first_ms=41.978 drain_ms=1043.355 vm_fps=42.053 budget_min=0.060000 budget_max=0.060000 candidates=2310 promoted=2290 fallback=20 peak=96
+[09:14:18.293] [20732] [I] real probes trial=3 ms=41.978,44.254,45.375,42.997
+[09:14:21.316] [9580 ] [I] real capture trial=4 on=false qpc=1387163637388 hz=10000000 jobs=160 actors=48
+[09:14:22.673] [20732] [I] real result trial=4 on=false jobs=160 bad=0 pending250=160 probes=6 probe_p95_ms=45.216 first_ms=41.236 drain_ms=1330.681 vm_fps=41.987 budget_min=0.060000 budget_max=0.060000 candidates=38 promoted=0 fallback=38 peak=0
+[09:14:22.673] [20732] [I] real probes trial=4 ms=41.236,45.216,44.193,42.315,43.906,44.444
+[09:14:25.697] [5152 ] [I] real capture trial=5 on=true qpc=1387207455591 hz=10000000 jobs=160 actors=48
+[09:14:26.746] [9580 ] [I] real result trial=5 on=true jobs=160 bad=0 pending250=159 probes=4 probe_p95_ms=63.664 first_ms=63.664 drain_ms=1045.306 vm_fps=42.064 budget_min=0.060000 budget_max=0.060000 candidates=2217 promoted=2200 fallback=17 peak=96
+[09:14:26.746] [9580 ] [I] real probes trial=5 ms=63.664,44.198,44.093,44.343
+[09:14:29.768] [20732] [I] real capture trial=6 on=false qpc=1387248158043 hz=10000000 jobs=160 actors=48
+[09:14:30.985] [41160] [I] real result trial=6 on=false jobs=160 bad=0 pending250=160 probes=5 probe_p95_ms=44.591 first_ms=41.187 drain_ms=1213.746 vm_fps=41.943 budget_min=0.060000 budget_max=0.060000 candidates=46 promoted=0 fallback=46 peak=0
+[09:14:30.985] [41160] [I] real probes trial=6 ms=41.187,44.117,43.995,44.591,44.316
+[09:14:34.006] [5152 ] [I] real capture trial=7 on=false qpc=1387290541552 hz=10000000 jobs=160 actors=48
+[09:14:35.196] [21592] [I] real result trial=7 on=false jobs=160 bad=0 pending250=160 probes=5 probe_p95_ms=44.400 first_ms=40.889 drain_ms=1187.672 vm_fps=41.984 budget_min=0.060000 budget_max=0.060000 candidates=48 promoted=0 fallback=48 peak=0
+[09:14:35.197] [21592] [I] real probes trial=7 ms=40.889,44.379,43.650,43.937,44.400
+[09:14:38.197] [21592] [I] real capture trial=8 on=true qpc=1387332446704 hz=10000000 jobs=160 actors=48
+[09:14:39.315] [9580 ] [I] real result trial=8 on=true jobs=160 bad=0 pending250=160 probes=5 probe_p95_ms=44.496 first_ms=41.663 drain_ms=1115.722 vm_fps=42.013 budget_min=0.060000 budget_max=0.060000 candidates=2327 promoted=2310 fallback=17 peak=96
+[09:14:39.315] [9580 ] [I] real probes trial=8 ms=41.663,44.021,44.496,44.054,42.946
+[09:14:39.315] [9580 ] [I] real benchmark complete

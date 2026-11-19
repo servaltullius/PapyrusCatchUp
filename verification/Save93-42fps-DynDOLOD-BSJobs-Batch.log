@@ -1,0 +1,75 @@
+Save93 / Whiterun exterior / joined Papyrus BSJobs batches and native FIFO / 2026-11-09
+
+Setup and method
+- Skyrim AE 1.6.1170.0, exact copied Save93 ESS/co-save, same disposable profile. SSE Display Tweaks 0.5.16 enabled, 42 FPS gameplay cap, dynamic Papyrus budget. Frame generation off only in the disposable profile. Four Bannered Mare to WhiterunWorld returns, with 32 Utility.Wait(0.01) probes per return.
+- Live disassembly confirms that AE IDs 39074 and 39075 collect script tasklets through the original VM vtable slot 0x12, then submit and wait on the same stock JobList. Call sites are gameplay 0x6D2D54/0x6D2D5C and menu 0x6D2E2C/0x6D2E34. The wait wrapper (69353) calls the stock join (69377). The join checks the final signal count, increments the list generation to retire the old job list, waits for participants to sign off, and performs the original reset.
+- Capture the actual JobListLocal address and stock tasklet membership before submission, then run the stock submit and wait as-is. Validate generation advancement, zero signed-up threads and the stock joined flag after wait. Match completed GetWorldSpace tasklets to the actual submitted list using exact tasklet identity and time bounds. Compare the FIFO head's exact query identity and DynDOLOD root-lock owner under the original queue guard. Record the rendered frame, thread, ownership of frozenStacksLock and original native drain context. No VM scheduling, object lock or queue membership is changed by this mode.
+- FIFO ordering readback compares the observed head stack at join to the actual first next stock pop, and counts the intervening messages in the servicing drain. For exact heads that fail the freeze-guard requirement, reconstruct the root lock release for the same stack and token from the observation trace.
+- APBGameplayTrace built and the runtime call-site verification passed. Synthetic checks covered wrong job-list identity, wrong membership count, tasklet/query identity, FIFO mismatch, missing VM guard and frame advance. Budget policy checks passed.
+- Raw capture build/gameplay-trace/cell-42-getworldspace-batch-observe. DLL SHA256 77763DE909AAE84A8D33C6A90BB523FD553FE12F04CEBBC3036577F4179E6FE9.
+
+Papyrus job-list analysis
+trial=1 dyn_tail=1485922 holder_calls={'after_budget_stop': 1, 'after_empty_drain': 19} gates={'different_fifo_head': 20} stats={'recorded_wait_returns': 366, 'joined_batches': 366, 'member_tasklets': 4577, 'joined_waits_owning_freeze': 0, 'joined_waits_in_native_phase': 0, 'stock_drain_owns_freeze': 366, 'tagged_tasklet_finishes': 40, 'tagged_finishes_matched_to_join': 40, 'all_tagged_exact_head_at_join': 1, 'all_tagged_exact_head_retains_root_lock': 1, 'head_stack_first_next_drain': 20, 'exact_query_head_at_join': 0, 'join_on_same_frame_as_drain': 20, 'join_on_native_drain_thread': 20}
+trial=2 dyn_tail=1487495 holder_calls={'budget_deferred': 1, 'after_empty_drain': 19} gates={'different_fifo_head': 17, 'missing_stock_vm_freeze_guard': 2} stats={'recorded_wait_returns': 377, 'joined_batches': 377, 'member_tasklets': 4786, 'joined_waits_owning_freeze': 0, 'joined_waits_in_native_phase': 0, 'stock_drain_owns_freeze': 377, 'tagged_tasklet_finishes': 40, 'tagged_finishes_matched_to_join': 40, 'all_tagged_exact_head_at_join': 2, 'all_tagged_exact_head_retains_root_lock': 2, 'head_stack_first_next_drain': 19, 'exact_query_head_at_join': 2, 'join_on_same_frame_as_drain': 19, 'join_on_native_drain_thread': 19, 'exact_heads_without_intervening_tasklet_batch': 2, 'exact_heads_released_after_next_batch_submit': 2}
+trial=3 dyn_tail=1488907 holder_calls={'budget_deferred': 2, 'after_empty_drain': 19, 'after_budget_stop': 1} gates={'different_fifo_head': 18, 'missing_stock_vm_freeze_guard': 2} stats={'recorded_wait_returns': 385, 'joined_batches': 385, 'member_tasklets': 4401, 'joined_waits_owning_freeze': 0, 'joined_waits_in_native_phase': 0, 'stock_drain_owns_freeze': 385, 'tagged_tasklet_finishes': 40, 'tagged_finishes_matched_to_join': 40, 'all_tagged_exact_head_at_join': 2, 'all_tagged_exact_head_retains_root_lock': 2, 'head_stack_first_next_drain': 20, 'exact_query_head_at_join': 2, 'join_on_same_frame_as_drain': 20, 'join_on_native_drain_thread': 20, 'exact_heads_without_intervening_tasklet_batch': 2, 'exact_heads_released_after_next_batch_submit': 2}
+trial=4 dyn_tail=1490267 holder_calls={'budget_deferred': 4, 'after_budget_stop': 1, 'after_empty_drain': 16} gates={'different_fifo_head': 17} stats={'recorded_wait_returns': 378, 'joined_batches': 378, 'member_tasklets': 4735, 'joined_waits_owning_freeze': 0, 'joined_waits_in_native_phase': 0, 'stock_drain_owns_freeze': 378, 'tagged_tasklet_finishes': 40, 'tagged_finishes_matched_to_join': 40, 'head_stack_first_next_drain': 17, 'exact_query_head_at_join': 0, 'join_on_same_frame_as_drain': 17, 'join_on_native_drain_thread': 17}
+call after_budget_stop count=3
+call after_empty_drain count=73
+call budget_deferred count=7
+gate different_fifo_head count=72
+gate missing_stock_vm_freeze_guard count=4
+stat all_tagged_exact_head_at_join count=5
+stat all_tagged_exact_head_retains_root_lock count=5
+stat exact_heads_released_after_next_batch_submit count=4
+stat exact_heads_without_intervening_tasklet_batch count=4
+stat exact_query_head_at_join count=4
+stat head_stack_first_next_drain count=76
+stat join_on_native_drain_thread count=76
+stat join_on_same_frame_as_drain count=76
+stat joined_batches count=1506
+stat joined_waits_in_native_phase count=0
+stat joined_waits_owning_freeze count=0
+stat member_tasklets count=18499
+stat recorded_wait_returns count=1506
+stat stock_drain_owns_freeze count=1506
+stat tagged_finishes_matched_to_join count=160
+stat tagged_tasklet_finishes count=160
+exact_head_join_to_stock_dispatch_ms calls=4 min=15.770 p50=16.128 p95=16.739 max=16.739
+fifo_messages_ahead calls=76 min=0.000 p50=12.000 p95=28.000 max=48.000
+join_to_next_stock_drain_ms calls=76 min=8.900 p50=16.361 p95=24.693 max=84.590
+next_batch_submit_to_root_release_ms calls=4 min=0.011 p50=0.015 p95=0.017 max=0.017
+tasklet_end_to_join_ms calls=76 min=0.004 p50=0.104 p95=0.514 max=0.819
+
+Independent stock drain and render validation
+trial=1 mode=off tail=1485922 drains=366 budget_stops=34 frames_first_2s_after_arrival=72 frames_last_2s=84 unpaired_drain_starts=0 after_budget_stop=1 after_empty_drain=19
+trial=2 mode=off tail=1487495 drains=377 budget_stops=33 frames_first_2s_after_arrival=78 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=1 after_empty_drain=19
+trial=3 mode=off tail=1488907 drains=385 budget_stops=23 frames_first_2s_after_arrival=85 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=2 after_empty_drain=19 after_budget_stop=1
+trial=4 mode=off tail=1490267 drains=378 budget_stops=32 frames_first_2s_after_arrival=80 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=4 after_budget_stop=1 after_empty_drain=16
+drain_end_reasons {'budget': 122, 'empty': 1384} original_budget_ms_median=0.433 min=0.401 max=0.437
+after_budget_stop calls=3 lock_hold_overlap_ms=18.273 Q_to_P_p50_ms=17.900 Q_to_P_p95_ms=25.093
+after_empty_drain calls=73 lock_hold_overlap_ms=1448.199 Q_to_P_p50_ms=16.595 Q_to_P_p95_ms=24.122
+budget_deferred calls=7 lock_hold_overlap_ms=211.704 Q_to_P_p50_ms=38.440 Q_to_P_p95_ms=40.375
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.105 p95_ms=0.168
+after_empty_drain enqueue_done_to_drain_p50_ms=16.502 p95_ms=23.910
+after_empty_drain drain_start_to_pop_p50_ms=0.097 p95_ms=0.270
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.166 p95_ms=0.238
+after_budget_stop enqueue_done_to_drain_p50_ms=17.645 p95_ms=24.750
+after_budget_stop drain_start_to_pop_p50_ms=0.254 p95_ms=0.340
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=25 original_budget_ms=0.435982
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=55 original_budget_ms=0.431568
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=11 original_budget_ms=0.425371
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=22 original_budget_ms=0.436063
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=14 original_budget_ms=0.435780
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=0 original_budget_ms=0.436023
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=3 original_budget_ms=0.435780
+off_metrics probes=128 response_p95_ms=39.993 steady_frame_p50_ms=23.810 steady_frame_p99_ms=24.051 early_frame_p99_ms=82.683 arrival_to_drain_median_ms=2148.482 total_median_ms=9704.117 tail_wait_median_ms=8331.526 at_return_wait_median_ms=836.815 holder_queue_median_ms=421.437
+
+Interpretation
+- All 160 tagged GetWorldSpace completions were matched to their actual joined BSJobs list. Of 83 calls overlapping the final DynDOLOD stack's lock wait, 76 had published after an earlier native drain cutoff. The matching joined wait was on the prior drain thread and render frame in all 76. Of those, 72 still had an earlier FIFO message. The observed head stack at join was the first stack popped in the next stock drain in all 76 cases.
+- Four of the 76 were the exact stock GetWorldSpace query at FIFO head and retained the original DynDOLOD root lock. None owned the VM freeze guard or were in the stock native phase. All 1506 stock drain starts owned that guard. No observed joined wait owned it.
+- Those four exact heads waited 15.770–16.739 ms from join to stock native dispatch. No Papyrus batch was submitted between the observed join and next native drain. The root lock was released 0.011–0.017 ms after the next tasklet batch was submitted in all four. This is an observed stock sequence, not proof of how a new phase would behave. Dispatch alone after the already-joined batch would still leave the continuation for a later tasklet pass unless scheduling changed again.
+- No tested boundary combines full join, the exact FIFO head and the stock native execution context. Taking a new guard and adding a new native pass would be a new synchronization arrangement. No acceleration was installed and the performance figures are stock baselines. All four windows completed and PresentMon exited normally.
+
+Restoration
+- Restored original MO2 profile, archived disposable fixture under build/gameplay-trace/getworldspace-batch-fixture.
+- Original ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D, SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA and original Upscaler INI 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E match.

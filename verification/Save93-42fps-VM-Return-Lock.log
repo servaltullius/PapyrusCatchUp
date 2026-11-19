@@ -1,0 +1,181 @@
+2026-11-09 | Skyrim AE 1.6.1170.0 | Whiterun Save93 | return-lock tracing
+Original and cloned ESS SHA256  87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D
+Original and cloned SKSE SHA256 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA
+Papyrus Tweaks NG bSpeedUpNativeCalls=false; iMaxOpsPerFrame=500.
+Both runs are observation only and include eight equipment windows.
+Early captures with a failed byte guard or a missing tasklet marker are excluded.
+
+[Render] Framerate limit (game): 42
+[Papyrus] [Patch] [UpdateBudget (game)] Writing..
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+
+First run | synchronous dispatch, return enqueue and tasklet accept
+trial=1 stack=1485279 HeelsFixCorrectEffect resume_max_ms=0.486 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) objectreference.getscale(queue=25.006,before=0.001,body=0.004,after=0.000,misses=0)
+trial=1 stack=1485272 condiexp_pctracking resume_max_ms=0.180 form.haskeyword(queue=23.710,before=0.002,body=0.003,after=0.001,misses=0) formlist.hasform(queue=21.969,before=0.001,body=0.002,after=0.000,misses=0)
+trial=1 stack=1485271 ht_playeralias resume_max_ms=0.464 form.haskeyword(queue=22.459,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=24.457,before=0.001,body=0.002,after=0.000,misses=0)
+trial=2 stack=1486010 HeelsFixCorrectEffect resume_max_ms=0.450 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.019,after=0.000,misses=0) netimmerse.getnodescale(queue=23.102,before=0.001,body=0.004,after=0.000,misses=0)
+trial=2 stack=1486003 condiexp_pctracking resume_max_ms=0.455 formlist.hasform(queue=23.721,before=0.002,body=0.003,after=0.001,misses=0) form.haskeyword(queue=24.095,before=0.002,body=0.002,after=0.001,misses=0)
+trial=2 stack=1486002 ht_playeralias resume_max_ms=0.475 form.haskeyword(queue=23.256,before=0.003,body=0.003,after=0.001,misses=0) form.haskeyword(queue=24.096,before=0.002,body=0.003,after=0.000,misses=0)
+trial=3 stack=1486768 HeelsFixCorrectEffect resume_max_ms=0.159 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.019,after=0.000,misses=0) objectreference.getscale(queue=23.563,before=0.000,body=0.005,after=0.000,misses=0)
+trial=3 stack=1486761 condiexp_pctracking resume_max_ms=0.467 form.haskeyword(queue=23.741,before=0.001,body=0.003,after=0.001,misses=0) form.haskeyword(queue=23.535,before=0.002,body=0.002,after=0.001,misses=0)
+trial=3 stack=1486760 ht_playeralias resume_max_ms=0.518 form.haskeyword(queue=23.551,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=24.285,before=0.001,body=0.002,after=0.000,misses=0)
+trial=4 stack=1487272 condiexp_pctracking resume_max_ms=0.170 formlist.hasform(queue=24.096,before=0.003,body=0.003,after=0.001,misses=0) form.haskeyword(queue=23.745,before=0.001,body=0.003,after=0.000,misses=0)
+trial=4 stack=1487279 HeelsFixCorrectEffect resume_max_ms=0.631 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) netimmerse.hasnode(queue=23.982,before=0.001,body=0.005,after=0.000,misses=0)
+trial=4 stack=1487271 ht_playeralias resume_max_ms=0.665 form.haskeyword(queue=23.766,before=0.002,body=0.002,after=0.001,misses=0) form.haskeyword(queue=25.592,before=0.002,body=0.002,after=0.001,misses=0)
+trial=5 stack=1487794 HeelsFixCorrectEffect resume_max_ms=0.400 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) netimmerse.hasnode(queue=23.375,before=0.001,body=0.004,after=0.000,misses=0)
+trial=5 stack=1487787 condiexp_pctracking resume_max_ms=0.429 form.haskeyword(queue=23.845,before=0.004,body=0.003,after=0.001,misses=0) formlist.hasform(queue=23.868,before=0.003,body=0.003,after=0.001,misses=0)
+trial=5 stack=1487786 ht_playeralias resume_max_ms=0.501 form.haskeyword(queue=22.829,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=47.898,before=0.001,body=0.002,after=0.000,misses=0)
+trial=6 stack=1488317 condiexp_pctracking resume_max_ms=0.531 form.getname(queue=22.248,before=0.001,body=0.003,after=0.000,misses=0) form.haskeyword(queue=94.842,before=0.001,body=0.003,after=0.000,misses=0)
+trial=6 stack=1488324 HeelsFixCorrectEffect resume_max_ms=0.425 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.022,after=0.001,misses=0) netimmerse.hasnode(queue=23.721,before=0.001,body=0.005,after=0.000,misses=0)
+trial=6 stack=1488316 ht_playeralias resume_max_ms=0.448 form.haskeyword(queue=23.817,before=0.002,body=0.003,after=0.000,misses=0) form.haskeyword(queue=23.371,before=0.002,body=0.002,after=0.001,misses=0)
+trial=7 stack=1488947 HeelsFixCorrectEffect resume_max_ms=0.427 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.019,after=0.000,misses=0) netimmerse.hasnode(queue=23.433,before=0.001,body=0.004,after=0.000,misses=0)
+trial=7 stack=1488940 condiexp_pctracking resume_max_ms=0.453 form.haskeyword(queue=24.496,before=0.002,body=0.003,after=0.001,misses=0) form.haskeyword(queue=23.410,before=0.001,body=0.002,after=0.001,misses=0)
+trial=7 stack=1488939 ht_playeralias resume_max_ms=0.467 form.haskeyword(queue=23.863,before=0.001,body=0.003,after=0.001,misses=0) form.haskeyword(queue=23.008,before=0.001,body=0.002,after=0.000,misses=0)
+trial=8 stack=1489464 HeelsFixCorrectEffect resume_max_ms=0.432 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.018,after=0.000,misses=0) objectreference.getscale(queue=24.152,before=0.001,body=0.004,after=0.000,misses=0)
+trial=8 stack=1489457 condiexp_pctracking resume_max_ms=0.432 formlist.hasform(queue=23.490,before=0.002,body=0.003,after=0.000,misses=0) form.haskeyword(queue=23.608,before=0.001,body=0.002,after=0.000,misses=0)
+trial=8 stack=1489456 ht_playeralias resume_max_ms=0.448 form.haskeyword(queue=23.742,before=0.003,body=0.002,after=0.001,misses=0) form.haskeyword(queue=21.888,before=0.003,body=0.002,after=0.001,misses=0)
+raw M=20568 N=20568 n=0 R=15225 T=15225 L=0
+all queue_to_push_ms n=20568 p50=23.333 p95=25.164 max=95.191 over_20ms=14781
+all push_to_marshal_ms n=20568 p50=0.001 p95=0.002 max=0.039 over_20ms=0
+all marshal_ms n=20568 p50=0.002 p95=0.010 max=0.596 over_20ms=0
+all return_to_pop_ms n=20568 p50=0.000 p95=0.001 max=214.533 over_20ms=50
+all ready_to_resume_ms n=15225 p50=0.154 p95=0.429 max=12.705 over_20ms=0
+all slow actor.hasmagiceffect span_ms=214.537 queue_ms=47.311 before_ms=0.000 marshal_ms=0.003 after_ms=214.533 lock_misses=0
+all slow game.getplayer span_ms=191.929 queue_ms=14.780 before_ms=0.000 marshal_ms=0.004 after_ms=191.924 lock_misses=0
+all slow game.getplayer span_ms=190.179 queue_ms=23.168 before_ms=0.000 marshal_ms=0.001 after_ms=190.178 lock_misses=0
+all slow game.getplayer span_ms=143.126 queue_ms=22.975 before_ms=0.000 marshal_ms=0.004 after_ms=143.121 lock_misses=0
+all slow game.getplayer span_ms=142.842 queue_ms=22.338 before_ms=0.000 marshal_ms=0.001 after_ms=142.841 lock_misses=0
+equipment queue_to_push_ms n=5088 p50=23.094 p95=25.011 max=95.191 over_20ms=3633
+equipment push_to_marshal_ms n=5088 p50=0.001 p95=0.002 max=0.008 over_20ms=0
+equipment marshal_ms n=5088 p50=0.003 p95=0.015 max=0.596 over_20ms=0
+equipment return_to_pop_ms n=5088 p50=0.000 p95=0.001 max=214.533 over_20ms=25
+equipment ready_to_resume_ms n=3650 p50=0.161 p95=0.459 max=0.783 over_20ms=0
+equipment slow actor.hasmagiceffect span_ms=214.537 queue_ms=47.311 before_ms=0.000 marshal_ms=0.003 after_ms=214.533 lock_misses=0
+equipment slow game.getplayer span_ms=191.929 queue_ms=14.780 before_ms=0.000 marshal_ms=0.004 after_ms=191.924 lock_misses=0
+equipment slow game.getplayer span_ms=190.179 queue_ms=23.168 before_ms=0.000 marshal_ms=0.001 after_ms=190.178 lock_misses=0
+equipment slow game.getplayer span_ms=143.126 queue_ms=22.975 before_ms=0.000 marshal_ms=0.004 after_ms=143.121 lock_misses=0
+equipment slow game.getplayer span_ms=142.842 queue_ms=22.338 before_ms=0.000 marshal_ms=0.001 after_ms=142.841 lock_misses=0
+
+equipment return-to-pop >20ms 25 thread changed 20
+214.5334 8 1489314 actor.hasmagiceffect 43632 53460
+191.9239 4 1487067 game.getplayer 164 4016
+190.1777 6 1488264 game.getplayer 4016 19896
+143.1214 1 1484940 game.getplayer 4016 4016
+142.8408 8 1489407 game.getplayer 43632 164
+142.5248 7 1488895 game.getplayer 53460 164
+119.1451 6 1488130 game.getplayer 43632 43632
+117.1101 6 1488052 game.getplayer 53460 43632
+73.1836 7 1488678 game.getplayer 164 53460
+72.6887 5 1487599 form.getname 26576 164
+
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 248.698 32 40.477 336 672 24.203 24.365 0
+2 off 12 12 174 0 252.744 32 42.704 336 672 24.302 24.361 0
+3 off 12 12 174 0 276.107 32 40.889 336 672 24.140 24.283 0
+4 off 12 12 174 0 346.824 32 40.478 336 672 24.174 24.267 0
+5 off 12 12 174 0 253.553 32 41.471 330 659 31.409 31.488 0
+6 off 12 12 174 0 298.697 32 40.427 335 671 24.260 24.513 0
+7 off 12 12 174 0 251.375 32 40.502 336 672 24.189 24.245 0
+8 off 12 12 174 0 374.731 32 40.576 336 672 24.209 24.226 0
+off: probes=256 probe_p95_ms=40.889 action_probes=96 action_probe_p95_ms=39.156 drain_median_ms=264.830 frame_median_ms=23.816 frame_p99_ms=25.531 alt_frame_p99_ms=25.560
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=6 queued=6 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=732 queued=729 equip_queued=144 equip_queue_p95_ms=24.305 equip_queue_total_ms=3278.351
+  form.haskeyword: executions=1254 queued=1254 equip_queued=1152 equip_queue_p95_ms=46.825 equip_queue_total_ms=29196.131
+
+Second run | add stock return-object lock acquisition failures
+trial=1 stack=1485288 HeelsFixCorrectEffect resume_max_ms=0.144 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.001,misses=0) netimmerse.hasnode(queue=24.259,before=0.001,body=0.004,after=0.000,misses=0)
+trial=1 stack=1485281 condiexp_pctracking resume_max_ms=0.447 form.haskeyword(queue=23.884,before=0.002,body=0.002,after=0.001,misses=0) globalvariable.getvalue(queue=0.000,before=0.003,body=0.001,after=0.001,misses=0)
+trial=1 stack=1485280 ht_playeralias resume_max_ms=0.492 form.haskeyword(queue=23.186,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=24.105,before=0.001,body=0.002,after=0.000,misses=0)
+trial=2 stack=1486037 HeelsFixCorrectEffect resume_max_ms=0.407 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.021,after=0.000,misses=0) netimmerse.getnodescale(queue=23.617,before=0.001,body=0.004,after=0.000,misses=0)
+trial=2 stack=1486030 condiexp_pctracking resume_max_ms=0.447 form.haskeyword(queue=23.928,before=0.001,body=0.003,after=0.001,misses=0) form.haskeyword(queue=22.966,before=0.002,body=0.002,after=0.001,misses=0)
+trial=2 stack=1486029 ht_playeralias resume_max_ms=0.536 form.haskeyword(queue=23.710,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=47.664,before=0.001,body=0.002,after=0.000,misses=0)
+trial=3 stack=1486773 HeelsFixCorrectEffect resume_max_ms=0.439 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.021,after=0.000,misses=0) objectreference.getscale(queue=23.064,before=0.001,body=0.006,after=0.001,misses=0)
+trial=3 stack=1486766 condiexp_pctracking resume_max_ms=0.467 form.haskeyword(queue=23.368,before=0.003,body=0.002,after=0.001,misses=0) form.haskeyword(queue=23.578,before=0.001,body=0.002,after=0.001,misses=0)
+trial=3 stack=1486765 ht_playeralias resume_max_ms=0.461 form.haskeyword(queue=23.273,before=0.001,body=0.002,after=0.000,misses=0) form.haskeyword(queue=47.416,before=0.001,body=0.002,after=0.000,misses=0)
+trial=4 stack=1487135 HeelsFixCorrectEffect resume_max_ms=0.186 actor.hasspell(queue=22.683,before=0.001,body=0.002,after=953.942,misses=40) actor.issneaking(queue=47.129,before=0.000,body=0.001,after=928.725,misses=39)
+trial=4 stack=1487272 HeelsFixCorrectEffect resume_max_ms=0.154 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.021,after=0.001,misses=0) netimmerse.hasnode(queue=24.172,before=0.001,body=0.005,after=0.000,misses=0)
+trial=4 stack=1487314 HeelsFixCorrectEffect resume_max_ms=0.491 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.024,after=0.001,misses=0) objectreference.getscale(queue=23.428,before=0.001,body=0.005,after=0.000,misses=0)
+trial=5 stack=1487873 HeelsFixCorrectEffect resume_max_ms=0.145 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) actor.hasspell(queue=23.251,before=0.002,body=0.002,after=0.001,misses=0)
+trial=5 stack=1487851 HeelsFixCorrectEffect resume_max_ms=0.159 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) netimmerse.getnodescale(queue=23.553,before=0.001,body=0.004,after=0.000,misses=0)
+trial=5 stack=1487866 condiexp_pctracking resume_max_ms=0.397 form.haskeyword(queue=24.747,before=0.002,body=0.002,after=0.001,misses=0) form.haskeyword(queue=21.924,before=0.001,body=0.003,after=0.001,misses=0)
+trial=6 stack=1488396 HeelsFixCorrectEffect resume_max_ms=0.148 form.getname(queue=46.072,before=0.001,body=0.002,after=237.698,misses=10) nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.019,after=0.000,misses=0)
+trial=6 stack=1488347 HeelsFixCorrectEffect resume_max_ms=0.182 form.getname(queue=46.883,before=0.000,body=0.000,after=356.666,misses=15) actor.hasperk(queue=50.220,before=0.001,body=0.002,after=235.247,misses=10)
+trial=6 stack=1488420 HeelsFixCorrectEffect resume_max_ms=0.496 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.023,after=0.001,misses=0) netimmerse.getnodescale(queue=24.234,before=0.001,body=0.004,after=0.000,misses=0)
+trial=7 stack=1489041 HeelsFixCorrectEffect resume_max_ms=0.156 form.getname(queue=46.852,before=0.000,body=0.000,after=213.997,misses=9) nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.022,after=0.001,misses=0)
+trial=7 stack=1489075 HeelsFixCorrectEffect resume_max_ms=0.158 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.020,after=0.000,misses=0) netimmerse.hasnode(queue=23.398,before=0.001,body=0.004,after=0.000,misses=0)
+trial=7 stack=1489068 condiexp_pctracking resume_max_ms=0.407 form.haskeyword(queue=22.799,before=0.003,body=0.002,after=0.001,misses=0) form.haskeyword(queue=23.303,before=0.002,body=0.002,after=0.001,misses=0)
+trial=8 stack=1489605 HeelsFixCorrectEffect resume_max_ms=0.173 form.getname(queue=47.082,before=0.000,body=0.001,after=217.098,misses=9) nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.018,after=0.000,misses=0)
+trial=8 stack=1489629 HeelsFixCorrectEffect resume_max_ms=0.160 nioverride.hasnodetransformposition(queue=0.000,before=0.001,body=0.022,after=0.000,misses=0) netimmerse.hasnode(queue=23.962,before=0.000,body=0.004,after=0.000,misses=0)
+trial=8 stack=1489622 condiexp_pctracking resume_max_ms=0.473 form.haskeyword(queue=24.010,before=0.002,body=0.002,after=0.001,misses=0) form.haskeyword(queue=22.977,before=0.001,body=0.002,after=0.001,misses=0)
+raw M=21450 N=21450 n=0 R=16010 T=16010 L=855
+all queue_to_push_ms n=21450 p50=23.313 p95=25.104 max=142.871 over_20ms=15476
+all push_to_marshal_ms n=21450 p50=0.001 p95=0.002 max=0.278 over_20ms=0
+all marshal_ms n=21450 p50=0.002 p95=0.009 max=0.696 over_20ms=0
+all return_to_pop_ms n=21450 p50=0.000 p95=0.001 max=953.942 over_20ms=126
+all ready_to_resume_ms n=16006 p50=0.159 p95=0.432 max=8.569 over_20ms=0
+all return_over_20ms=126 with_lock_misses=126 max_misses_in_slow_call=41
+all repeated_lock_miss_interval_ms n=684 p50=23.663 p95=25.297 max=26.774 over_20ms=612
+all slow actor.hasspell span_ms=953.945 queue_ms=22.683 before_ms=0.001 marshal_ms=0.002 after_ms=953.942 lock_misses=40
+all slow actor.issneaking span_ms=951.749 queue_ms=20.979 before_ms=0.001 marshal_ms=0.001 after_ms=951.748 lock_misses=41
+all slow actor.issneaking span_ms=928.726 queue_ms=47.129 before_ms=0.000 marshal_ms=0.001 after_ms=928.725 lock_misses=39
+all slow form.haskeyword span_ms=547.386 queue_ms=24.236 before_ms=0.000 marshal_ms=0.001 after_ms=547.385 lock_misses=23
+all slow objectreference.getscale span_ms=477.019 queue_ms=23.472 before_ms=0.001 marshal_ms=0.006 after_ms=477.012 lock_misses=20
+equipment queue_to_push_ms n=5599 p50=23.096 p95=25.038 max=142.871 over_20ms=3998
+equipment push_to_marshal_ms n=5599 p50=0.001 p95=0.002 max=0.028 over_20ms=0
+equipment marshal_ms n=5599 p50=0.003 p95=0.015 max=0.513 over_20ms=0
+equipment return_to_pop_ms n=5599 p50=0.000 p95=0.001 max=953.942 over_20ms=91
+equipment ready_to_resume_ms n=4018 p50=0.170 p95=0.453 max=0.928 over_20ms=0
+equipment return_over_20ms=91 with_lock_misses=91 max_misses_in_slow_call=41
+equipment repeated_lock_miss_interval_ms n=598 p50=23.682 p95=25.339 max=26.774 over_20ms=546
+equipment slow actor.hasspell span_ms=953.945 queue_ms=22.683 before_ms=0.001 marshal_ms=0.002 after_ms=953.942 lock_misses=40
+equipment slow actor.issneaking span_ms=951.749 queue_ms=20.979 before_ms=0.001 marshal_ms=0.001 after_ms=951.748 lock_misses=41
+equipment slow actor.issneaking span_ms=928.726 queue_ms=47.129 before_ms=0.000 marshal_ms=0.001 after_ms=928.725 lock_misses=39
+equipment slow form.haskeyword span_ms=547.386 queue_ms=24.236 before_ms=0.000 marshal_ms=0.001 after_ms=547.385 lock_misses=23
+equipment slow objectreference.getscale span_ms=477.019 queue_ms=23.472 before_ms=0.001 marshal_ms=0.006 after_ms=477.012 lock_misses=20
+
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 348.394 32 61.427 336 672 24.189 24.254 0
+2 off 12 12 174 0 254.032 32 41.815 336 672 24.242 24.341 0
+3 off 12 12 174 0 252.967 32 40.794 336 672 24.189 24.314 0
+4 off 12 11 203 0 636.661 32 42.561 336 672 24.334 24.319 0
+5 off 12 11 202 0 608.599 32 41.418 336 672 24.196 24.286 0
+6 off 12 12 202 0 658.699 32 41.206 336 672 24.293 24.396 0
+7 off 12 12 202 0 585.556 32 40.718 336 672 24.347 24.558 0
+8 off 12 12 202 0 587.382 32 42.955 336 672 24.215 24.297 0
+off: probes=256 probe_p95_ms=41.668 action_probes=96 action_probe_p95_ms=42.057 drain_median_ms=586.469 frame_median_ms=23.812 frame_p99_ms=24.239 alt_frame_p99_ms=24.370
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=6 queued=6 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=738 queued=738 equip_queued=154 equip_queue_p95_ms=24.690 equip_queue_total_ms=3484.480
+  form.haskeyword: executions=1367 queued=1367 equip_queued=1267 equip_queue_p95_ms=46.927 equip_queue_total_ms=32159.741
+
+Raw summary log for the second run
+[10:40:02.486] [22812] [I] APBGameplayTrace v0-1-0-0
+[10:40:12.427] [22812] [I] Installed native dispatch, return lock, enqueue, and tasklet resume trace
+[10:40:12.427] [22812] [I] gameplay trace profiler installed=true
+[10:42:49.150] [53748] [I] gameplay trace start form=FEC6580E qpc_hz=10000000
+[10:42:49.150] [53748] [I] gameplay window trial=1 equip=true enabled=false qpc=1440241978251
+[10:42:57.151] [53748] [I] gameplay end trial=1 qpc=1440321986683
+[10:42:57.182] [53748] [I] gameplay result trial=1 equip=true enabled=false actions=12 events=25256 player=00000000 promoted=0 peak=0 probes=39.961,39.109,39.706,38.413,61.427,38.007,39.225,39.477,39.711,38.168,39.319,38.307,41.173,40.758,41.230,39.519,40.774,40.257,41.648,39.069,41.668,35.336,41.276,38.821,42.349,64.356,42.021,40.653,40.556,39.980,40.994,40.484
+[10:42:59.183] [53748] [I] gameplay window trial=2 equip=true enabled=false qpc=1440342312992
+[10:43:07.184] [53748] [I] gameplay end trial=2 qpc=1440422316475
+[10:43:07.212] [53748] [I] gameplay result trial=2 equip=true enabled=false actions=12 events=23677 player=00000000 promoted=0 peak=0 probes=38.349,39.270,37.535,38.839,36.492,36.785,37.884,36.708,38.920,38.056,38.092,37.147,40.513,40.731,40.735,38.993,42.135,39.971,40.355,41.440,41.815,37.861,39.746,39.637,39.827,40.319,40.603,38.249,39.021,39.943,40.088,40.511
+[10:43:09.213] [53748] [I] gameplay window trial=3 equip=true enabled=false qpc=1440442611769
+[10:43:17.215] [53748] [I] gameplay end trial=3 qpc=1440522630163
+[10:43:17.243] [53748] [I] gameplay result trial=3 equip=true enabled=false actions=12 events=22361 player=00000000 promoted=0 peak=0 probes=37.136,36.329,35.189,37.967,38.256,36.815,38.989,38.209,38.258,37.815,38.441,37.925,39.321,39.398,39.055,39.867,41.094,39.239,38.626,40.794,38.663,39.399,38.381,40.167,38.937,38.594,39.393,40.622,38.779,40.223,38.167,39.881
+[10:43:19.243] [53748] [I] gameplay window trial=4 equip=true enabled=false qpc=1440542909590
+[10:43:27.244] [53748] [I] gameplay end trial=4 qpc=1440622916467
+[10:43:27.270] [53748] [I] gameplay result trial=4 equip=true enabled=false actions=12 events=21870 player=00000000 promoted=0 peak=0 probes=38.207,61.594,39.556,36.153,39.093,37.876,37.023,38.045,38.620,39.302,38.111,39.334,41.093,40.395,39.484,40.083,40.747,39.984,39.080,34.065,41.035,38.644,39.932,39.640,41.546,42.561,40.045,40.446,40.561,41.275,39.673,40.097
+[10:43:29.271] [53748] [I] gameplay window trial=5 equip=true enabled=false qpc=1440643186254
+[10:43:37.272] [53748] [I] gameplay end trial=5 qpc=1440723197365
+[10:43:37.298] [53748] [I] gameplay result trial=5 equip=true enabled=false actions=12 events=22246 player=00000000 promoted=0 peak=0 probes=36.823,37.866,41.683,36.072,36.623,37.520,38.354,38.983,37.774,37.680,38.928,37.016,39.115,38.741,40.386,40.501,37.979,39.948,40.723,41.109,39.921,38.920,35.400,40.419,39.432,38.299,41.418,38.870,39.842,39.578,41.122,40.657
+[10:43:39.298] [53748] [I] gameplay window trial=6 equip=true enabled=false qpc=1440743462798
+[10:43:47.299] [53748] [I] gameplay end trial=6 qpc=1440823467745
+[10:43:47.330] [53748] [I] gameplay result trial=6 equip=true enabled=false actions=12 events=24641 player=00000000 promoted=0 peak=0 probes=38.301,33.786,38.169,37.174,37.348,38.907,37.721,38.637,42.057,39.946,38.135,40.345,39.236,41.177,40.038,39.921,39.807,39.071,39.897,39.731,39.385,38.174,38.302,39.221,39.235,41.206,37.865,40.397,38.886,39.793,37.998,40.456
+[10:43:49.331] [53748] [I] gameplay window trial=7 equip=true enabled=false qpc=1440843792637
+[10:43:57.332] [53748] [I] gameplay end trial=7 qpc=1440923802518
+[10:43:57.360] [53748] [I] gameplay result trial=7 equip=true enabled=false actions=12 events=22003 player=00000000 promoted=0 peak=0 probes=38.426,35.451,39.325,36.222,37.198,38.077,38.007,36.707,37.413,37.264,36.269,36.684,37.929,40.432,40.484,39.910,40.784,38.952,40.071,39.675,38.916,40.255,40.718,40.057,39.542,40.612,39.357,40.531,40.048,36.843,39.615,39.545
+[10:43:59.360] [53748] [I] gameplay window trial=8 equip=true enabled=false qpc=1440944082819
+[10:44:07.361] [53748] [I] gameplay end trial=8 qpc=1441024090086
+[10:44:07.392] [53748] [I] gameplay result trial=8 equip=true enabled=false actions=12 events=25297 player=00000000 promoted=0 peak=0 probes=37.840,58.936,37.929,37.895,38.069,37.903,37.897,42.955,37.894,37.440,39.459,38.548,40.943,40.854,40.466,39.921,37.460,40.082,40.365,40.450,39.397,39.703,40.255,39.573,39.863,39.108,38.890,38.956,38.987,38.858,39.617,39.955
+[10:44:09.393] [53748] [I] gameplay trace complete

@@ -1,0 +1,118 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 / 42 FPS
+Two read-only save loads in the cloned MO2 profile. 12 real equip/unequip requests and 32 Utility.Wait(0.01) probes per window.
+Timing uses QPC at the first observed successful free CAS after a miss and the next attempt result for the same stack, depth, and object.
+Final continuous free windows end at a new owner, a blocking flag, or a contradictory transition. Counters are trace observations, with no scheduling inferred for ambiguous transitions.
+ABBA-BAAB changes the relative position of the existing native message and return retry passes only on a verified return queue head notification. Both arms use the same hooks and budgets. No production patch.
+Trial 7 matched 11/12 request/event pairs. Excluding trials 7 and 8 as a pair: drain median OFF 275.956ms, ON 301.826ms (3 windows per mode).
+
+Fixture SHA256
+87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.ess
+5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.skse
+4AB44F0CA9FEA3256A9CCC0899DCC77192CBD36B54438CA5BFC3F5798C426FAE  APBGameplayTrace.dll
+
+build/gameplay-trace/equip-42-lock-transitions
+Display Tweaks:
+SSEDisplayTweaks version 0.5.16 (runtime 1.6.1170.0)
+[Render] Framerate limit (game): 42
+[Render] Framerate limiter installed, mode: pre
+[Papyrus] UpdateBudgetBase: 1.2 ms (0.3 - 1.2)
+[Papyrus] [Patch] [UpdateBudget (game)] Writing..
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+
+Unlock trace:
+trial=1 tail=HeelsFixCorrectEffect matched_free=17 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=2 tail=HeelsFixCorrectEffect matched_free=9 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=3 tail=HeelsFixCorrectEffect matched_free=10 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=4 tail=HeelsFixCorrectEffect matched_free=10 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=5 tail=HeelsFixCorrectEffect matched_free=11 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=6 tail=HeelsFixCorrectEffect matched_free=30 tail_misses=9 tail_matched_free=1 tail_max_free_ms=0.007 tail_retaken=16 tail_max_retaken_ms=24.967
+trial=7 tail=HeelsFixCorrectEffect matched_free=33 tail_misses=9 tail_matched_free=2 tail_max_free_ms=23.320 tail_retaken=14 tail_max_retaken_ms=24.951
+trial=8 tail=HeelsFixCorrectEffect matched_free=29 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+raw A=19160 B=70 G=35153 L=730 X=35147 acquire_without_release=1 matched_acquire=149 owner_mismatch=1 retried_success=149
+all final_unlock_to_successful_retry n=149 p50_ms=0.132 p95_ms=24.469 max_ms=27.015 over_1ms=62 over_5ms=62
+all last_failed_to_successful_retry n=149 p50_ms=23.681 p95_ms=25.111 max_ms=27.154 over_1ms=126 over_5ms=126
+all multiple_observed_return_waiters=14
+equipment final_unlock_to_successful_retry n=93 p50_ms=0.086 p95_ms=24.683 max_ms=27.015 over_1ms=36 over_5ms=36
+equipment last_failed_to_successful_retry n=93 p50_ms=23.680 p95_ms=25.327 max_ms=27.152 over_1ms=75 over_5ms=75
+equipment multiple_observed_return_waiters=14
+last_equipment_stacks final_unlock_to_successful_retry n=3 p50_ms=0.007 p95_ms=23.320 max_ms=23.320 over_1ms=1 over_5ms=1
+unlock_to_other_stack_acquire_while_return_pending n=770 p50_ms=22.512 p95_ms=24.625 max_ms=26.953 over_1ms=428 over_5ms=428
+last_equipment_stacks unlock_to_other_stack_acquire_while_return_pending n=30 p50_ms=0.008 p95_ms=24.951 max_ms=24.967 over_1ms=14 over_5ms=14
+last_equipment_stacks_with_lock_misses=2
+off equipment first_unlock_to_next_attempt n=538 p50_ms=23.571 p95_ms=25.265 max_ms=27.015 over_1ms=479 over_5ms=479
+off equipment next_attempt_succeeded=93 next_attempt_failed=445
+
+Gameplay and render trace:
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 252.284 32 40.636 336 674 24.134 24.425 0
+2 off 12 12 174 0 324.208 32 41.108 336 672 24.116 24.323 0
+3 off 12 12 174 0 252.690 32 40.869 336 672 24.277 24.272 0
+4 off 12 12 174 0 252.570 32 41.268 336 672 24.150 24.178 0
+5 off 12 12 174 0 249.899 32 40.090 336 672 24.260 24.346 0
+6 off 12 12 203 0 610.092 32 41.393 336 672 24.177 24.375 0
+7 off 12 12 202 0 586.496 32 41.834 336 672 24.288 24.434 0
+8 off 12 12 202 0 586.225 32 40.613 336 672 24.131 24.227 0
+off: probes=256 probe_p95_ms=41.086 action_probes=96 action_probe_p95_ms=40.813 drain_median_ms=288.449 frame_median_ms=23.810 frame_p99_ms=24.189 alt_frame_p99_ms=24.346
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=6 queued=6 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=739 queued=738 equip_queued=150 equip_queue_p95_ms=25.308 equip_queue_total_ms=3485.463
+  form.haskeyword: executions=1323 queued=1323 equip_queued=1221 equip_queue_p95_ms=46.977 equip_queue_total_ms=31178.259
+
+build/gameplay-trace/equip-42-retry-ab
+Display Tweaks:
+SSEDisplayTweaks version 0.5.16 (runtime 1.6.1170.0)
+[Render] Framerate limit (game): 42
+[Render] Framerate limiter installed, mode: pre
+[Papyrus] UpdateBudgetBase: 1.2 ms (0.3 - 1.2)
+[Papyrus] [Patch] [UpdateBudget (game)] Writing..
+[Papyrus] [Patch] [UpdateBudget (game)] OK
+
+Unlock trace:
+trial=1 tail=HeelsFixCorrectEffect matched_free=12 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=2 tail=HeelsFixCorrectEffect matched_free=18 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=3 tail=condiexp_pctracking matched_free=13 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=4 tail=condiexp_pctracking matched_free=17 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=5 tail=HeelsFixCorrectEffect matched_free=22 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=6 tail=HeelsFixCorrectEffect matched_free=14 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+trial=7 tail=HeelsFixCorrectEffect matched_free=33 tail_misses=10 tail_matched_free=1 tail_max_free_ms=0.013 tail_retaken=16 tail_max_retaken_ms=24.245
+trial=8 tail=HeelsFixCorrectEffect matched_free=28 tail_misses=0 tail_matched_free=0 tail_max_free_ms=n/a tail_retaken=0 tail_max_retaken_ms=n/a
+raw A=19350 B=70 G=35567 L=500 X=35573 acquire_without_release=1 matched_acquire=157 owner_mismatch=1 retried_success=157
+all final_unlock_to_successful_retry n=157 p50_ms=21.607 p95_ms=24.801 max_ms=25.460 over_1ms=80 over_5ms=80
+all last_failed_to_successful_retry n=157 p50_ms=23.438 p95_ms=25.157 max_ms=27.019 over_1ms=120 over_5ms=120
+all multiple_observed_return_waiters=8
+equipment final_unlock_to_successful_retry n=96 p50_ms=0.076 p95_ms=24.098 max_ms=25.460 over_1ms=35 over_5ms=35
+equipment last_failed_to_successful_retry n=96 p50_ms=23.163 p95_ms=25.460 max_ms=27.019 over_1ms=64 over_5ms=64
+equipment multiple_observed_return_waiters=5
+last_equipment_stacks final_unlock_to_successful_retry n=1 p50_ms=0.013 p95_ms=0.013 max_ms=0.013 over_1ms=0 over_5ms=0
+unlock_to_other_stack_acquire_while_return_pending n=506 p50_ms=0.049 p95_ms=24.527 max_ms=26.811 over_1ms=228 over_5ms=228
+last_equipment_stacks unlock_to_other_stack_acquire_while_return_pending n=16 p50_ms=22.691 p95_ms=24.245 max_ms=24.245 over_1ms=9 over_5ms=9
+last_equipment_stacks_with_lock_misses=1
+off equipment first_unlock_to_next_attempt n=128 p50_ms=23.359 p95_ms=24.858 max_ms=26.317 over_1ms=96 over_5ms=96
+off equipment next_attempt_succeeded=44 next_attempt_failed=84
+off advanced=0 candidates=43 head_failed=36 head_succeeded=7 passes=1344
+off equipment final_unlock_to_successful_retry n=44 p50_ms=0.066 p95_ms=23.862 max_ms=25.306 over_1ms=12 over_5ms=12
+on equipment first_unlock_to_next_attempt n=150 p50_ms=23.410 p95_ms=24.948 max_ms=26.867 over_1ms=123 over_5ms=123
+on equipment next_attempt_succeeded=52 next_attempt_failed=98
+on advanced=26 candidates=26 head_succeeded=26 passes=1343
+on equipment final_unlock_to_successful_retry n=52 p50_ms=0.096 p95_ms=24.098 max_ms=25.460 over_1ms=23 over_5ms=23
+
+Gameplay and render trace:
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 270.248 32 41.667 336 336 24.036 24.036 0
+2 on 12 12 174 0 322.730 32 45.102 335 336 23.915 23.915 0
+3 on 12 12 174 0 301.826 32 41.030 336 336 23.965 23.965 0
+4 off 12 12 174 0 300.673 32 41.335 336 336 24.050 24.050 0
+5 on 12 12 174 0 252.940 32 41.041 336 336 23.959 23.959 0
+6 off 12 12 174 0 275.956 32 40.768 336 336 23.925 23.925 0
+7 off 12 11 203 0 634.513 32 42.255 336 336 24.012 24.012 0
+8 on 12 12 203 0 585.996 32 41.652 335 335 24.008 24.008 0
+off: probes=128 probe_p95_ms=41.335 action_probes=48 action_probe_p95_ms=40.021 drain_median_ms=288.315 frame_median_ms=23.809 frame_p99_ms=24.021 alt_frame_p99_ms=n/a
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=372 queued=372 equip_queued=74 equip_queue_p95_ms=25.079 equip_queue_total_ms=1667.945
+  form.haskeyword: executions=652 queued=652 equip_queued=599 equip_queue_p95_ms=46.851 equip_queue_total_ms=15039.840
+on: probes=128 probe_p95_ms=41.811 action_probes=48 action_probe_p95_ms=40.516 drain_median_ms=312.278 frame_median_ms=23.809 frame_p99_ms=23.970 alt_frame_p99_ms=n/a
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=367 queued=367 equip_queued=74 equip_queue_p95_ms=24.555 equip_queue_total_ms=1685.616
+  form.haskeyword: executions=647 queued=647 equip_queued=599 equip_queue_p95_ms=46.892 equip_queue_total_ms=15016.814

@@ -1,0 +1,252 @@
+Quest segment A with a save and load while the inn scene runs (test plan step 4), 2026-11-11 10:55-12:06
+Probe DLL APBQuestProbe.dll SHA-256 580C457384A54B23811761F44FF0C8BBE0C17F7188AE5133AA126067B10D0407 (06:45 build)
+Commands, one after the other (six launches of two trials):
+  build/catchup/run-quest-series.ps1 -Prefix qms-1 -Order off,acc,skip -Trials 2 -MidSave 1
+  build/catchup/run-quest-series.ps1 -Prefix qms-2 -Order skip,acc,off -Trials 2 -MidSave 1
+Profile APB-CatchUp-Test, FramerateLimit 30, start save APB_MQ203_A, game window in front 100% in all 12 trials, dropped rows 0.
+"off" = VM catch-up not installed; "acc" = accelerate with the release read rule; "skip" = the same plus the test rule
+SetSkipBlocked. Four trials per condition. In each trial the probe takes a snapshot when MQ203 reaches stage 50 (the scene is at
+phase 14 or 15), saves, loads that save, takes a second snapshot about 13 s after the first, and lets the scene run to its end.
+
+RESULT
+- 12 of 12 trials ended normally. No hang, no failed load, no dump. guard_violations 0 in the eight catch-up trials.
+- After the load the scene went on from the phase it was saved in (14 or 15) through phase 29 in every trial; MQ203 reached
+  stage 60; the end state (digest 995561791e), the dialogue order (fdb15642cc) and the end state after a second save and load
+  are the same in all 12 trials and the same as in the main run without a mid save.
+- The snapshot after the load is identical in all 12 trials of the three conditions (one distinct snapshot).
+- The snapshot before the save differs between trials in one line, the MQ203 objectives, and not by condition alone:
+  [10:3,20:1] (the stage-50 fragment had finished) in off x2, acc x2, skip x4; [10:3,20:0] in off x1, acc x2; [10:1,20:0] in
+  off x1. The snapshot is taken the moment stage 50 is seen, so it catches the fragment's two objective calls at whatever
+  point they have reached. In the four trials caught partway, the objectives after the load are [10:3,20:1] like everywhere
+  else: the fragment's remaining calls ran. Whether the save itself still held them as waiting calls or they finished in
+  the moment between the snapshot and the save is not recorded.
+- The analysis script prints "mid reload equal: False" for every trial, off included. That compares the two snapshots, which
+  are 13 s apart in a running scene (phase 14/15 -> 16, the actors' packages change with it). It is not a difference between
+  the saved and the loaded state.
+- Graph event -> stage 48 notification 65-68 ms. No menu other than HUD and loading, player not moved, in all 12 trials.
+- Every launch left two crash logs right after the window was closed, as before; no address of this project in the stack
+  section of any of the 12.
+
+WHAT THIS SHOWS AND WHAT IT DOES NOT
+- Shows: with catch-up running (either rule), a save made while the scene and its quest stage fragment are in progress loads
+  and the scene completes with the same end state as without catch-up, in four trials each.
+- Does not show: a save made at other moments (only stage 50 was used), other quests, 42 FPS, the release DLL.
+
+--- per trial (scratch script): mid save time, reload snapshot time, objectives and scene phase before -> after
+run trial result | mid save s | reload snap s | objectives before -> after | scene phase before -> after | stage60 s | end reload
+qms-1-01-off 1 ok | 137.6 | 150.6 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 243952 ms | end reload equal True | fg 100.0 | viol 0 cycles 0 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-1-01-off 2 ok | 143.6 | 156.1 | [10:1,20:0,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 248179 ms | end reload equal True | fg 100.0 | viol 0 cycles 0 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-1-02-acc 1 ok | 160.0 | 172.7 | [10:3,20:0,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 264508 ms | end reload equal True | fg 100.0 | viol 0 cycles 2861 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-1-02-acc 2 ok | 133.0 | 145.9 | [10:3,20:0,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 237937 ms | end reload equal True | fg 100.0 | viol 0 cycles 2854 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-1-03-skip 1 ok | 133.3 | 146.1 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 236734 ms | end reload equal True | fg 100.0 | viol 0 cycles 5058 skips 19778 rebuilds 10 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-1-03-skip 2 ok | 123.2 | 136.0 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 225507 ms | end reload equal True | fg 100.0 | viol 0 cycles 4985 skips 18180 rebuilds 14 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-01-skip 1 ok | 165.1 | 177.7 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=15 -> playing=true phase=16 | 270283 ms | end reload equal True | fg 100.0 | viol 0 cycles 5661 skips 21385 rebuilds 9 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-01-skip 2 ok | 120.6 | 133.2 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=15 -> playing=true phase=16 | 225706 ms | end reload equal True | fg 100.0 | viol 0 cycles 4968 skips 18912 rebuilds 9 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-02-acc 1 ok | 130.3 | 142.9 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=15 -> playing=true phase=16 | 236071 ms | end reload equal True | fg 100.0 | viol 0 cycles 2609 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-02-acc 2 ok | 122.1 | 134.7 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 226459 ms | end reload equal True | fg 100.0 | viol 0 cycles 2625 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-03-off 1 ok | 138.9 | 151.7 | [10:3,20:1,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 243244 ms | end reload equal True | fg 100.0 | viol 0 cycles 0 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+qms-2-03-off 2 ok | 136.0 | 149.0 | [10:3,20:0,30:0,40:0] -> [10:3,20:1,30:0,40:0] | playing=true phase=14 -> playing=true phase=16 | 239876 ms | end reload equal True | fg 100.0 | viol 0 cycles 0 skips 0 rebuilds 0 dropped 0
+      stage line before: MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+      stage line after : MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false completed=false
+
+== off: distinct mid_after_reload snapshots 1 over 4 trials
+== acc: distinct mid_after_reload snapshots 1 over 4 trials
+== skip: distinct mid_after_reload snapshots 1 over 4 trials
+distinct mid_after_reload snapshots over all conditions: 1
+== off: objectives and stage line in the snapshot before the mid save
+   x2  MQ203 objectives=[10:3,20:1,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+   x1  MQ203 objectives=[10:1,20:0,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+   x1  MQ203 objectives=[10:3,20:0,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+== acc: objectives and stage line in the snapshot before the mid save
+   x2  MQ203 objectives=[10:3,20:0,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+   x2  MQ203 objectives=[10:3,20:1,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+== skip: objectives and stage line in the snapshot before the mid save
+   x4  MQ203 objectives=[10:3,20:1,30:0,40:0] | MQ203 stage=50 done=[10,20,30,40,48,50] stopped=false comple
+distinct end snapshots over all conditions: 1
+
+--- launches and trial lines
+series qms-1 probe DLL SHA-256 580C457384A54B23811761F44FF0C8BBE0C17F7188AE5133AA126067B10D0407 order=off,acc,skip trials=2 mid_save=1 entry_delay=0
+== launch 1 of 3: qms-1-01-off
+   [11:02:17.098] [34456] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=243952 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:06:48.567] [34456] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=248179 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:06:48.567] [34456] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-11-06-50.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-11-06-52.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 2 of 3: qms-1-02-acc
+   [11:14:24.637] [51184] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=264508 stage40=true stage48=true stage50=true stage60=true cu_frames=7324 cu_engaged=7324 cu_held=417 cu_cycles=2861 cu_extra_calls=6633 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:18:45.739] [51184] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=237937 stage40=true stage48=true stage50=true stage60=true cu_frames=6764 cu_engaged=6764 cu_held=406 cu_cycles=2854 cu_extra_calls=6430 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:18:45.739] [51184] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-11-18-46.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-11-18-49.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 3 of 3: qms-1-03-skip
+   [11:25:58.886] [33064] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=236734 stage40=true stage48=true stage50=true stage60=true cu_frames=6522 cu_engaged=6522 cu_held=420 cu_cycles=5058 cu_extra_calls=12738 cu_front_skips=19778 cu_order_rebuilds=10 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:30:07.768] [33064] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=225507 stage40=true stage48=true stage50=true stage60=true cu_frames=6424 cu_engaged=6424 cu_held=416 cu_cycles=4985 cu_extra_calls=12517 cu_front_skips=18180 cu_order_rebuilds=14 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:30:07.768] [33064] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-11-30-08.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-11-30-11.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+series qms-2 probe DLL SHA-256 580C457384A54B23811761F44FF0C8BBE0C17F7188AE5133AA126067B10D0407 order=skip,acc,off trials=2 mid_save=1 entry_delay=0
+== launch 1 of 3: qms-2-01-skip
+   [11:38:09.939] [63944] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=270283 stage40=true stage48=true stage50=true stage60=true cu_frames=7523 cu_engaged=7523 cu_held=426 cu_cycles=5661 cu_extra_calls=13481 cu_front_skips=21385 cu_order_rebuilds=9 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:42:18.644] [63944] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=225706 stage40=true stage48=true stage50=true stage60=true cu_frames=6424 cu_engaged=6424 cu_held=412 cu_cycles=4968 cu_extra_calls=12232 cu_front_skips=18912 cu_order_rebuilds=9 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:42:18.644] [63944] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-11-42-20.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-11-42-22.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 2 of 3: qms-2-02-acc
+   [11:49:30.090] [44564] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=236071 stage40=true stage48=true stage50=true stage60=true cu_frames=6522 cu_engaged=6522 cu_held=419 cu_cycles=2609 cu_extra_calls=5991 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:53:39.656] [44564] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=226459 stage40=true stage48=true stage50=true stage60=true cu_frames=6450 cu_engaged=6450 cu_held=409 cu_cycles=2625 cu_extra_calls=5908 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [11:53:39.656] [44564] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-11-53-41.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5F7CB0000
+   Crash log crash-2026-11-11-11-53-43.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5F7CA0000
+== launch 3 of 3: qms-2-03-off
+   [12:00:55.407] [48868] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=243244 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [12:05:18.530] [48868] [I] quest probe trial=2 segment=A result=ok reason="" scene_ms=239876 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [12:05:18.530] [48868] [I] quest probe complete trials=2 ok=2
+   Crash log crash-2026-11-11-12-05-20.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-12-05-22.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+
+--- tests/analyze_quest_probe.py over the six run folders
+== qms-1-01-off [off] quest probe segment=A trials=2 mid_save=true catch_up=false catch_up_mode=none skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=244.0 foreground=100.0%
+    stages: 20@22.9s 30@33.9s 40@46.7s 48@137.5s 50@137.6s 60@224.5s
+    stage 48 path: after the graph event (66 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 94
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+  trial 2: ok "" scene_s=248.2 foreground=100.0%
+    stages: 20@15.8s 30@26.2s 40@48.1s 48@143.5s 50@143.6s 60@229.4s
+    stage 48 path: after the graph event (66 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 91
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+== qms-1-02-acc [accelerate] quest probe segment=A trials=2 mid_save=true catch_up=true catch_up_mode=accelerate skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=264.5 foreground=100.0%
+    stages: 20@23.6s 30@35.0s 40@71.2s 48@159.8s 50@159.9s 60@245.3s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 95
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=7324 engaged=7324 held=417 cycles=2861 extra_calls=6633 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=48 calls=109 held=0/120; around the animation event: cycles=42 calls=90 held=0/111; around stage 48: cycles=42 calls=90 held=0/111
+  trial 2: ok "" scene_s=237.9 foreground=100.0%
+    stages: 20@16.0s 30@26.7s 40@40.4s 48@132.8s 50@132.9s 60@218.7s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 91
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6764 engaged=6764 held=406 cycles=2854 extra_calls=6430 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=57 calls=187 held=0/120; around the animation event: cycles=35 calls=67 held=0/107; around stage 48: cycles=35 calls=67 held=0/107
+== qms-1-03-skip [accelerate+skip] quest probe segment=A trials=2 mid_save=true catch_up=true catch_up_mode=accelerate skip_blocked=true entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=236.7 foreground=100.0%
+    stages: 20@22.8s 30@33.7s 40@44.1s 48@133.1s 50@133.2s 60@217.8s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 101
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6522 engaged=6522 held=420 cycles=5058 extra_calls=12738 front_skips=19778 order_rebuilds=10 gate_closes=0 violations=0; around stage 40: cycles=80 calls=292 held=25/120; around the animation event: cycles=68 calls=116 held=0/111; around stage 48: cycles=68 calls=116 held=0/111
+  trial 2: ok "" scene_s=225.5 foreground=100.0%
+    stages: 20@15.5s 30@25.9s 40@36.2s 48@123.0s 50@123.1s 60@206.7s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 89
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6424 engaged=6424 held=416 cycles=4985 extra_calls=12517 front_skips=18180 order_rebuilds=14 gate_closes=0 violations=0; around stage 40: cycles=52 calls=323 held=46/120; around the animation event: cycles=84 calls=259 held=0/114; around stage 48: cycles=84 calls=259 held=0/114
+== qms-2-01-skip [accelerate+skip] quest probe segment=A trials=2 mid_save=true catch_up=true catch_up_mode=accelerate skip_blocked=true entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=270.3 foreground=100.0%
+    stages: 20@22.8s 30@34.0s 40@52.1s 48@164.9s 50@165.0s 60@251.2s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 99
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=7523 engaged=7523 held=426 cycles=5661 extra_calls=13481 front_skips=21385 order_rebuilds=9 gate_closes=0 violations=0; around stage 40: cycles=121 calls=316 held=0/121; around the animation event: cycles=83 calls=169 held=0/111; around stage 48: cycles=83 calls=169 held=0/111
+  trial 2: ok "" scene_s=225.7 foreground=100.0%
+    stages: 20@16.1s 30@26.4s 40@34.3s 48@120.4s 50@120.5s 60@206.3s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 91
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6424 engaged=6424 held=412 cycles=4968 extra_calls=12232 front_skips=18912 order_rebuilds=9 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=77/120; around the animation event: cycles=73 calls=130 held=0/110; around stage 48: cycles=73 calls=130 held=0/110
+== qms-2-02-acc [accelerate] quest probe segment=A trials=2 mid_save=true catch_up=true catch_up_mode=accelerate skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=236.1 foreground=100.0%
+    stages: 20@22.5s 30@33.3s 40@41.2s 48@130.1s 50@130.2s 60@216.4s
+    stage 48 path: after the graph event (65 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 95
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6522 engaged=6522 held=419 cycles=2609 extra_calls=5991 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=76/121; around the animation event: cycles=58 calls=159 held=0/111; around stage 48: cycles=58 calls=159 held=0/111
+  trial 2: ok "" scene_s=226.5 foreground=100.0%
+    stages: 20@15.8s 30@26.4s 40@34.3s 48@122.0s 50@122.1s 60@207.6s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 91
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=6450 engaged=6450 held=409 cycles=2625 extra_calls=5908 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=79/121; around the animation event: cycles=49 calls=112 held=0/111; around stage 48: cycles=49 calls=112 held=0/111
+== qms-2-03-off [off] quest probe segment=A trials=2 mid_save=true catch_up=false catch_up_mode=none skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=243.2 foreground=100.0%
+    stages: 20@22.8s 30@33.8s 40@46.8s 48@138.7s 50@138.8s 60@223.7s
+    stage 48 path: after the graph event (66 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 95
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+  trial 2: ok "" scene_s=239.9 foreground=100.0%
+    stages: 20@15.5s 30@26.4s 40@44.5s 48@135.9s 50@136.0s 60@220.5s
+    stage 48 path: after the graph event (68 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 89
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: False
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+
+== values per condition (trials)
+  MQ203 stage order:
+    accelerate      x4  20 30 40 48 50 60
+    accelerate+skip x4  20 30 40 48 50 60
+    off             x4  20 30 40 48 50 60
+  stage 48 path:
+    accelerate      x4  after the graph event
+    accelerate+skip x4  after the graph event
+    off             x4  after the graph event
+  end state digest:
+    accelerate      x4  995561791e
+    accelerate+skip x4  995561791e
+    off             x4  995561791e
+  Esbern and Delphine line order:
+    accelerate      x4  fdb15642cc
+    accelerate+skip x4  fdb15642cc
+    off             x4  fdb15642cc
+
+== end state lines that differ from the first off trial with an end state (qms-1-01-off trial 1)
+  none

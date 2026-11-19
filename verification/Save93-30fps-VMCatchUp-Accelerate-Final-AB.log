@@ -1,0 +1,60 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 limiter 30 FPS, DynamicUpdateBudget=false / Papyrus Tweaks NG 4.1.1 with bImproveValidateArgsLogs=true / Papyrus bEnableLogging=0, bEnableProfiling=1
+APB_GAMEPLAY_TRACE=catchup-ab, APB_CATCHUP_MODE=accelerate, APB_CATCHUP_TARGET=60. Test DLL APBGameplayTrace.dll sha256 4519309262ef3b63df6acd7c21f5ee2f1381576ae269d4d477d6b61dffba042b, same VMCatchUp source as AdaptivePapyrusBudget.dll b612a0e3...
+Order off,on,on,off,on,off,off,on in one launch. Drain = last equip signal to the last equip/unequip handler exit. Compare trials with the same handler count (174 vs 202 is a scene variable).
+
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 202 0 2023.855 0 0.000 0 0 0 0 0.0000 0.000
+2 on 12 12 174 0 555.168 239 33.336 210 157 0 0 0.1054 0.723
+3 on 12 12 202 0 1256.950 239 33.331 203 158 0 0 0.0908 0.635
+4 off 12 12 202 0 2022.382 0 0.000 0 0 0 0 0.0000 0.000
+5 on 12 12 174 0 623.911 239 33.343 220 154 0 0 0.0882 0.508
+6 off 12 12 202 0 1957.320 0 0.000 0 0 0 0 0.0000 0.000
+7 off 12 12 174 0 1324.428 0 0.000 0 0 0 0 0.0000 0.000
+8 on 12 11 202 0 1024.059 239 33.334 213 165 0 0 0.0919 0.659
+off: drain_median_ms=1989.851 min=1324.428 max=2023.855 n=4
+on: drain_median_ms=823.985 min=555.168 max=1256.950 n=4
+drain median change on vs off: -58.6%
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 239 33.340 33.218 35.370 35.613 35.810
+2 on 239 33.341 33.166 35.790 36.172 36.785
+3 on 239 33.333 33.182 35.222 35.557 35.770
+4 off 239 33.329 33.230 35.354 35.783 35.891
+5 on 239 33.331 33.214 35.313 35.594 35.886
+6 off 239 33.335 33.194 35.399 35.852 36.131
+7 off 239 33.336 33.208 35.356 35.538 36.077
+8 on 240 33.322 33.270 35.616 36.230 36.404
+off: frames=956 avg_ms=33.335 median_ms=33.208 p95_ms=35.354 p99_ms=35.749 max_ms=36.131
+on: frames=957 avg_ms=33.332 median_ms=33.222 p95_ms=35.481 p99_ms=36.104 max_ms=36.785
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 202 0 2023.855 32 60.612 240 480 33.730 33.763 0
+2 on 12 12 174 0 555.168 32 58.876 240 480 33.897 33.970 0
+3 on 12 12 202 0 1256.950 32 58.679 240 480 33.669 33.685 0
+4 off 12 12 202 0 2022.382 32 59.696 240 480 33.787 33.861 0
+5 on 12 12 174 0 623.911 32 60.786 240 480 33.765 33.828 0
+6 off 12 12 202 0 1957.320 32 59.180 240 482 33.744 33.799 0
+7 off 12 12 174 0 1324.428 32 59.608 240 480 33.908 33.896 0
+8 on 12 11 202 0 1024.059 32 59.314 241 481 33.813 33.758 0
+off: probes=128 probe_p95_ms=59.696 action_probes=48 action_probe_p95_ms=58.050 drain_median_ms=1989.851 frame_median_ms=33.330 frame_p99_ms=33.787 alt_frame_p99_ms=33.837
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=354 queued=354 equip_queued=78 equip_queue_p95_ms=34.428 equip_queue_total_ms=2595.440
+  form.haskeyword: executions=691 queued=691 equip_queued=645 equip_queue_p95_ms=65.836 equip_queue_total_ms=23405.930
+on: probes=128 probe_p95_ms=59.322 action_probes=48 action_probe_p95_ms=58.236 drain_median_ms=823.985 frame_median_ms=33.332 frame_p99_ms=33.770 alt_frame_p99_ms=33.782
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=365 queued=362 equip_queued=76 equip_queue_p95_ms=34.670 equip_queue_total_ms=2430.199
+  form.haskeyword: executions=668 queued=668 equip_queued=622 equip_queue_p95_ms=64.622 equip_queue_total_ms=16045.534
+== vm.log catch-up lines
+[63472] [I] Installed VM catch-up: mode=accelerate, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[63472] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[58156] [I] catch-up trial=1 enabled=false target_hz=50 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[58156] [I] catch-up trial=2 enabled=true target_hz=50 frames=239 slow=239 avg_frame_ms=33.336 cycles=210 with_tasklets=157 idle_stops=0 time_stops=0 blocked_stops=157 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=25.200 extra_ms_per_frame=0.1054 max_frame_extra_ms=0.723 max_update_ms=0.536 max_batch_ms=0.186
+[58156] [I] catch-up trial=3 enabled=true target_hz=50 frames=239 slow=239 avg_frame_ms=33.331 cycles=203 with_tasklets=158 idle_stops=0 time_stops=0 blocked_stops=148 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=21.704 extra_ms_per_frame=0.0908 max_frame_extra_ms=0.635 max_update_ms=0.392 max_batch_ms=0.263
+[58156] [I] catch-up trial=4 enabled=false target_hz=50 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[58156] [I] catch-up trial=5 enabled=true target_hz=50 frames=239 slow=239 avg_frame_ms=33.343 cycles=220 with_tasklets=154 idle_stops=0 time_stops=0 blocked_stops=168 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=21.083 extra_ms_per_frame=0.0882 max_frame_extra_ms=0.508 max_update_ms=0.407 max_batch_ms=0.149
+[58156] [I] catch-up trial=6 enabled=false target_hz=50 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[58156] [I] catch-up trial=7 enabled=false target_hz=50 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[58156] [I] catch-up trial=8 enabled=true target_hz=50 frames=239 slow=239 avg_frame_ms=33.334 cycles=213 with_tasklets=165 idle_stops=0 time_stops=0 blocked_stops=159 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=21.972 extra_ms_per_frame=0.0919 max_frame_extra_ms=0.659 max_update_ms=0.413 max_batch_ms=0.244

@@ -1,0 +1,74 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 / gameplay 42 FPS cap
+Cross-scene diagnosis. The equipment group is the four disabled trials of the previous gameplay A/B. The cell group is a separate run from the same Save93 with stock scheduling and four COC transitions between Whiterun exterior and the Bannered Mare.
+Initial cell pilot aborted in trial 2 when response requests piled up in the SKSE task queue during loading. That pilot is excluded below. The revised benchmark waits for observed arrival and UI-ready, then one second before dispatching 32 response probes over 8 seconds. This is a post-load sample; actual render rate is measured separately.
+Cell roots are the traced cell/load/location event types first queued from the travel request until response probing begins. The tail is the latest completed root in that group. Open counts do not include work that never entered a root during the capture. Native waits are profiler Q-P on that stack, with a 1 ms floor for listing chains. Adjacent native calls may have intervening script bytecode.
+Only the render periods validated against engine counters are reported. The final two seconds are shown separately because the 42 FPS cap does not guarantee the game reaches it during streaming.
+Exact pair intersections apply only to the measured last handlers. Cell travel is not a combat benchmark. No continuation optimization was activated.
+
+Observed cell changes
+[11:53:06.681] [45332] [I] cell change 0001A275 -> 0001605E responses=32
+[11:53:27.719] [45332] [I] cell change 0001605E -> 0001A27F responses=32
+[11:53:45.105] [45332] [I] cell change 0001A27F -> 0001605E responses=32
+[11:54:06.063] [45332] [I] cell change 0001605E -> 0001A27F responses=32
+
+Save93 SHA256
+87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.ess
+5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA  Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.skse
+
+Event stream SHA256
+EEA683B4F9226791AC07F73CB4FB9D28B6EF40BB0306466C9AF05B8281A73BAA  G:\skyrim project\스림 스크립트 개선 모드\build\gameplay-trace\equip-42-entry-worker-ab\vm-events.csv
+9A7C1BD6C4863B080C586F27E769A1279E422ED1CFBE9EC6ED2C00E9C27D15A8  G:\skyrim project\스림 스크립트 개선 모드\build\gameplay-trace\cell-42-stable\vm-events.csv
+
+Trace comparison
+Equipment (stock order)
+  1: roots=203 open=0 after_signal_ms=610.300 ready_probe_p95_ms=54.159
+    tail=HeelsFixCorrectEffect.OnObjectEquipped stack=1485368 root_duration_ms=594.911 after_ready_ms=n/a native_queue_ms=284.805 native_dispatch_ms=0.049
+    chain form.getname=22.686 actor.issneaking=24.105 actor.hasperk=95.232 actor.hasspell=23.961 objectreference.getscale=23.295 netimmerse.hasnode=23.578 netimmerse.getnodescale=23.729 netimmerse.hasnode=23.872 netimmerse.getnodescale=24.347
+  4: roots=174 open=0 after_signal_ms=253.839 ready_probe_p95_ms=40.817
+    tail=HeelsFixCorrectEffect.OnObjectEquipped stack=1487368 root_duration_ms=235.485 after_ready_ms=n/a native_queue_ms=209.733 native_dispatch_ms=0.047
+    chain form.getname=21.113 actor.issneaking=24.194 actor.hasperk=23.692 actor.hasspell=24.260 objectreference.getscale=21.920 netimmerse.hasnode=23.336 netimmerse.getnodescale=23.957 netimmerse.hasnode=24.209 netimmerse.getnodescale=23.051
+  6: roots=174 open=0 after_signal_ms=278.745 ready_probe_p95_ms=40.559
+    tail=HeelsFixCorrectEffect.OnObjectEquipped stack=1488415 root_duration_ms=261.064 after_ready_ms=n/a native_queue_ms=209.879 native_dispatch_ms=0.047
+    chain form.getname=21.626 actor.issneaking=23.603 actor.hasperk=23.775 actor.hasspell=23.920 objectreference.getscale=22.673 netimmerse.hasnode=23.390 netimmerse.getnodescale=24.149 netimmerse.hasnode=23.163 netimmerse.getnodescale=23.581
+  7: roots=174 open=0 after_signal_ms=278.320 ready_probe_p95_ms=40.383
+    tail=HeelsFixCorrectEffect.OnObjectEquipped stack=1489049 root_duration_ms=260.772 after_ready_ms=n/a native_queue_ms=233.857 native_dispatch_ms=0.049
+    chain form.getname=22.039 actor.issneaking=46.809 actor.hasperk=25.068 actor.hasspell=22.261 objectreference.getscale=23.292 netimmerse.hasnode=23.773 netimmerse.getnodescale=24.151 netimmerse.hasnode=22.956 netimmerse.getnodescale=23.508
+  root_native_wait_ms: form.haskeyword=15284.537 actor.getequippedweapon=2912.715 netimmerse.getnodescale=2378.173 netimmerse.hasnode=2348.435 keyword.getkeyword=1765.447 formlist.hasform=1760.473 form.getname=1733.237 game.getplayer=1724.898 actor.hasperk=1293.036 actor.removefromfaction=1251.754
+  tail_presence: actor.hasperk=4.000 actor.hasspell=4.000 actor.issneaking=4.000 form.getname=4.000 netimmerse.getnodescale=4.000 netimmerse.hasnode=4.000 objectreference.getscale=4.000
+  adjacent_tail_calls: ('netimmerse.hasnode', 'netimmerse.getnodescale')=8.000 ('form.getname', 'actor.issneaking')=4.000 ('actor.hasperk', 'actor.hasspell')=4.000 ('actor.hasspell', 'objectreference.getscale')=4.000 ('objectreference.getscale', 'netimmerse.hasnode')=4.000 ('netimmerse.getnodescale', 'netimmerse.hasnode')=4.000
+Cell transitions (stock order)
+  1: roots=204 open=1 after_signal_ms=15022.913 ready_probe_p95_ms=273.185
+    cell_ready_sample_ms=6784.118
+    post_load: frames=91 fps=11.373 present_samples=184 frame_p99_ms=1646.366
+    last_two_seconds: frames=73 fps=36.500 present_samples=149 frame_p99_ms=250.998
+    tail=DoroFollowerController.OnLoad stack=1485221 root_duration_ms=713.542 after_ready_ms=8238.794 native_queue_ms=683.311 native_dispatch_ms=0.091
+    chain game.getplayer=24.697 dorocollision.setcharactercollisiondisabled=22.489 actor.isinfaction=23.506 actor.isinfaction=24.568 actor.setghost=23.255 actor.setplayerteammate=23.451 actor.setactorvalue=22.975 actor.setactorvalue=23.382 actor.setactorvalue=23.354 actor.getcombatstate=23.264 actor.isinfaction=23.923 actor.isinfaction=22.818 actor.setdontmove=24.034 actor.setplayerteammate=23.161 actor.clearkeepoffsetfromactor=23.608 actor.keepoffsetfromactor=23.612 utility.getcurrentrealtime=23.374 actor.isinfaction=25.316 game.getplayer=22.527 actor.isinfaction=23.118 actor.isinfaction=23.832 objectreference.is3dloaded=23.873 objectreference.getdistance=23.663 actor.isinfaction=24.235 actor.isinfaction=22.842 objectreference.is3dloaded=24.184 actor.isinfaction=23.253 form.unregisterforupdate=23.554 form.registerforsingleupdate=23.443
+  2: roots=391 open=0 after_signal_ms=12963.990 ready_probe_p95_ms=59.758
+    cell_ready_sample_ms=9843.419
+    post_load: frames=321 fps=40.119 present_samples=642 frame_p99_ms=53.486
+    last_two_seconds: frames=84 fps=42.000 present_samples=168 frame_p99_ms=24.250
+    tail=SHESON_DynDOLOD_ObjectEnabler.OnCellDetach stack=1485772 root_duration_ms=2858.868 after_ready_ms=3120.571 native_queue_ms=884.014 native_dispatch_ms=0.100
+    chain formlist.getsize=176.449 objectreference.getworldspace=328.487 formlist.getat=49.243 objectreference.getworldspace=23.626 formlist.getat=23.125 objectreference.getworldspace=23.795 formlist.getat=23.794 objectreference.getworldspace=23.307 formlist.getat=23.538 objectreference.getworldspace=23.686 formlist.getat=23.820 objectreference.getworldspace=23.423 formlist.getat=23.563 objectreference.getworldspace=24.597 formlist.getat=22.784 objectreference.getworldspace=23.624 formlist.getat=23.154
+  3: roots=200 open=0 after_signal_ms=13360.199 ready_probe_p95_ms=259.741
+    cell_ready_sample_ms=6238.215
+    post_load: frames=123 fps=15.373 present_samples=246 frame_p99_ms=655.273
+    last_two_seconds: frames=84 fps=42.000 present_samples=168 frame_p99_ms=24.140
+    tail=zeroBountyHostilityFix.OnLocationChange stack=1486953 root_duration_ms=6878.166 after_ready_ms=7121.984 native_queue_ms=6842.474 native_dispatch_ms=0.309
+    chain actor.issneaking=336.874 form.haskeyword=3175.733 form.haskeyword=34.881 actor.istrespassing=167.863 faction.getcrimegold=1507.648 faction.getcrimegold=22.565 faction.getcrimegold=23.709 faction.getcrimegold=22.915 faction.getcrimegold=658.530 faction.getcrimegold=14.071 faction.getcrimegold=23.475 faction.getcrimegold=23.513 faction.getcrimegold=23.554 faction.getcrimegold=22.555 faction.getcrimegold=252.957 faction.getcrimegold=13.507 faction.playerpaycrimegold=23.330 faction.getcrimegold=23.439 faction.playerpaycrimegold=23.545 faction.getcrimegold=23.188 faction.playerpaycrimegold=59.136 faction.getcrimegold=12.675 faction.playerpaycrimegold=22.460 faction.getcrimegold=23.537 faction.playerpaycrimegold=24.011 faction.getcrimegold=23.136 faction.playerpaycrimegold=23.613 faction.getcrimegold=23.712 faction.playerpaycrimegold=23.462 faction.getcrimegold=24.166 faction.playerpaycrimegold=23.485 faction.getcrimegold=23.144 faction.playerpaycrimegold=24.219 faction.getcrimegold=23.947 faction.playerpaycrimegold=22.424 faction.getcrimegold=23.346 faction.playerpaycrimegold=24.151
+  4: roots=390 open=0 after_signal_ms=12539.418 ready_probe_p95_ms=48.544
+    cell_ready_sample_ms=9776.037
+    post_load: frames=330 fps=41.246 present_samples=660 frame_p99_ms=37.355
+    last_two_seconds: frames=84 fps=42.000 present_samples=168 frame_p99_ms=24.348
+    tail=SHESON_DynDOLOD_ObjectEnabler.OnCellDetach stack=1487729 root_duration_ms=2590.623 after_ready_ms=2763.381 native_queue_ms=831.981 native_dispatch_ms=0.085
+    chain formlist.getsize=257.503 objectreference.getworldspace=33.970 formlist.getat=210.510 objectreference.getworldspace=23.441 formlist.getat=23.706 objectreference.getworldspace=23.702 formlist.getat=23.881 objectreference.getworldspace=22.727 formlist.getat=23.441 objectreference.getworldspace=23.817 formlist.getat=23.432 objectreference.getworldspace=23.469 formlist.getat=23.596 objectreference.getworldspace=24.103 formlist.getat=23.060 objectreference.getworldspace=23.296 formlist.getat=24.328
+  root_native_wait_ms: objectreference.getlinkedref=99116.721 quest.getcurrentstageid=28077.030 objectreference.getparentcell=27508.570 objectreference.getworldspace=15192.025 actor.hasmagiceffectwithkeyword=14767.564 game.getplayer=13545.457 objectreference.is3dloaded=12912.557 quest.isstopped=10853.574 actor.hasspell=10831.193 actor.isinfaction=10081.180
+  tail_presence: formlist.getat=2.000 formlist.getsize=2.000 objectreference.getworldspace=2.000 actor.clearkeepoffsetfromactor=1.000 actor.getcombatstate=1.000 actor.isinfaction=1.000 actor.keepoffsetfromactor=1.000 actor.setactorvalue=1.000 actor.setdontmove=1.000 actor.setghost=1.000
+  adjacent_tail_calls: ('objectreference.getworldspace', 'formlist.getat')=16.000 ('formlist.getat', 'objectreference.getworldspace')=14.000 ('faction.getcrimegold', 'faction.getcrimegold')=11.000 ('faction.getcrimegold', 'faction.playerpaycrimegold')=11.000 ('faction.playerpaycrimegold', 'faction.getcrimegold')=10.000 ('actor.isinfaction', 'actor.isinfaction')=3.000 ('actor.setactorvalue', 'actor.setactorvalue')=2.000 ('actor.isinfaction', 'objectreference.is3dloaded')=2.000 ('formlist.getsize', 'objectreference.getworldspace')=2.000 ('game.getplayer', 'dorocollision.setcharactercollisiondisabled')=1.000
+Common delayed native methods in tails: ['actor.issneaking']
+Common adjacent delayed native pairs in tails: []
+Common pairs when including the last three roots (equipment, cells):
+  ('form.haskeyword', 'form.haskeyword'): 30, 2
+
+Near-tail HasKeyword cross-check
+Gear: 30 adjacent HasKeyword pairs in the last three handlers of the four stock windows. The final handler in each window was HeelsFixCorrectEffect.
+Cell: two pairs, both zeroBountyHostilityFix in interior streaming windows. Queue-to-entry times for each pair were 3443.897/113.189 ms and 3175.733/34.881 ms.

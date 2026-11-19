@@ -1,0 +1,154 @@
+Three access violations at SkyrimSE.exe+0xCC90CF during harness 'coc' travel. Full WER dumps in %LOCALAPPDATA%\CrashDumps; no Crash Logger file.
+Exception context from the minidump exception stream, unwound with each module's .pdata (perf-probe dumpstack Unwinder).
+13:24 = earlier APBGameplayTrace build (folder since removed). 20:52 = erbw-c2-off-a (catch-up installed, gate never opened: frames=0). 21:34 = erbw-c3-dry-b (carried installed, extra cycles disabled: cycles=0).
+Both soak crashes: third trip, coc WhiterunBanneredMare from WhiterunOrigin. GPU LiveKernelEvent 117 reports filed at 21:34 are queued reports from 12:53 (System log nvlddmkm 153 last at 12:53).
+AdaptivePapyrusBudget.dll was not loaded in these runs; VMCatchUp is compiled into APBGameplayTrace.dll. Its frames below sit deeper than skse64 task dispatch (the harness task that issued coc).
+
+dump SkyrimSE.exe.10724.dmp  exc tid=8148 code=0xc0000005 addr=SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233) params=['0x0', '0x88']
+regs: rip=7FF7D1E390CF rsp=9229AFD6F0 rax=1FD4 rbx=88 rcx=88 rdx=1C rsi=70 rdi=88 r8=0 r9=9229AFD8F0
+frames:
+  [ 0] SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233)
+  [ 1] SkyrimSE+17928D  ExtraDataList::GetExtraData+3D (ID 12329)
+  [ 2] SkyrimSE+15D926  ExtraDataList::GetExtraTextDisplayData+26 (ID 11654)
+  [ 3] SkyrimSE+2EA36B  TESObjectREFR::GetDisplayFullName+2B (ID 19781)
+  [ 4] SkyrimSE+33194A  GameFunc::native::IsInCombat+AA (ID 21576)
+  [ 5] SkyrimSE+4A0C9C  TESConditionItem::IsTrue+6BC (ID 29924)
+  [ 6] LexiconSKSE.dll+5296B
+  [ 7] SkyrimSE+49FB54  ID 29895+E4
+  [ 8] SkyrimSE+3D7ACD  ID 25160+9D
+  [ 9] SkyrimSE+3D4D60  ID 25114+130
+  [10] SkyrimSE+3D0300  TESQuest::sub+14D0 (ID 25063)
+  [11] SkyrimSE+3CCDFD  TESQuest::sub+1AD (ID 25048)
+  [12] SkyrimSE+532906  BGSStoryTeller::sub+2C6 (ID 32483)
+  [13] SkyrimSE+532D02  BGSStoryTeller::FindQuestsForAllEventsInQueue+42 (ID 32484)
+  [14] SkyrimSE+730D2E  Actor::sub+83E (ID 40438)
+  [15] SkyrimSE+7304BF  PlayerCharacter::CenterOnCell_Impl+26F (ID 40437)
+  [16] SkyrimSE+36B4F0  ConsoleFunc::handler::CenterOnCell+60 (ID 22873)
+  [17] 0x26CBED8C012
+raw stack scan (exception thread, from rsp, non-exe modules and exe code):
+  rsp+2B8: LexiconSKSE.dll+5296B
+  rsp+2D8: EngineFixes.dll+F1733
+  rsp+948: EngineFixes.dll+F0E95
+  rsp+9A8: EngineFixes.dll+F177E
+  rsp+AB8: EngineFixes.dll+F1733
+  rsp+13C8: EngineFixes.dll+F05D6
+  rsp+13F8: EngineFixes.dll+F1733
+  rsp+15D8: EngineFixes.dll+F0E95
+  rsp+1638: EngineFixes.dll+F19CC
+  rsp+1648: EngineFixes.dll+F0E95
+  rsp+1828: EngineFixes.dll+F0E95
+  rsp+1878: EngineFixes.dll+F05D6
+  rsp+18A8: EngineFixes.dll+F1733
+  rsp+1DA8: NativeEditorIDFix.dll+16E5F
+  rsp+1E08: EngineFixes.dll+F0E95
+  rsp+1E38: EngineFixes.dll+F05D6
+  rsp+1E68: EngineFixes.dll+F1733
+  rsp+1E88: EngineFixes.dll+F05D6
+  rsp+2028: EngineFixes.dll+F19CC
+  rsp+2058: APBGameplayTrace.dll+32581
+  rsp+2060: APBGameplayTrace.dll+5C2A8
+  rsp+2088: APBGameplayTrace.dll+144C8
+  rsp+2090: APBGameplayTrace.dll+5C2A8
+  rsp+20D0: APBGameplayTrace.dll+5C2A8
+  rsp+20F8: skse64_1_6_1170.dll+199AF
+threads with apbgameplay on raw stack: [8148, 47496]
+   tid 8148: APBGameplayTrace.dll+32581, APBGameplayTrace.dll+5C2A8, APBGameplayTrace.dll+144C8, APBGameplayTrace.dll+5C2A8, APBGameplayTrace.dll+5C2A8
+   tid 47496: APBGameplayTrace.dll+5C308, APBGameplayTrace.dll+10E9D, APBGameplayTrace.dll+23CEA, APBGameplayTrace.dll+16545, APBGameplayTrace.dll+5CB08, APBGameplayTrace.dll+16731, APBGameplayTrace.dll+5CB08, APBGameplayTrace.dll+5C308, APBGameplayTrace.dll+5C1D8, APBGameplayTrace.dll+18330, APBGameplayTrace.dll+96A9D, APBGameplayTrace.dll+5C1D8, APBGameplayTrace.dll+5C1D8, APBGameplayTrace.dll+5C300, APBGamep
+   7FFFA1CF0000 G:\TAKEALOOK\mods\Adaptive Papyrus Budget - Gameplay Trace\SKSE\Plugins\APBGameplayTrace.dll
+
+dump SkyrimSE.exe.61460.dmp  exc tid=57048 code=0xc0000005 addr=SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233) params=['0x0', '0x88']
+regs: rip=7FF7D1E390CF rsp=B30AEFD4E0 rax=DED8 rbx=88 rcx=88 rdx=1C rsi=70 rdi=88 r8=0 r9=B30AEFD6E0
+frames:
+  [ 0] SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233)
+  [ 1] SkyrimSE+17928D  ExtraDataList::GetExtraData+3D (ID 12329)
+  [ 2] SkyrimSE+15D926  ExtraDataList::GetExtraTextDisplayData+26 (ID 11654)
+  [ 3] SkyrimSE+2EA36B  TESObjectREFR::GetDisplayFullName+2B (ID 19781)
+  [ 4] SkyrimSE+33194A  GameFunc::native::IsInCombat+AA (ID 21576)
+  [ 5] SkyrimSE+4A0C9C  TESConditionItem::IsTrue+6BC (ID 29924)
+  [ 6] LexiconSKSE.dll+5296B
+  [ 7] SkyrimSE+49FB54  ID 29895+E4
+  [ 8] SkyrimSE+3D7ACD  ID 25160+9D
+  [ 9] SkyrimSE+3D43C1  ID 25105+B1
+  [10] SkyrimSE+3D02EB  TESQuest::sub+14BB (ID 25063)
+  [11] SkyrimSE+3CCDFD  TESQuest::sub+1AD (ID 25048)
+  [12] SkyrimSE+532906  BGSStoryTeller::sub+2C6 (ID 32483)
+  [13] SkyrimSE+532D02  BGSStoryTeller::FindQuestsForAllEventsInQueue+42 (ID 32484)
+  [14] SkyrimSE+730D2E  Actor::sub+83E (ID 40438)
+  [15] SkyrimSE+7304BF  PlayerCharacter::CenterOnCell_Impl+26F (ID 40437)
+  [16] SkyrimSE+36B4F0  ConsoleFunc::handler::CenterOnCell+60 (ID 22873)
+  [17] 0x244C6E94012
+raw stack scan (exception thread, from rsp, non-exe modules and exe code):
+  rsp+2B8: LexiconSKSE.dll+5296B
+  rsp+398: EngineFixes.dll+F05D6
+  rsp+938: EngineFixes.dll+F0E95
+  rsp+998: EngineFixes.dll+F177E
+  rsp+AA8: EngineFixes.dll+F1733
+  rsp+15C8: EngineFixes.dll+F0E95
+  rsp+1628: EngineFixes.dll+F19CC
+  rsp+1638: EngineFixes.dll+F0E95
+  rsp+1818: EngineFixes.dll+F0E95
+  rsp+1868: EngineFixes.dll+F05D6
+  rsp+1898: EngineFixes.dll+F1733
+  rsp+1DF8: EngineFixes.dll+F0E95
+  rsp+1E28: EngineFixes.dll+F05D6
+  rsp+1E58: EngineFixes.dll+F1733
+  rsp+1E78: EngineFixes.dll+F05D6
+  rsp+2018: EngineFixes.dll+F19CC
+  rsp+2048: APBGameplayTrace.dll+3D001
+  rsp+2050: APBGameplayTrace.dll+67308
+  rsp+2078: APBGameplayTrace.dll+16118
+  rsp+2080: APBGameplayTrace.dll+67308
+  rsp+20C0: APBGameplayTrace.dll+67308
+  rsp+20E8: skse64_1_6_1170.dll+199AF
+threads with apbgameplay on raw stack: [57048, 63364]
+   tid 57048: APBGameplayTrace.dll+3D001, APBGameplayTrace.dll+67308, APBGameplayTrace.dll+16118, APBGameplayTrace.dll+67308, APBGameplayTrace.dll+67308
+   tid 63364: APBGameplayTrace.dll+123FD, APBGameplayTrace.dll+26A5A, APBGameplayTrace.dll+18195, APBGameplayTrace.dll+68068, APBGameplayTrace.dll+68068, APBGameplayTrace.dll+1BAB8, APBGameplayTrace.dll+67218, APBGameplayTrace.dll+67B70, APBGameplayTrace.dll+67C20, APBGameplayTrace.dll+68148, APBGameplayTrace.dll+68148, APBGameplayTrace.dll+78D3
+   7FFFE7B50000 G:\TAKEALOOK\mods\APB CatchUp Test\SKSE\Plugins\APBGameplayTrace.dll
+
+dump SkyrimSE.exe.59268.dmp  exc tid=60124 code=0xc0000005 addr=SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233) params=['0x0', '0x88']
+regs: rip=7FF7D1E390CF rsp=3B98CFD890 rax=EADC rbx=88 rcx=88 rdx=1C rsi=70 rdi=88 r8=0 r9=3B98CFDA90
+frames:
+  [ 0] SkyrimSE+CC90CF  BSReadWriteLock::LockForRead+F (ID 68233)
+  [ 1] SkyrimSE+17928D  ExtraDataList::GetExtraData+3D (ID 12329)
+  [ 2] SkyrimSE+15D926  ExtraDataList::GetExtraTextDisplayData+26 (ID 11654)
+  [ 3] SkyrimSE+2EA36B  TESObjectREFR::GetDisplayFullName+2B (ID 19781)
+  [ 4] SkyrimSE+33194A  GameFunc::native::IsInCombat+AA (ID 21576)
+  [ 5] SkyrimSE+4A0C9C  TESConditionItem::IsTrue+6BC (ID 29924)
+  [ 6] LexiconSKSE.dll+5296B
+  [ 7] SkyrimSE+49FB54  ID 29895+E4
+  [ 8] SkyrimSE+3D7ACD  ID 25160+9D
+  [ 9] SkyrimSE+3D43C1  ID 25105+B1
+  [10] SkyrimSE+3D02EB  TESQuest::sub+14BB (ID 25063)
+  [11] SkyrimSE+3CCDFD  TESQuest::sub+1AD (ID 25048)
+  [12] SkyrimSE+532906  BGSStoryTeller::sub+2C6 (ID 32483)
+  [13] SkyrimSE+532D02  BGSStoryTeller::FindQuestsForAllEventsInQueue+42 (ID 32484)
+  [14] SkyrimSE+730D2E  Actor::sub+83E (ID 40438)
+  [15] SkyrimSE+7304BF  PlayerCharacter::CenterOnCell_Impl+26F (ID 40437)
+  [16] SkyrimSE+36B4F0  ConsoleFunc::handler::CenterOnCell+60 (ID 22873)
+  [17] 0x1D5ADA3E012
+raw stack scan (exception thread, from rsp, non-exe modules and exe code):
+  rsp+2B8: LexiconSKSE.dll+5296B
+  rsp+398: EngineFixes.dll+F05D6
+  rsp+938: EngineFixes.dll+F0E95
+  rsp+998: EngineFixes.dll+F177E
+  rsp+AA8: EngineFixes.dll+F1733
+  rsp+15C8: EngineFixes.dll+F0E95
+  rsp+1628: EngineFixes.dll+F19CC
+  rsp+1638: EngineFixes.dll+F0E95
+  rsp+1868: EngineFixes.dll+F05D6
+  rsp+1898: EngineFixes.dll+F1733
+  rsp+1DF8: EngineFixes.dll+F0E95
+  rsp+1E28: EngineFixes.dll+F05D6
+  rsp+1E58: EngineFixes.dll+F1733
+  rsp+1E78: EngineFixes.dll+F05D6
+  rsp+2018: EngineFixes.dll+F19CC
+  rsp+2048: APBGameplayTrace.dll+3D001
+  rsp+2050: APBGameplayTrace.dll+67308
+  rsp+2078: APBGameplayTrace.dll+16118
+  rsp+2080: APBGameplayTrace.dll+67308
+  rsp+20C0: APBGameplayTrace.dll+67308
+  rsp+20E8: skse64_1_6_1170.dll+199AF
+threads with apbgameplay on raw stack: [60008, 60124]
+   tid 60008: APBGameplayTrace.dll+123FD, APBGameplayTrace.dll+26A5A, APBGameplayTrace.dll+18195, APBGameplayTrace.dll+68068, APBGameplayTrace.dll+68068, APBGameplayTrace.dll+1BAB8, APBGameplayTrace.dll+67218, APBGameplayTrace.dll+67B70, APBGameplayTrace.dll+67C20, APBGameplayTrace.dll+68148, APBGameplayTrace.dll+68148, APBGameplayTrace.dll+78D3
+   tid 60124: APBGameplayTrace.dll+3D001, APBGameplayTrace.dll+67308, APBGameplayTrace.dll+16118, APBGameplayTrace.dll+67308, APBGameplayTrace.dll+67308
+   7FFFE6D30000 G:\TAKEALOOK\mods\APB CatchUp Test\SKSE\Plugins\APBGameplayTrace.dll

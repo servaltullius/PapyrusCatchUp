@@ -1,0 +1,56 @@
+Release DLL AdaptivePapyrusBudget 0.3.0 run through its real entry path (Plugin.cpp), 2026-11-11 12:27-12:40.
+What this run was for: the new INI option [VMCatchUp] SkipWaitingCalls, read from the INI by the release DLL.
+
+Build under test: 2026-11-11 12:26. DLL SHA-256 167A2C6933EBB7AC75E4ACA349769E642E4C29CAB76D57DE4E2B84E0EF3A5B35.
+Not the DLL in dist/AdaptivePapyrusBudget-0.3.0-AE1170.zip, which is an older build.
+Command per launch: build/catchup/run-release-check.ps1 -Sequence <name> -Mode <mode> [-Set "VMCatchUp|SkipWaitingCalls|true"]
+Profile APB-CatchUp-Release, Save93, FramerateLimit 30, standing in Whiterun; the packaged INI with this run's values.
+The game window was not checked for being in front, so the frame-time figures are not measurements.
+
+RESULT
+1. relchk-1226-acc, Mode=accelerate, option off: install line "skip waiting calls=false". Full-minute report: 1,799 frames,
+   759 extra cycles, 1,659 extra calls, blocked_skips 658 (37% of frames), blocked_stops 670, front_skips 0, order_rebuilds 0,
+   guard_violations 0, held_frames 154 (the hold after the load), gate_closes 0, 0.040 ms extra per frame, max 0.393 ms.
+2. relchk-1226-skip, Mode=accelerate, SkipWaitingCalls=true: install line "skip waiting calls=true". Full-minute report:
+   1,794 frames, 1,515 extra cycles (in 84% of the frames), 4,012 extra calls, front_skips 5,185, the queue rebuilt after 3
+   cycles, blocked_skips 24, blocked_stops 2 (with the rule on these are cycles after which no reachable call could run),
+   guard_violations 0, gate_closes 0, 0.087 ms extra per frame, max 0.561 ms. No "turned off" line.
+3. relchk-1226-off, Mode=off with SkipWaitingCalls=true: the warning "[VMCatchUp] SkipWaitingCalls=true needs Mode=accelerate; it
+   is ignored", then "VM catch-up is off"; nothing installed; the game ran its 90 s.
+So the option reaches the rule through the release DLL, the new report fields are written, and the refusal outside accelerate
+is logged. With the option on the extra cycles ran 2.0 times as often and dispatched 2.4 times as many queued calls as with
+it off, in two separate launches of a standing scene (not a controlled comparison).
+
+After each launch the two usual crash logs were written while the window was being closed (execute access violation at
+0x7FF5DF460000 / 0x7FF5DF450000, also in the launch with nothing installed); no address of this project in their stack sections.
+
+NOT COVERED: any menu during the run (no pausing menu was opened, so gate_closes stayed 0 and the closed-gate line never came),
+saving, a quest or cell change, 42 FPS, a longer session. The first report line of each launch covers one frame only: the
+report interval ended during the load.
+
+The release test mod now holds this DLL and the packaged INI with everything off; the DLL and INI it held before are in
+build/catchup/release-mod-before-relchk-1226.
+
+--- relchk-1226-acc (Mode=accelerate, SkipWaitingCalls=false): AdaptivePapyrusBudget.log
+[12:28:08.132] [43408] [I] AdaptivePapyrusBudget v0-3-0-0
+[12:28:18.267] [43408] [I] Compensation disabled in plugin INI
+[12:28:18.267] [43408] [I] VM catch-up reads: 30 game natives and 14 SKSE natives count as reads
+[12:28:18.267] [43408] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame, skip waiting calls=false
+[12:28:18.267] [43408] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[12:30:37.579] [40276] [I] VM catch-up: frames=1 slow=1 engaged=1 avg_frame_ms=38.04 extra_cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 front_skips=0 order_rebuilds=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 gate_closes=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[12:31:37.585] [40276] [I] VM catch-up: frames=1799 slow=1793 engaged=1799 avg_frame_ms=33.36 extra_cycles=759 with_tasklets=732 extra_calls=1659 leftover_tasklets=2 idle_stops=0 time_stops=0 blocked_stops=670 blocked_skips=658 front_skips=0 order_rebuilds=0 guard_violations=0 direct_changes=6350 frozen_stops=0 held_frames=154 overrun_pauses=0 gate_closes=0 extra_ms_per_frame=0.0404 max_frame_extra_ms=0.393 max_update_ms=0.260 max_batch_ms=0.146 slowest_batch_tasklets=1 max_batch_tasklets=19
+
+--- relchk-1226-skip (Mode=accelerate, SkipWaitingCalls=true): AdaptivePapyrusBudget.log
+[12:32:19.818] [41348] [I] AdaptivePapyrusBudget v0-3-0-0
+[12:32:29.960] [41348] [I] Compensation disabled in plugin INI
+[12:32:29.960] [41348] [I] VM catch-up reads: 30 game natives and 14 SKSE natives count as reads
+[12:32:29.960] [41348] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame, skip waiting calls=true
+[12:32:29.960] [41348] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[12:34:46.003] [49116] [I] VM catch-up: frames=1 slow=1 engaged=1 avg_frame_ms=36.16 extra_cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 front_skips=0 order_rebuilds=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 gate_closes=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[12:35:46.008] [49116] [I] VM catch-up: frames=1794 slow=1785 engaged=1794 avg_frame_ms=33.45 extra_cycles=1515 with_tasklets=1511 extra_calls=4012 leftover_tasklets=4 idle_stops=0 time_stops=0 blocked_stops=2 blocked_skips=24 front_skips=5185 order_rebuilds=3 guard_violations=0 direct_changes=6225 frozen_stops=0 held_frames=149 overrun_pauses=0 gate_closes=0 extra_ms_per_frame=0.0866 max_frame_extra_ms=0.561 max_update_ms=0.498 max_batch_ms=0.344 slowest_batch_tasklets=2 max_batch_tasklets=51
+
+--- relchk-1226-off (Mode=off, SkipWaitingCalls=true): AdaptivePapyrusBudget.log
+[12:36:27.884] [31176] [I] AdaptivePapyrusBudget v0-3-0-0
+[12:36:27.885] [31176] [W] [VMCatchUp] SkipWaitingCalls=true needs Mode=accelerate; it is ignored
+[12:36:37.909] [31176] [I] Compensation disabled in plugin INI
+[12:36:37.909] [31176] [I] VM catch-up is off ([VMCatchUp] Mode=off)

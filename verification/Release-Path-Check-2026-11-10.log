@@ -1,0 +1,65 @@
+Release DLL AdaptivePapyrusBudget 0.3.0 run through its real entry path (Plugin.cpp: INI reading,
+menu/load gate, periodic report), 2026-11-10 08:46-09:00.
+
+Build under test: source after the 2026-11-10 review fixes (queue-front check before a cycle, new
+counters, violation stop, collecting only while engaged, strict INI switches, locale-independent
+numbers). DLL SHA-256 D5029BA57757B9A876E5EFD434CF3CAB67C38236973A2E8FD74829BCBECE4575.
+This is not the DLL in dist/AdaptivePapyrusBudget-0.3.0-AE1170.zip (25429bd8...), which predates
+those fixes and has never been run in the game.
+
+Setup: profile APB-CatchUp-Release, Save93 loaded by APBTestSaveLoader, SSE Display Tweaks limiter
+30 FPS, DynamicUpdateBudget off, Papyrus log off, Papyrus Tweaks NG 4.1.1 active (iMaxOpsPerFrame
+500, bSpeedUpNativeCalls off). The profile lists TulliusNovelistProbe-0.0.3 as enabled, but that
+mod folder no longer exists, so it was not loaded. The player stands still in Whiterun; no menu
+was opened and no save was made, so the menu gate and the save freeze were not exercised. The game
+window was not kept in front (the user worked over a remote session), so frame-cost numbers below
+are not measurements. Script: build/catchup/run-release-check.ps1; run folders relcheck-off,
+relcheck-carried, relcheck-accelerate.
+
+Result summary
+- Mode=off with [General] Enabled=flase: the typo is reported and the feature stays off; no hook is
+  installed; the game ran 90 s after the save load.
+- Mode=carried with MaxExtraMS=1.5 and [NativePacing] Enabled=maybe: the number is read as 1.50 ms,
+  the typo is reported and native pacing stays off. One full report minute: 1,795 frames, all
+  engaged, 148 held after the load, 11 extra cycles that dispatched 174 queued messages, 1,483
+  frames skipped because the queue front had to wait, guard_violations 0.
+- Mode=accelerate with the packaged INI: two full report minutes. Second minute: 1,800 frames,
+  1,185 extra cycles, 3,268 queued messages dispatched (about 2.8 per cycle), 579 frames skipped
+  because the front had to wait (32 %), 905 cycles stopped at a waiting front, 15 idle stops,
+  guard_violations 0, overrun_pauses 0, at most 0.55 ms extra in a frame.
+- leftover_tasklets was 0 (carried), 2 and 4 (accelerate) per minute: in this scene and with the
+  500-op limit, tasklets carried over by the op limit are almost absent, so the extra tasklet
+  batches ran the scripts the cycle's own calls resumed. The vanilla 100-op limit and busier scenes
+  are not covered by this.
+- Every run left the two exit crash logs of the known pattern (execution of an unmapped 64 KB
+  aligned address while the game closes), after the run had completed.
+
+== relcheck-off: deployed INI values
+Mode=off EngageBelowFPS=50 TargetFPS=60 MaxExtraCycles=4 MaxExtraMS=2.0 Enabled=flase Benchmark=false Enabled=false 
+== relcheck-off: plugin.log
+[08:46:49.365] [67188] [I] AdaptivePapyrusBudget v0-3-0-0
+[08:46:49.365] [67188] [W] Unknown INI value [General] Enabled = 'flase'; the feature stays off (use true or false)
+[08:46:59.557] [67188] [I] Compensation disabled in plugin INI
+[08:46:59.557] [67188] [I] VM catch-up is off ([VMCatchUp] Mode=off)
+
+== relcheck-carried: deployed INI values
+Mode=carried EngageBelowFPS=50 TargetFPS=60 MaxExtraCycles=4 MaxExtraMS=1.5 Enabled=false Benchmark=false Enabled=maybe 
+== relcheck-carried: plugin.log
+[08:51:01.308] [61912] [I] AdaptivePapyrusBudget v0-3-0-0
+[08:51:01.309] [61912] [W] Unknown INI value [NativePacing] Enabled = 'maybe'; the feature stays off (use true or false)
+[08:51:11.452] [61912] [I] Compensation disabled in plugin INI
+[08:51:11.452] [61912] [I] Installed VM catch-up: mode=carried, below 50 FPS, target=60 Hz, max 4 extra cycles and 1.50 ms per frame
+[08:53:25.163] [23496] [I] VM catch-up: frames=1 slow=1 engaged=1 avg_frame_ms=40.40 extra_cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[08:54:25.172] [27784] [I] VM catch-up: frames=1795 slow=1786 engaged=1795 avg_frame_ms=33.43 extra_cycles=11 with_tasklets=11 extra_calls=174 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=11 blocked_skips=1483 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=148 overrun_pauses=0 extra_ms_per_frame=0.0011 max_frame_extra_ms=0.321 max_update_ms=0.187 max_batch_ms=0.133 slowest_batch_tasklets=16 max_batch_tasklets=16
+
+== relcheck-accelerate: deployed INI values
+Mode=accelerate EngageBelowFPS=50 TargetFPS=60 MaxExtraCycles=4 MaxExtraMS=2.0 Enabled=false Benchmark=false Enabled=false 
+== relcheck-accelerate: plugin.log
+[08:55:24.596] [35080] [I] AdaptivePapyrusBudget v0-3-0-0
+[08:55:34.820] [35080] [I] Compensation disabled in plugin INI
+[08:55:34.821] [35080] [I] Installed VM catch-up: mode=accelerate, below 50 FPS, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[08:55:34.821] [35080] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[08:57:55.388] [60008] [I] VM catch-up: frames=1 slow=1 engaged=1 avg_frame_ms=150.03 extra_cycles=0 with_tasklets=0 extra_calls=0 leftover_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 blocked_skips=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[08:58:55.419] [10616] [I] VM catch-up: frames=1788 slow=1784 engaged=1788 avg_frame_ms=33.57 extra_cycles=986 with_tasklets=973 extra_calls=3241 leftover_tasklets=2 idle_stops=0 time_stops=0 blocked_stops=703 blocked_skips=378 guard_violations=0 direct_changes=7732 frozen_stops=0 held_frames=146 overrun_pauses=0 extra_ms_per_frame=0.0582 max_frame_extra_ms=0.550 max_update_ms=0.496 max_batch_ms=0.193 slowest_batch_tasklets=6 max_batch_tasklets=51
+[08:59:55.420] [60684] [I] VM catch-up: frames=1800 slow=1800 engaged=1800 avg_frame_ms=33.33 extra_cycles=1185 with_tasklets=1152 extra_calls=3268 leftover_tasklets=4 idle_stops=15 time_stops=0 blocked_stops=905 blocked_skips=579 guard_violations=0 direct_changes=3700 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0668 max_frame_extra_ms=0.314 max_update_ms=0.222 max_batch_ms=0.219 slowest_batch_tasklets=6 max_batch_tasklets=20
+

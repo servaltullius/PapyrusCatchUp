@@ -1,0 +1,34 @@
+Actor.GetActorValue: registered at 9ECAEA (func id=54784) callback 9E82B0 id=54675
+Actor.GetActorValuePercentage: registered at 9ECBCE (func id=54784) callback 9E83F0 id=54677
+Actor.GetBaseActorValue: registered at 9ECC40 (func id=54784) callback 9E8460 id=54678
+Actor.GetEquippedArmorInSlot: registered at 9ED0E4 (func id=54784) callback 9E8690 id=54684
+Actor.GetEquippedWeapon: registered at 9ED356 (func id=54784) callback 9F52D0 id=54924
+Actor.GetFactionRank: registered at 9ED5D3 (func id=54784) callback 9E87A0 id=54686
+Actor.GetRace: registered at 9EDBFB (func id=54784) callback 9F5340 id=54930
+Actor.HasMagicEffect: registered at 9EE13B (func id=54784) callback 9E76B0 id=54649
+Actor.HasMagicEffectWithKeyword: registered at 9EE270 (func id=54784) callback 9E76F0 id=54650
+Actor.HasPerk: registered at 9EE30E (func id=54784) callback 9E7560 id=54644
+Actor.HasSpell: registered at 9EE3C6 (func id=54784) callback 9E7870 id=54653
+Actor.IsDead: registered at 9EE741 (func id=54784) callback 9E8CA0 id=54705
+Actor.IsInCombat: registered at 9EE9ED (func id=54784) callback 9F54A0 id=54945
+Actor.IsInFaction: registered at 9EEA3F (func id=54784) callback 9F54B0 id=54946
+Actor.IsSneaking: registered at 9EED06 (func id=54784) callback 9F5520 id=54953
+Actor.WornHasKeyword: registered at 9F0C9B (func id=54784) callback 9EB770 id=54777
+ActorBase.GetSex: registered at A2456F (func id=55991) callback A255E0 id=56005
+Alias.GetOwningQuest: registered at 9FBFFE (func id=55146) callback 9FD320 id=55155
+Form.HasKeyword: registered at A1F740 (func id=55890) callback A1EC50 id=55870
+FormList.HasForm: registered at A16F36 (func id=55671) callback callback not recognised
+Game.GetFormFromFile: registered at A0E708 (func id=55503) callback A0C7E0 id=55465
+Game.GetPlayer: registered at A0EA82 (func id=55503) callback A0CBB0 id=55469
+GlobalVariable.GetValue: registered at A21525 (func id=55926) callback A217F0 id=55930
+ObjectReference.GetBaseObject: registered at A334A7 (func id=56246) callback A2D060 id=56168
+ObjectReference.GetDistance: registered at A33710 (func id=56246) callback A2D0A0 id=56170
+ObjectReference.GetItemCount: registered at A338CE (func id=56246) callback callback not recognised
+ObjectReference.GetPositionX: registered at A33E98 (func id=56246) callback A2D2D0 id=56178
+ObjectReference.GetPositionY: registered at A33F20 (func id=56246) callback A2D2E0 id=56179
+ObjectReference.GetPositionZ: registered at A33F9A (func id=56246) callback A2D2F0 id=56180
+ObjectReference.GetScale: registered at A34016 (func id=56246) callback A44B70 id=56633
+ObjectReference.Is3DLoaded: registered at A34610 (func id=56246) callback A2D550 id=56188
+ObjectReference.IsDisabled: registered at A3478C (func id=56246) callback A44BD0 id=56639
+ObjectReference.IsInDialogueWithPlayer: registered at A348BC (func id=56246) callback A2D7A0 id=56194
+ReferenceAlias.GetReference: registered at A0377E (func id=55292) callback A033F0 id=55287

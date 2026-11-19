@@ -1,0 +1,50 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 limiter 30 FPS, DynamicUpdateBudget=false / Papyrus Tweaks NG 4.1.1 with bImproveValidateArgsLogs=true / Papyrus bEnableLogging=0, bEnableProfiling=1
+APB_GAMEPLAY_TRACE=catchup-ab, APB_CATCHUP_MODE=accelerate, APB_CATCHUP_TARGET=60. Test DLL APBGameplayTrace.dll sha256 1601c46f7ec7cad20f0986077f445373f30b0e2261b46b572c01913100b210ae, same VMCatchUp source as AdaptivePapyrusBudget.dll cb0ebc0a...
+This build also judges natives that tasklets call directly (105176 +0x82F, 105204 +0x56 -> 104853 +0x650); direct_changes counts those that marked their script as changed.
+Order off,on,on,off,on,off,off,on in one launch. Drain = last equip signal to the last equip/unequip handler exit. Compare trials with the same handler count (174 vs 202/203 is a scene variable).
+Render percentiles are unavailable for this run: tests/analyze_gameplay_trace.py stops with 'PresentMon rows do not form pairs' (double-recorded presents). Engine frame times are below.
+
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 174 0 1288.079 0 0.000 0 0 0 0 0.0000 0.000
+2 on 12 12 203 0 1123.946 239 33.330 207 165 0 0 0.0886 0.478
+3 on 12 12 174 0 656.678 239 33.332 206 152 0 0 0.0840 0.593
+4 off 12 11 202 0 1986.585 0 0.000 0 0 0 0 0.0000 0.000
+5 on 12 12 203 0 1154.590 240 33.334 224 164 0 0 0.0932 0.469
+6 off 12 12 174 0 1390.925 0 0.000 0 0 0 0 0.0000 0.000
+7 off 12 12 202 0 2024.491 0 0.000 0 0 0 0 0.0000 0.000
+8 on 12 12 174 0 690.029 239 33.333 204 164 0 0 0.0969 0.645
+off: drain_median_ms=1688.755 min=1288.079 max=2024.491 n=4
+on: drain_median_ms=906.988 min=656.678 max=1154.590 n=4
+drain median change on vs off: -46.3%
+== tests/analyze_engine_frames.py
+trial mode frames avg_ms median_ms p95_ms p99_ms max_ms
+1 off 239 33.339 33.204 35.360 35.690 35.879
+2 on 239 33.330 33.190 35.536 36.047 36.526
+3 on 239 33.334 33.206 35.279 35.522 35.854
+4 off 239 33.337 33.188 35.300 35.525 35.679
+5 on 239 33.327 33.305 35.110 35.476 35.665
+6 off 239 33.334 33.253 35.229 35.377 35.474
+7 off 239 33.331 33.286 35.090 35.571 36.331
+8 on 239 33.330 33.090 35.692 35.949 36.048
+off: frames=956 avg_ms=33.335 median_ms=33.224 p95_ms=35.272 p99_ms=35.571 max_ms=36.331
+on: frames=956 avg_ms=33.330 median_ms=33.198 p95_ms=35.390 p99_ms=35.918 max_ms=36.526
+== vm.log catch-up lines
+[49900] [I] Installed VM catch-up: mode=accelerate, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[49900] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[57240] [I] catch-up trial=1 enabled=false target_hz=60 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[57240] [I] gameplay result trial=1 equip=true enabled=false actions=12 events=14827 player=00000000 promoted=0 peak=0 probes=59.198,50.962,55.390,89.557,57.809,58.146,57.298,56.279,55.986,57.314,56.203,54.244,58.741,58.799,58.666,56.693,59.435,56.482,58.962,57.315,59.182,57.434,56.440,56.363,59.594,58.169,58.547,58.468,55.466,58.950,57.486,58.594
+[57240] [I] catch-up trial=2 enabled=true target_hz=60 frames=239 slow=239 avg_frame_ms=33.330 cycles=207 with_tasklets=165 idle_stops=0 time_stops=0 blocked_stops=180 guard_violations=0 direct_changes=913 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=21.177 extra_ms_per_frame=0.0886 max_frame_extra_ms=0.478 max_update_ms=0.401 max_batch_ms=0.276
+[57240] [I] gameplay result trial=2 equip=true enabled=true actions=12 events=15403 player=00000000 promoted=0 peak=0 probes=55.797,52.389,54.769,57.835,55.903,57.339,54.315,55.771,55.360,53.995,54.063,58.121,56.719,57.536,54.547,58.755,56.891,59.767,58.847,58.311,57.147,59.483,56.706,56.098,89.812,59.204,52.525,56.542,56.757,57.495,57.414,57.254
+[57240] [I] catch-up trial=3 enabled=true target_hz=60 frames=239 slow=239 avg_frame_ms=33.332 cycles=206 with_tasklets=152 idle_stops=0 time_stops=0 blocked_stops=171 guard_violations=0 direct_changes=833 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=20.070 extra_ms_per_frame=0.0840 max_frame_extra_ms=0.593 max_update_ms=0.353 max_batch_ms=0.265
+[57240] [I] gameplay result trial=3 equip=true enabled=true actions=12 events=13493 player=00000000 promoted=0 peak=0 probes=56.453,58.266,55.477,54.697,55.478,55.998,56.382,55.354,53.746,53.909,54.807,55.651,56.787,57.976,57.382,59.563,56.143,58.297,54.574,58.661,58.538,58.416,54.270,60.011,57.700,57.740,57.723,57.938,56.467,56.779,53.888,58.864
+[57240] [I] catch-up trial=4 enabled=false target_hz=60 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[57240] [I] gameplay result trial=4 equip=true enabled=false actions=12 events=13216 player=00000000 promoted=0 peak=0 probes=56.123,56.541,57.196,56.585,59.274,55.928,56.192,56.816,57.353,54.845,54.008,52.989,53.891,58.938,57.482,58.974,60.542,58.402,59.111,59.123,58.122,58.801,58.218,58.111,57.980,55.686,57.742,57.258,58.739,58.875,57.903,58.772
+[57240] [I] catch-up trial=5 enabled=true target_hz=60 frames=240 slow=240 avg_frame_ms=33.334 cycles=224 with_tasklets=164 idle_stops=0 time_stops=0 blocked_stops=196 guard_violations=0 direct_changes=915 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=22.361 extra_ms_per_frame=0.0932 max_frame_extra_ms=0.469 max_update_ms=0.345 max_batch_ms=0.148
+[57240] [I] gameplay result trial=5 equip=true enabled=true actions=12 events=13865 player=00000000 promoted=0 peak=0 probes=58.083,57.646,57.145,58.597,57.439,55.227,55.503,55.989,57.099,55.335,56.247,53.283,59.154,58.563,59.850,58.890,59.324,58.414,58.756,54.826,58.433,59.262,57.551,59.755,56.559,58.894,57.075,58.286,59.119,58.239,58.881,56.963
+[57240] [I] catch-up trial=6 enabled=false target_hz=60 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[57240] [I] gameplay result trial=6 equip=true enabled=false actions=12 events=13144 player=00000000 promoted=0 peak=0 probes=56.615,59.206,57.711,56.791,55.813,56.364,89.626,56.050,56.185,53.964,52.585,55.687,56.575,58.530,58.658,56.952,57.656,56.404,59.389,57.391,57.778,58.653,58.386,56.560,56.589,59.538,57.564,58.726,60.499,58.738,57.194,58.028
+[57240] [I] catch-up trial=7 enabled=false target_hz=60 frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 direct_changes=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[57240] [I] gameplay result trial=7 equip=true enabled=false actions=12 events=12769 player=00000000 promoted=0 peak=0 probes=55.060,55.430,55.518,56.529,88.902,54.708,56.206,57.316,57.138,54.130,57.464,57.229,56.330,60.727,58.868,57.952,57.190,58.219,57.350,57.137,55.727,57.893,56.816,58.554,58.123,58.597,59.605,59.272,58.385,58.013,59.047,56.684
+[57240] [I] catch-up trial=8 enabled=true target_hz=60 frames=239 slow=239 avg_frame_ms=33.333 cycles=204 with_tasklets=164 idle_stops=0 time_stops=0 blocked_stops=189 guard_violations=0 direct_changes=1049 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=23.151 extra_ms_per_frame=0.0969 max_frame_extra_ms=0.645 max_update_ms=0.454 max_batch_ms=0.498
+[57240] [I] gameplay result trial=8 equip=true enabled=true actions=12 events=14263 player=00000000 promoted=0 peak=0 probes=56.578,56.057,52.028,55.395,55.887,57.485,55.893,56.248,55.417,56.612,53.594,57.784,59.307,56.903,57.803,58.328,58.694,54.850,57.678,60.907,58.747,58.536,60.325,57.562,58.308,57.797,57.351,58.664,58.712,59.146,57.730,58.772

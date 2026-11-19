@@ -1,0 +1,74 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 limiter 42 FPS, DynamicUpdateBudget=false / APB_GAMEPLAY_TRACE=catchup-ab, target 50 Hz
+Order off,on,on,off,on,off,off,on in one launch. Drain = last equip signal to the last equip/unequip handler exit.
+
+== tests/analyze_catchup_ab.py
+trial mode signals matched handlers open drain_ms frames avg_frame_ms cycles with_tasklets idle_stops time_stops extra_ms_per_frame max_frame_extra_ms
+1 off 12 12 174 0 299.689 0 0.000 0 0 0 0 0.0000 0.000
+2 on 12 12 174 0 203.578 335 23.811 63 63 0 0 0.0280 0.745
+3 on 12 12 174 0 205.611 335 23.812 63 63 0 0 0.0263 0.604
+4 off 12 12 174 0 321.338 0 0.000 0 0 0 0 0.0000 0.000
+5 on 12 12 174 0 204.660 335 23.812 63 63 0 0 0.0246 0.236
+6 off 12 12 174 0 324.627 0 0.000 0 0 0 0 0.0000 0.000
+7 off 12 12 174 0 253.459 0 0.000 0 0 0 0 0.0000 0.000
+8 on 12 12 174 0 201.278 335 23.812 63 63 0 0 0.0235 0.225
+off: drain_median_ms=310.514 min=253.459 max=324.627 n=4
+on: drain_median_ms=204.119 min=201.278 max=205.611 n=4
+drain median change on vs off: -34.3%
+
+== tests/analyze_gameplay_trace.py
+trial mode signals matched completed open drain_ms probes p95_ms engine presents frame_p99_ms alt_p99_ms promoted
+1 off 12 12 174 0 299.689 32 41.828 336 672 24.305 24.392 0
+2 on 12 12 174 0 203.578 32 41.115 336 672 24.252 24.392 0
+3 on 12 12 174 0 205.611 32 40.652 336 672 24.257 24.314 0
+4 off 12 12 174 0 321.338 32 39.876 336 672 24.200 24.247 0
+5 on 12 12 174 0 204.660 32 41.208 336 672 24.307 24.361 0
+6 off 12 12 174 0 324.627 32 41.484 336 672 24.223 24.395 0
+7 off 12 12 174 0 253.459 32 40.740 337 672 24.200 24.358 0
+8 on 12 12 174 0 201.278 32 41.021 336 672 24.206 24.327 0
+off: probes=128 probe_p95_ms=41.286 action_probes=48 action_probe_p95_ms=39.871 drain_median_ms=310.514 frame_median_ms=23.812 frame_p99_ms=24.239 alt_frame_p99_ms=24.389
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=369 queued=367 equip_queued=72 equip_queue_p95_ms=24.410 equip_queue_total_ms=1629.869
+  form.haskeyword: executions=630 queued=630 equip_queued=576 equip_queue_p95_ms=46.890 equip_queue_total_ms=14510.654
+on: probes=128 probe_p95_ms=41.021 action_probes=48 action_probe_p95_ms=39.386 drain_median_ms=204.119 frame_median_ms=23.813 frame_p99_ms=24.252 alt_frame_p99_ms=24.358
+  form.gettype: executions=0 queued=0 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  form.getformid: executions=3 queued=3 equip_queued=0 equip_queue_p95_ms=n/a equip_queue_total_ms=0.000
+  game.getplayer: executions=370 queued=369 equip_queued=72 equip_queue_p95_ms=23.409 equip_queue_total_ms=510.374
+  form.haskeyword: executions=624 queued=624 equip_queued=576 equip_queue_p95_ms=47.010 equip_queue_total_ms=11085.515
+
+== APBGameplayTrace.log (selected lines)
+[16:24:35.191] [11896] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[16:27:10.688] [12268] [I] gameplay trace start form=FEC6580E qpc_hz=10000000
+[16:27:10.688] [12268] [I] gameplay window trial=1 equip=true enabled=false cells=false qpc=1646857364958
+[16:27:18.689] [12268] [I] gameplay end trial=1 qpc=1646937371739
+[16:27:18.706] [12268] [I] catch-up trial=1 enabled=false frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[16:27:18.707] [12268] [I] gameplay result trial=1 equip=true enabled=false actions=12 events=14892 player=00000000 promoted=0 peak=0 probes=42.220,41.001,38.481,38.736,38.207,36.398,39.871,37.085,38.212,35.029,39.450,37.246,40.098,37.899,41.274,38.663,41.286,38.418,41.828,39.635,41.779,37.704,41.434,40.153,40.061,39.676,39.843,39.802,41.215,39.746,40.838,39.798
+[16:27:20.707] [12268] [I] gameplay window trial=2 equip=true enabled=true cells=false qpc=1646957551315
+[16:27:28.708] [12268] [I] gameplay end trial=2 qpc=1647037559146
+[16:27:28.726] [12268] [I] catch-up trial=2 enabled=true frames=335 slow=335 avg_frame_ms=23.811 cycles=63 with_tasklets=63 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=9.372 extra_ms_per_frame=0.0280 max_frame_extra_ms=0.745 max_update_ms=0.478 max_batch_ms=0.265
+[16:27:28.726] [12268] [I] gameplay result trial=2 equip=true enabled=true actions=12 events=14929 player=00000000 promoted=0 peak=0 probes=38.941,38.802,39.351,36.940,38.946,37.227,39.386,35.596,37.929,37.782,36.471,36.340,40.246,40.856,38.387,38.787,40.669,38.234,39.240,41.115,39.856,40.680,40.842,39.623,40.192,39.724,42.636,38.405,39.310,40.249,40.745,37.213
+[16:27:30.726] [12268] [I] gameplay window trial=3 equip=true enabled=true cells=false qpc=1647057744255
+[16:27:38.727] [12268] [I] gameplay end trial=3 qpc=1647137751728
+[16:27:38.743] [12268] [I] catch-up trial=3 enabled=true frames=335 slow=335 avg_frame_ms=23.812 cycles=63 with_tasklets=63 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=8.796 extra_ms_per_frame=0.0263 max_frame_extra_ms=0.604 max_update_ms=0.491 max_batch_ms=0.111
+[16:27:38.744] [12268] [I] gameplay result trial=3 equip=true enabled=true actions=12 events=13714 player=00000000 promoted=0 peak=0 probes=39.132,37.974,37.646,38.123,37.565,38.051,37.577,38.977,38.521,37.845,38.959,38.870,38.702,39.982,40.023,36.889,40.632,40.459,39.010,39.622,40.526,39.856,40.652,38.922,41.415,39.240,36.875,37.071,40.283,38.615,39.599,40.133
+[16:27:40.744] [12268] [I] gameplay window trial=4 equip=true enabled=false cells=false qpc=1647157923339
+[16:27:48.745] [12268] [I] gameplay end trial=4 qpc=1647237933127
+[16:27:48.761] [12268] [I] catch-up trial=4 enabled=false frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[16:27:48.761] [12268] [I] gameplay result trial=4 equip=true enabled=false actions=12 events=12889 player=00000000 promoted=0 peak=0 probes=34.244,37.391,36.318,38.396,37.710,36.443,37.396,36.992,37.443,37.048,36.609,35.444,36.930,39.174,39.467,39.415,37.957,39.876,38.274,39.579,37.863,39.762,37.473,38.518,36.917,39.315,39.187,39.784,38.910,40.016,39.209,39.487
+[16:27:50.762] [12268] [I] gameplay window trial=5 equip=true enabled=true cells=false qpc=1647258097216
+[16:27:58.762] [12268] [I] gameplay end trial=5 qpc=1647338104517
+[16:27:58.777] [12268] [I] catch-up trial=5 enabled=true frames=335 slow=335 avg_frame_ms=23.812 cycles=63 with_tasklets=63 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=8.250 extra_ms_per_frame=0.0246 max_frame_extra_ms=0.236 max_update_ms=0.140 max_batch_ms=0.144
+[16:27:58.777] [12268] [I] gameplay result trial=5 equip=true enabled=true actions=12 events=12436 player=00000000 promoted=0 peak=0 probes=39.036,38.377,37.779,36.285,39.078,38.225,38.167,38.169,36.673,37.785,37.847,36.637,41.679,39.922,39.823,39.865,36.672,37.544,38.268,39.581,40.184,39.305,41.208,39.022,40.955,40.305,39.781,39.295,39.937,39.253,39.594,38.703
+[16:28:00.778] [12268] [I] gameplay window trial=6 equip=true enabled=false cells=false qpc=1647358257929
+[16:28:08.779] [12268] [I] gameplay end trial=6 qpc=1647438271427
+[16:28:08.796] [12268] [I] catch-up trial=6 enabled=false frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[16:28:08.796] [12268] [I] gameplay result trial=6 equip=true enabled=false actions=12 events=14926 player=00000000 promoted=0 peak=0 probes=37.916,38.675,36.026,33.888,39.293,37.493,39.007,39.222,39.334,38.149,37.983,37.067,61.865,39.231,40.674,41.484,38.453,40.578,37.487,40.823,39.682,39.639,37.551,40.121,38.491,38.675,38.617,40.286,39.759,38.068,37.953,40.634
+[16:28:10.797] [12268] [I] gameplay window trial=7 equip=true enabled=false cells=false qpc=1647458449163
+[16:28:18.798] [12268] [I] gameplay end trial=7 qpc=1647538464333
+[16:28:18.814] [12268] [I] catch-up trial=7 enabled=false frames=0 slow=0 avg_frame_ms=0.000 cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=0.000 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000
+[16:28:18.814] [12268] [I] gameplay result trial=7 equip=true enabled=false actions=12 events=13103 player=00000000 promoted=0 peak=0 probes=37.950,38.649,35.018,37.235,36.965,38.337,38.203,37.035,36.207,38.871,35.826,38.452,39.219,39.691,39.687,37.591,38.859,41.266,38.806,40.740,40.475,39.989,40.051,39.375,39.155,40.347,38.259,39.116,38.073,39.985,38.922,39.103
+[16:28:20.815] [12268] [I] gameplay window trial=8 equip=true enabled=true cells=false qpc=1647558627397
+[16:28:28.815] [12268] [I] gameplay end trial=8 qpc=1647638633838
+[16:28:28.834] [12268] [I] catch-up trial=8 enabled=true frames=335 slow=335 avg_frame_ms=23.812 cycles=63 with_tasklets=63 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_total=7.862 extra_ms_per_frame=0.0235 max_frame_extra_ms=0.225 max_update_ms=0.139 max_batch_ms=0.143
+[16:28:28.834] [12268] [I] gameplay result trial=8 equip=true enabled=true actions=12 events=15260 player=00000000 promoted=0 peak=0 probes=38.257,39.377,37.882,37.734,39.408,39.675,38.525,38.829,39.122,38.131,36.164,33.025,39.040,41.021,39.766,39.748,38.822,40.162,39.079,39.989,39.996,39.605,39.990,37.663,43.057,39.968,39.720,39.789,39.119,38.948,39.041,39.717
+[16:28:30.834] [12268] [I] gameplay trace complete

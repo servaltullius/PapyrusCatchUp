@@ -1,0 +1,91 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 limiter 30 FPS / Papyrus bEnableLogging=1 / APB_GAMEPLAY_TRACE=catchup-soak, APB_CATCHUP_MODE=accelerate, APB_CATCHUP_TARGET=60
+Test DLL APBGameplayTrace.dll sha256 1601c46f7ec7cad20f0986077f445373f30b0e2261b46b572c01913100b210ae (current source, includes the direct tasklet judgement) for all three runs.
+Order: accelerate (APB_CATCHUP_ON=1), not installed (none), accelerate. Every attempt is listed; all three completed 8 trips (no aborted attempt).
+erbw = 'ERBWRestore.GetBaseObject' errors. papyrus_errors = lines with 'Error:'. jb1 = JB1ClearAlias.OnCellDetach errors. crash_logs = the known exit crash 0x7FF7529B0000 after completion.
+One overrun pause in final-acc-1 trip 8: a single extra Update took 7.336 ms shortly after arriving outside; catch-up paused 3 s as designed.
+
+run           condition  trips  frames  cycles  cycles_per_trip                  blocked  violations  overrun  erbw  papyrus_errors  jb1  crash_logs
+final-acc-1   ?          8      4699    2483    314/355/345/298/313/334/293/231  2226     0           1        1     698             2    0
+final-none-1  ?          8      0       0       0/0/0/0/0/0/0/0                  0        0           0        3     684             0    2
+final-acc-2   ?          8      4780    2570    310/340/335/280/363/331/304/307  2289     0           0        0     681             2    0
+
+== per-trip catch-up lines
+-- final-acc-1
+[61356] [I] Installed VM catch-up: mode=accelerate, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[20524] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=467 slow=467 cycles=314 with_tasklets=206 blocked_stops=287 guard_violations=0 direct_changes=2273 overrun_pauses=0 max_frame_extra_ms=0.676 max_update_ms=0.493 max_batch_ms=0.308 slowest_batch_tasklets=3 max_batch_tasklets=50
+[20524] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=613 slow=610 cycles=355 with_tasklets=257 blocked_stops=303 guard_violations=0 direct_changes=3147 overrun_pauses=0 max_frame_extra_ms=0.291 max_update_ms=0.183 max_batch_ms=0.125 slowest_batch_tasklets=2 max_batch_tasklets=15
+[20524] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=481 slow=480 cycles=345 with_tasklets=224 blocked_stops=314 guard_violations=0 direct_changes=2307 overrun_pauses=0 max_frame_extra_ms=0.544 max_update_ms=0.492 max_batch_ms=0.139 slowest_batch_tasklets=4 max_batch_tasklets=48
+[20524] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=619 slow=614 cycles=298 with_tasklets=230 blocked_stops=264 guard_violations=0 direct_changes=3527 overrun_pauses=0 max_frame_extra_ms=0.605 max_update_ms=0.392 max_batch_ms=0.254 slowest_batch_tasklets=7 max_batch_tasklets=15
+[20524] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=695 slow=656 cycles=313 with_tasklets=227 blocked_stops=280 guard_violations=0 direct_changes=2433 overrun_pauses=0 max_frame_extra_ms=0.488 max_update_ms=0.380 max_batch_ms=0.158 slowest_batch_tasklets=4 max_batch_tasklets=13
+[20524] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=694 slow=664 cycles=334 with_tasklets=224 blocked_stops=292 guard_violations=0 direct_changes=3792 overrun_pauses=0 max_frame_extra_ms=0.540 max_update_ms=0.493 max_batch_ms=0.153 slowest_batch_tasklets=3 max_batch_tasklets=48
+[20524] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=700 slow=658 cycles=293 with_tasklets=183 blocked_stops=274 guard_violations=0 direct_changes=2845 overrun_pauses=0 max_frame_extra_ms=0.476 max_update_ms=0.371 max_batch_ms=0.152 slowest_batch_tasklets=3 max_batch_tasklets=13
+[42876] [I] VM catch-up paused for 3 s: 1 extra cycles took 7.365 ms (limit 2.00 ms)
+[20524] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=430 slow=430 cycles=231 with_tasklets=152 blocked_stops=212 guard_violations=0 direct_changes=3518 overrun_pauses=1 max_frame_extra_ms=7.365 max_update_ms=7.336 max_batch_ms=0.146 slowest_batch_tasklets=4 max_batch_tasklets=9
+[20524] [I] catch-up soak complete
+-- final-none-1
+[13116] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 direct_changes=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[13116] [I] catch-up soak complete
+-- final-acc-2
+[60852] [I] Installed VM catch-up: mode=accelerate, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[31808] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=562 slow=562 cycles=310 with_tasklets=200 blocked_stops=286 guard_violations=0 direct_changes=2438 overrun_pauses=0 max_frame_extra_ms=1.827 max_update_ms=0.507 max_batch_ms=0.430 slowest_batch_tasklets=10 max_batch_tasklets=97
+[31808] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=619 slow=619 cycles=340 with_tasklets=249 blocked_stops=268 guard_violations=0 direct_changes=3185 overrun_pauses=0 max_frame_extra_ms=0.940 max_update_ms=0.810 max_batch_ms=0.193 slowest_batch_tasklets=8 max_batch_tasklets=20
+[31808] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=592 slow=592 cycles=335 with_tasklets=225 blocked_stops=291 guard_violations=0 direct_changes=2413 overrun_pauses=0 max_frame_extra_ms=0.766 max_update_ms=0.679 max_batch_ms=0.382 slowest_batch_tasklets=2 max_batch_tasklets=24
+[31808] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=667 slow=667 cycles=280 with_tasklets=215 blocked_stops=255 guard_violations=0 direct_changes=3769 overrun_pauses=0 max_frame_extra_ms=0.549 max_update_ms=0.491 max_batch_ms=0.155 slowest_batch_tasklets=2 max_batch_tasklets=47
+[31808] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=670 slow=670 cycles=363 with_tasklets=238 blocked_stops=311 guard_violations=0 direct_changes=2580 overrun_pauses=0 max_frame_extra_ms=0.592 max_update_ms=0.441 max_batch_ms=0.235 slowest_batch_tasklets=3 max_batch_tasklets=14
+[31808] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=675 slow=674 cycles=331 with_tasklets=202 blocked_stops=310 guard_violations=0 direct_changes=3823 overrun_pauses=0 max_frame_extra_ms=0.386 max_update_ms=0.345 max_batch_ms=0.152 slowest_batch_tasklets=1 max_batch_tasklets=14
+[31808] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=563 slow=563 cycles=304 with_tasklets=181 blocked_stops=278 guard_violations=0 direct_changes=2494 overrun_pauses=0 max_frame_extra_ms=0.774 max_update_ms=0.491 max_batch_ms=0.185 slowest_batch_tasklets=4 max_batch_tasklets=37
+[31808] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=432 slow=432 cycles=307 with_tasklets=202 blocked_stops=290 guard_violations=0 direct_changes=3444 overrun_pauses=0 max_frame_extra_ms=0.480 max_update_ms=0.370 max_batch_ms=0.212 slowest_batch_tasklets=6 max_batch_tasklets=11
+[31808] [I] catch-up soak complete
+
+== papyrus error kinds, none vs acc-1
+lines: baseline=4582 candidate=4653
+error: baseline=685 (219 kinds) candidate=699 (219 kinds)
+warning: baseline=1888 (250 kinds) candidate=1887 (251 kinds)
+stack dump: baseline=0 (0 kinds) candidate=0 (0 kinds)
+overstressed: baseline=0 (0 kinds) candidate=0 (0 kinds)
+
+== error: only in candidate (2 kinds)
+      1  Error: alias Follower on quest JB1ChattyFollowers (#): Cannot clear a non-optional alias.
+      1  Error: alias Groupie on quest JB1ChattyFollowers (#): Cannot clear a non-optional alias.
+
+== error: only in baseline (2 kinds)
+      2  Error: Property raceController on script DZ_HighElfRaceController attached to 00DZH_HighElfRaceController (#) cannot be bound because 00DZH_HighElfRaceController (#) is not the right type
+      1  Error: Unable to call Dispel - no native object bound to the script object, or object is of incorrect type
+
+== warning: only in candidate (2 kinds)
+      2  warning: Property raceController on script DZ_HighElfRaceController attached to 00DZH_HighElfRaceController (#) cannot be initialized because the script no longer contains that property
+      2  warning: Assigning None to a non-object variable named "::temp2"
+
+== warning: only in baseline (1 kinds)
+      1  warning: Type of variable ::raceController_var on script DZ_HighElfRaceController, which is None, doesn't match the type loaded in the actual object. This variable will be skipped.
+
+== papyrus error kinds, none vs acc-2
+lines: baseline=4582 candidate=4580
+error: baseline=685 (219 kinds) candidate=682 (216 kinds)
+warning: baseline=1888 (250 kinds) candidate=1873 (250 kinds)
+stack dump: baseline=0 (0 kinds) candidate=0 (0 kinds)
+overstressed: baseline=0 (0 kinds) candidate=0 (0 kinds)
+
+== error: only in candidate (2 kinds)
+      1  Error: alias Follower on quest JB1FollowerGreeting (#): Cannot clear a non-optional alias.
+      1  Error: alias Greeter on quest JB1FollowerGreeting (#): Cannot clear a non-optional alias.
+
+== error: only in baseline (5 kinds)
+      3  Error: Unable to call GetBaseObject - no native object bound to the script object, or object is of incorrect type
+      3  Error: File "EldenRimBattleWill.esp" does not exist or is not currently loaded.
+      2  Error: Property raceController on script DZ_HighElfRaceController attached to 00DZH_HighElfRaceController (#) cannot be bound because 00DZH_HighElfRaceController (#) is not the right type
+      1  Error: Cannot call Play() on a None object, aborting function call
+      1  Error: Unable to call Dispel - no native object bound to the script object, or object is of incorrect type
+
+== warning: only in candidate (1 kinds)
+      2  warning: Property raceController on script DZ_HighElfRaceController attached to 00DZH_HighElfRaceController (#) cannot be initialized because the script no longer contains that property
+
+== warning: only in baseline (1 kinds)
+      1  warning: Type of variable ::raceController_var on script DZ_HighElfRaceController, which is None, doesn't match the type loaded in the actual object. This variable will be skipped.

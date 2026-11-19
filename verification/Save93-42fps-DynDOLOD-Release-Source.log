@@ -1,0 +1,61 @@
+Save93 / Whiterun exterior / DynDOLOD root-lock release and stock tasklet admission / 2026-11-09
+
+Setup and methods
+- Skyrim AE 1.6.1170.0, exact Save93 copy, SSE Display Tweaks 0.5.16 with its 42 FPS cap and dynamic Papyrus budget, frame generation off only in the disposable fixture. Four Bannered Mare to WhiterunWorld transitions and 32 Utility.Wait(0.01) probes per window. Observation only.
+- For GetWorldSpace calls whose queue wait overlaps the final DynDOLOD stack's root-lock wait, match native completion, the stock return-tasklet enqueue bracket (R/r), and acceptance (T) by exact tasklet pointer and stack. Pair that pointer to the real submitted BSJobs list and preceding stock collection call. Count a missed collection only when the entire enqueue finished before an earlier stock collection start. A publication overlapping collection is reported separately.
+- Capture the stock caller RVA immediately after the existing atomic object release succeeds on a DynDOLOD root in VMProcess. Match the same lock token through acquisition and release and correlate the subsequent different-object acquisition and next delayed native dispatch. The verified release call at 104853+0x29F returns to RVA 0x144E614. The original code compares previous and next script-object pointers and releases the old object's lock only on the different-object branch before attempting the new lock.
+- Time the existing TasksToJobs vtable method 104855 and compare the job array capacity before and after the original method. Every real submitted tasklet list is checked against the actual size delta. Array growth is the diagnostic criterion for the preallocation candidate. Elapsed time in the whole method is a conservative upper bound on time that its own optimization could save per call.
+- Also examined the operation-limit mechanism in Papyrus Tweaks NG (https://github.com/Nightfallstorm/PapyrusTweaks/blob/main/src/hooks/performance/MaxOps.h). It raises the operation count in the bytecode loop. Here an extra instruction budget could matter only if a resumed tasklet yielded again before the lock switch.
+- Test DLL built and runtime installation passed. Budget policy and synthetic collection boundary, capacity, job membership and next-call pairing checks passed. Final DLL SHA256 BB532DB496AF81BB1C2452CD0E7BEB89416C58FD2DA315085F32A3C81D7D92F4. Raw capture build/gameplay-trace/cell-42-getworldspace-release-observe.
+
+Release and ordered tasklet collection
+trial=1 dyn_tail=1485846 activity={'collections': 742, 'joined_batches': 371, 'holder_worldspace': 24, 'matched_return_tasklet': 24, 'collected_first_opportunity': 24, 'acquired_a_different_object_before_next_native': 24} sites={21292564: 24} next={'GetAt': 24}
+trial=2 dyn_tail=1487667 activity={'collections': 734, 'joined_batches': 367, 'holder_worldspace': 20, 'matched_return_tasklet': 20, 'collected_first_opportunity': 20, 'acquired_a_different_object_before_next_native': 20} sites={21292564: 20} next={'GetAt': 20}
+trial=3 dyn_tail=1488993 activity={'collections': 753, 'joined_batches': 376, 'holder_worldspace': 22, 'matched_return_tasklet': 22, 'collected_first_opportunity': 22, 'acquired_a_different_object_before_next_native': 22} sites={21292564: 22} next={'GetAt': 22}
+trial=4 dyn_tail=1490333 activity={'collections': 747, 'joined_batches': 373, 'holder_worldspace': 24, 'matched_return_tasklet': 24, 'collected_first_opportunity': 24, 'acquired_a_different_object_before_next_native': 24} sites={21292564: 24} next={'GetAt': 24}
+activity {'collections': 2976, 'joined_batches': 1487, 'holder_worldspace': 90, 'matched_return_tasklet': 90, 'collected_first_opportunity': 90, 'acquired_a_different_object_before_next_native': 90}
+release_sites 0x144E614=90
+next_native_after_object_switch {'GetAt': 90}
+collect_ms n=2976 p50=0.0005 p95=0.0009 max=0.0130 sum=1.5236
+native_marshalling_ms n=90 p50=0.0062 p95=0.0080 max=0.0091 sum=0.5348
+publication_to_accept_ms n=90 p50=0.2082 p95=0.4720 max=0.5582 sum=22.0110
+publication_to_collection_ms n=90 p50=0.1824 p95=0.4416 max=0.5097 sum=19.2854
+tasklet_accept_to_root_release_ms n=90 p50=0.0013 p95=0.0044 max=0.0128 sum=0.1907
+
+Independent stock native drain and frame validation
+trial=1 mode=off tail=1485846 drains=371 budget_stops=37 frames_first_2s_after_arrival=75 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=3 after_budget_stop=2 after_empty_drain=19
+trial=2 mode=off tail=1487667 drains=367 budget_stops=30 frames_first_2s_after_arrival=72 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=1 after_empty_drain=18 after_budget_stop=1
+trial=3 mode=off tail=1488993 drains=376 budget_stops=20 frames_first_2s_after_arrival=83 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=2 after_budget_stop=1 after_empty_drain=19
+trial=4 mode=off tail=1490333 drains=373 budget_stops=30 frames_first_2s_after_arrival=83 frames_last_2s=81 unpaired_drain_starts=0 budget_deferred=4 after_empty_drain=19 after_budget_stop=1
+drain_end_reasons {'budget': 117, 'empty': 1370} original_budget_ms_median=0.434 min=0.405 max=0.437
+after_budget_stop calls=5 lock_hold_overlap_ms=64.306 Q_to_P_p50_ms=17.939 Q_to_P_p95_ms=20.294
+after_empty_drain calls=75 lock_hold_overlap_ms=1254.064 Q_to_P_p50_ms=16.459 Q_to_P_p95_ms=18.487
+budget_deferred calls=10 lock_hold_overlap_ms=499.969 Q_to_P_p50_ms=55.927 Q_to_P_p95_ms=110.521
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.105 p95_ms=0.144
+after_empty_drain enqueue_done_to_drain_p50_ms=16.377 p95_ms=18.467
+after_empty_drain drain_start_to_pop_p50_ms=0.074 p95_ms=0.178
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.128 p95_ms=0.157
+after_budget_stop enqueue_done_to_drain_p50_ms=17.626 p95_ms=19.967
+after_budget_stop drain_start_to_pop_p50_ms=0.240 p95_ms=0.412
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=65 original_budget_ms=0.435335
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=62 original_budget_ms=0.424440
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=32 original_budget_ms=0.435172
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=8 original_budget_ms=0.433553
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=31 original_budget_ms=0.436144
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=12 original_budget_ms=0.435820
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=76 original_budget_ms=0.435780
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=43 original_budget_ms=0.435982
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=21 original_budget_ms=0.435982
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=2 original_budget_ms=0.436023
+off_metrics probes=128 response_p95_ms=41.462 steady_frame_p50_ms=23.810 steady_frame_p99_ms=27.189 early_frame_p99_ms=63.572 arrival_to_drain_median_ms=2079.307 total_median_ms=9814.297 tail_wait_median_ms=8546.703 at_return_wait_median_ms=955.830 holder_queue_median_ms=469.702
+
+Interpretation
+- 90 holder calls matched the exact return tasklet. The original lock survived native completion and return publication in all 90. The worker accepted the return and released the original lock from the stock different-object call entry site 0x144E614. All 90 then acquired a different object lock and dispatched FormList.GetAt.
+- The waiting stack resumes its DynDOLOD script on the same Papyrus object after GetWorldSpace. The release comes at the following call to a different script object, not when the GetWorldSpace callback finishes or the scheduler finishes a list. Returning to the same owning object preserves its serialization until a genuine ownership change.
+- No returned target missed an existing eligible tasklet collection. Publication to return acceptance was 0.2082 ms at median and 0.4720 ms at p95. From acceptance to release it was 0.0013 ms at median, 0.0044 ms at p95 and at most 0.0128 ms, without an intervening frame. That rules out a second tasklet-operation limit pause for this measured chain.
+- The stock collector ran 2976 times, with zero job-array capacity increases and 0.0009 ms p95 elapsed time. No preallocation target was observed. The complete measured native marshalling cost for the 90 calls summed to 0.5348 ms across four runs, placing an upper bound on removing that specific computation.
+- No supported acceleration candidate emerged from these three alternatives under the existing lock and FIFO constraints. The test DLL has observation only. The timings are stock baseline observations, not an A/B effect estimate. All four windows completed and PresentMon exited 0.
+
+Restoration
+- Original MO2 profile restored and disposable fixture archived under build/gameplay-trace/getworldspace-release-fixture.
+- Original Save93 ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA matched. Original SkyrimUpscaler.ini 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E matched.

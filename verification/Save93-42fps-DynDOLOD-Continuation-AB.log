@@ -1,0 +1,59 @@
+Save93 / Whiterun exterior / DynDOLOD continuation / 2026-11-09
+
+Runtime and procedure
+- Skyrim AE 1.6.1170.0, SSE Display Tweaks 0.5.16, 42 FPS game cap and dynamic Papyrus budget enabled, 60 FPS loading screen cap.
+- Save93 loaded once per launch. Each trial entered Bannered Mare (0001605E), waited for steady interior cadence, and returned to WhiterunWorld (0001A27F). Four measured exterior returns in ABBA order. The real DynDOLOD and other load-order mods supplied the workload. Later trials inherit in-session state.
+- Off and on shared tracing. The continuation was armed only after confirming arrival and the loading menu had closed. 32 Utility.Wait(0.01) responses per trial from about one second after arrival, with one pending SKSE task.
+- Total measures the time from the exterior request to completion of the last tracked cell event. Drain starts at confirmed arrival. The event cohort consists of cell roots queued from request until probe start. Tail wait sums root Q->P and native Q->P on the last completed root. It includes loading and excludes separately timed native execution.
+- Frame intervals are PresentMon QPC gaps validated against engine render counts. Steady windows use the last two seconds. Post-load frame metrics cover the probe window.
+- Save93 original files checked before and after. SHA256 ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D
+- SHA256 SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA
+- Final APBGameplayTrace.dll SHA256 565AA7B3F67850A08AC2BD252D9120C822A84608846433CA7A192F23F8FEE458
+- Test DLL and copied profile archived after completion. MO2 profile restored to TKL - MUNG ADDON - SPS Test.
+
+Final implementation and observations
+- Stock drain/retry use the original SSE Display Tweaks budget. After a stock function call returns, the test admits only the just-returned DynDOLOD root at the front of the existing tasklet queue, with a stock native byte and identity check and a same-render-frame deadline. Stock target-object locking and VM result marshalling stay in the engine path.
+- Scope is at most one resumed tasklet and one newly eligible stock getter per render frame. The 0.25 ms check is an admission deadline. Processing time is checked after the engine routine returns, and a slice exceeding 0.5 ms disables further attempts in that trial.
+- Four eligible off candidates, one on continuation in two on trials. The successful continuation occurred on the last tracked stack in trial 3. Its engine tasklet took 0.0201 ms including the check and continuation.
+- For stack 1488833, thread 30496, render frame 9113, stock FormList.GetAt return -> inline ObjectReference.GetWorldSpace dispatch took 0.0117 ms. Enqueue -> tasklet acceptance was 0.0017 ms. Both native dispatches and returns are present on the same thread. The render sampler measured a local 22.075 ms interval. This was in the 42 FPS-capped run, with some transition frames faster than the cap and exactly 84 frames in each final two-second window.
+- Trial 3 stock GetAt before the promotion held the list lock for 23.4145 ms from G to X. The promoted GetWorldSpace reused the reacquired root lock, then the original VM switched targets and acquired the list lock for the next GetAt. No GetAt itself was promoted. After the promoted getter, the next GetAt queued and completed via stock processing. Its Q->P was 0.0686 ms.
+- For context, on the same DynDOLOD root type after arrival, 56 off GetAt return -> next GetWorldSpace dispatch samples had trial medians of about 23.3 ms and 18.6 ms. These include natural queue and locking differences across different instances and are not paired counterfactuals.
+- Response p95 after excluding the first four probes from each trial as a sensitivity check was off 39.844 ms and on 39.575 ms. One on trial never activated and the largest off spikes clustered near the start of a trial. Attribution of aggregate gains or regressions to the single continuation is unsupported.
+- Stock locking is tied to VM stack ownership. AE 1.6.1170 disassembly at Address Library IDs 104257 and 104258 shows a successful new acquisition incrementing the owning stack reference count, then release decrementing it. The lock can span the handoff to the native queue. This supports preserving the engine acquisition/release path. Earlier scheduling can still change ordering against other scripts, array observations and object binding timing. This short run proves a successful dispatch/return, not general lifetime safety or equivalence of returned object identity under concurrent mutation.
+- Earlier in this session, an indoor-window pilot was invalid because rendering did not stabilize during capture. The staged phase-end ABBA below completed but never activated the extra execution. Its on/off variation demonstrates how the last completing root and measured wait can change without intervention.
+
+Verification
+- xmake build APBGameplayTrace and xmake build AdaptivePapyrusBudget succeeded. xmake run budget_policy_tests passed.
+- Trace analyzer accepted a synthetic same-stack/thread/frame continuation and rejected wrong thread, stack and frame records.
+- Both staged and final runs produced four complete captures, with no dropped trace events. PresentMon warned about process-query privileges. The captured Skyrim frame counts agreed with the independent render counter in the measured windows.
+- Raw folders: build/gameplay-trace/cell-42-continuation-budget-ab and build/gameplay-trace/cell-42-continuation-staged-ab.
+- f is a stock matching return. m is a queue guard rejection. H is an eligible disabled candidate. h is a resumed tasklet, i a scoped immediate getter, k completion of the slice.
+
+Final ABBA
+1 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1485698 roots=391 open=0 arrival_ms=7683.680 drain_ms=2527.843 total_ms=10211.523 root_wait_ms=8128.325 native_wait_ms=666.675 tail_wait_ms=8795.000 target_wait_ms=523.514
+  probes=32 p95_ms=76.141 post_load_frames=335 post_load_p99_ms=40.816 last_2s_frames=84 steady_p99_ms=24.042 f=34 m=21 H=3 h=0 i=0 k=0 rejected_state=9 rejected_budget=1 target_tail_promotions=0 max_slice_ms=n/a
+2 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1487426 roots=389 open=0 arrival_ms=8547.420 drain_ms=2124.078 total_ms=10671.498 root_wait_ms=8264.787 native_wait_ms=484.685 tail_wait_ms=8749.472 target_wait_ms=412.518
+  probes=32 p95_ms=39.575 post_load_frames=344 post_load_p99_ms=27.804 last_2s_frames=84 steady_p99_ms=23.964 f=26 m=21 H=0 h=0 i=0 k=0 rejected_state=4 rejected_budget=1 target_tail_promotions=0 max_slice_ms=n/a
+3 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1488833 roots=390 open=0 arrival_ms=7623.944 drain_ms=2019.383 total_ms=9643.327 root_wait_ms=7740.082 native_wait_ms=535.129 tail_wait_ms=8275.211 target_wait_ms=411.551
+  probes=32 p95_ms=38.831 post_load_frames=343 post_load_p99_ms=28.189 last_2s_frames=84 steady_p99_ms=24.175 f=23 m=14 H=0 h=1 i=1 k=1 rejected_state=7 rejected_budget=0 target_tail_promotions=1 max_slice_ms=0.020
+  promoted stack=1488833 frame=9113 getter=objectreference.getworldspace sampled_render_period_ms=22.075
+4 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1490030 roots=390 open=0 arrival_ms=7679.403 drain_ms=2045.921 total_ms=9725.324 root_wait_ms=7594.507 native_wait_ms=902.690 tail_wait_ms=8497.197 target_wait_ms=605.487
+  probes=32 p95_ms=38.870 post_load_frames=342 post_load_p99_ms=29.646 last_2s_frames=84 steady_p99_ms=24.595 f=33 m=24 H=1 h=0 i=0 k=0 rejected_state=7 rejected_budget=1 target_tail_promotions=0 max_slice_ms=n/a
+off probes=64 response_p95_ms=61.037 frame_median_ms=23.810 frame_p99_ms=24.042 alt_p99_ms=n/a post_load_p99_ms=37.498 arrival_median_ms=7681.542(n=2) drain_median_ms=2286.882(n=2) total_median_ms=9968.423(n=2) root_wait_median_ms=7861.416(n=2) native_wait_median_ms=784.682(n=2) tail_wait_median_ms=8646.099(n=2) target_wait_median_ms=564.501(n=2)
+  stock_GetAt_lock_hold_n=80 p50_ms=23.270 p95_ms=79.027
+on probes=64 response_p95_ms=39.310 frame_median_ms=23.810 frame_p99_ms=24.116 alt_p99_ms=n/a post_load_p99_ms=28.189 arrival_median_ms=8085.682(n=2) drain_median_ms=2071.730(n=2) total_median_ms=10157.412(n=2) root_wait_median_ms=8002.434(n=2) native_wait_median_ms=509.907(n=2) tail_wait_median_ms=8512.341(n=2) target_wait_median_ms=412.035(n=2)
+  stock_GetAt_lock_hold_n=80 p50_ms=18.351 p95_ms=81.021
+
+Earlier staged ABBA with no actual activation
+1 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1485658 roots=390 open=0 arrival_ms=10189.682 drain_ms=1976.613 total_ms=12166.295 root_wait_ms=8163.084 native_wait_ms=338.170 tail_wait_ms=8501.254 target_wait_ms=305.626
+  probes=32 p95_ms=39.184 post_load_frames=349 post_load_p99_ms=24.996 last_2s_frames=84 steady_p99_ms=41.156 f=7 m=1 H=1 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 max_slice_ms=n/a
+2 on ht_playeralias.OnLocationChange stack=1487506 roots=390 open=0 arrival_ms=9922.229 drain_ms=1655.972 total_ms=11578.201 root_wait_ms=565.957 native_wait_ms=183.413 tail_wait_ms=749.370 target_wait_ms=263.173
+  probes=32 p95_ms=43.420 post_load_frames=350 post_load_p99_ms=25.533 last_2s_frames=82 steady_p99_ms=70.143 f=2 m=0 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 max_slice_ms=n/a
+3 on ht_playeralias.OnLocationChange stack=1489057 roots=388 open=0 arrival_ms=10637.650 drain_ms=1871.547 total_ms=12509.196 root_wait_ms=643.850 native_wait_ms=269.225 tail_wait_ms=913.075 target_wait_ms=283.902
+  probes=32 p95_ms=39.113 post_load_frames=346 post_load_p99_ms=28.529 last_2s_frames=84 steady_p99_ms=27.450 f=8 m=0 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 max_slice_ms=n/a
+4 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1490390 roots=391 open=0 arrival_ms=10181.563 drain_ms=1642.583 total_ms=11824.147 root_wait_ms=7683.554 native_wait_ms=304.336 tail_wait_ms=7987.891 target_wait_ms=271.121
+  probes=32 p95_ms=37.988 post_load_frames=343 post_load_p99_ms=36.106 last_2s_frames=84 steady_p99_ms=24.167 f=6 m=0 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 max_slice_ms=n/a
+off probes=64 response_p95_ms=39.069 frame_median_ms=23.814 frame_p99_ms=24.167 alt_p99_ms=n/a post_load_p99_ms=31.161 arrival_median_ms=10185.623(n=2) drain_median_ms=1809.598(n=2) total_median_ms=11995.221(n=2) root_wait_median_ms=7923.319(n=2) native_wait_median_ms=321.253(n=2) tail_wait_median_ms=8244.572(n=2) target_wait_median_ms=288.374(n=2)
+  stock_GetAt_lock_hold_n=80 p50_ms=16.778 p95_ms=33.527
+on probes=64 response_p95_ms=39.113 frame_median_ms=23.810 frame_p99_ms=27.450 alt_p99_ms=n/a post_load_p99_ms=28.529 arrival_median_ms=10279.939(n=2) drain_median_ms=1763.759(n=2) total_median_ms=12043.699(n=2) root_wait_median_ms=604.904(n=2) native_wait_median_ms=226.319(n=2) tail_wait_median_ms=831.223(n=2) target_wait_median_ms=273.538(n=2)
+  stock_GetAt_lock_hold_n=80 p50_ms=16.624 p95_ms=35.167

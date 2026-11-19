@@ -1,0 +1,131 @@
+Save93 / AE 1.6.1170 / SSE Display Tweaks 0.5.16 limiter 30 FPS / Papyrus bEnableLogging=1 / APB_GAMEPLAY_TRACE=catchup-soak, APB_CATCHUP_MODE=carried, APB_CATCHUP_TARGET=60
+Test DLL APBGameplayTrace.dll sha256 d6b6121d9bffdad133cd4f6ebbde2bb875cf18ecedde4d0452451f1bebf821f8 for every run below.
+One launch per run: 8 trips between WhiterunOrigin (exterior, 0001A27F) and WhiterunBanneredMare (0001605E) by coc, 11 s wait, 32 equip/unequip + Utility.Wait probes per trip.
+Conditions (APB_CATCHUP_ON): none = VMCatchUp not installed; 0 = installed, gate never opens; dry = gate opens and hooks collect, no extra cycle; 1 = extra cycles.
+erbw = 'ERBWRestore.GetBaseObject' errors (one per error). papyrus_errors = lines with 'Error:'. jb1 = JB1ClearAlias.OnCellDetach errors.
+crash_logs = Crash Logger files copied for the run; all are the known exit crash at 0x7FF7529B0000 / 0x7FF7529A0000 written after the run completed.
+erbw-c2-off-a and erbw-c3-dry-b stopped on trip 3 with the coc crash at SkyrimSE+0xCC90CF; see Soak-coc-Crash-Dumps.log.
+
+run             condition  trips  frames  cycles  cycles_per_trip  blocked  violations  overrun  erbw  papyrus_errors  jb1  crash_logs
+erbw-c1-none-a  none       8      0       0       0/0/0/0/0/0/0/0  0        0           0        0     683             0    0
+erbw-c1-none-b  none       8      0       0       0/0/0/0/0/0/0/0  0        0           0        1     681             0    0
+erbw-c2-off-a   off        2      0       0       0/0              0        0           0        0     654             0    0
+erbw-c2-off-a2  off        8      0       0       0/0/0/0/0/0/0/0  0        0           0        2     683             2    2
+erbw-c2-off-b   off        8      0       0       0/0/0/0/0/0/0/0  0        0           0        0     687             0    2
+erbw-c3-dry-a   dry        8      4218    0       0/0/0/0/0/0/0/0  0        0           0        0     691             0    0
+erbw-c3-dry-b   dry        2      1094    0       0/0              0        0           0        0     657             0    0
+erbw-c3-dry-b2  dry        8      3773    0       0/0/0/0/0/0/0/0  0        0           0        0     674             0    0
+erbw-c4-on-a    on         8      4826    16      8/1/2/0/1/2/1/1  16       0           0        0     680             2    2
+erbw-c4-on-b    on         8      4510    22      6/5/2/0/0/4/1/4  21       0           0        0     676             0    0
+
+== per-trip catch-up lines
+-- erbw-c1-none-a
+[57908] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57908] [I] catch-up soak complete
+-- erbw-c1-none-b
+[57592] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[57592] [I] catch-up soak complete
+-- erbw-c2-off-a
+[27052] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[63364] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[63364] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+-- erbw-c2-off-a2
+[36372] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[58480] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58480] [I] catch-up soak complete
+-- erbw-c2-off-b
+[39176] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[58544] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=0 slow=0 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[58544] [I] catch-up soak complete
+-- erbw-c3-dry-a
+[54472] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[41336] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=467 slow=465 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=450 slow=450 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=699 slow=649 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=453 slow=452 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=704 slow=659 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=440 slow=440 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=564 slow=561 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=441 slow=438 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[41336] [I] catch-up soak complete
+-- erbw-c3-dry-b
+[51344] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[60008] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=475 slow=473 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[60008] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=619 slow=614 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+-- erbw-c3-dry-b2
+[31664] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[24312] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=481 slow=480 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=446 slow=446 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=694 slow=657 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=456 slow=455 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=560 slow=557 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=447 slow=447 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=555 slow=553 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak cycle=8 cell=0001A27F requested=0 responses=0 failures=0 frames=134 slow=99 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[24312] [I] catch-up soak complete
+-- erbw-c4-on-a
+[11320] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[61000] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=475 slow=475 cycles=8 with_tasklets=8 blocked_stops=8 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.565 max_update_ms=0.459 max_batch_ms=0.280 slowest_batch_tasklets=32 max_batch_tasklets=69
+[61000] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=686 slow=657 cycles=1 with_tasklets=1 blocked_stops=1 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.157 max_update_ms=0.098 max_batch_ms=0.057 slowest_batch_tasklets=12 max_batch_tasklets=12
+[61000] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=489 slow=489 cycles=2 with_tasklets=2 blocked_stops=2 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.454 max_update_ms=0.200 max_batch_ms=0.252 slowest_batch_tasklets=19 max_batch_tasklets=19
+[61000] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=655 slow=628 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[61000] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=488 slow=487 cycles=1 with_tasklets=0 blocked_stops=1 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.060 max_update_ms=0.059 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[61000] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=651 slow=635 cycles=2 with_tasklets=2 blocked_stops=2 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.463 max_update_ms=0.209 max_batch_ms=0.251 slowest_batch_tasklets=15 max_batch_tasklets=15
+[61000] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=690 slow=680 cycles=1 with_tasklets=1 blocked_stops=1 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.090 max_update_ms=0.065 max_batch_ms=0.024 slowest_batch_tasklets=4 max_batch_tasklets=4
+[61000] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=692 slow=654 cycles=1 with_tasklets=1 blocked_stops=1 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.100 max_update_ms=0.061 max_batch_ms=0.037 slowest_batch_tasklets=5 max_batch_tasklets=5
+[61000] [I] catch-up soak complete
+-- erbw-c4-on-b
+[2356 ] [I] Installed VM catch-up: mode=carried, target=60 Hz, max 4 extra cycles and 2.00 ms per frame
+[59876] [I] catch-up soak cycle=1 cell=0001605E requested=32 responses=32 failures=0 frames=467 slow=467 cycles=6 with_tasklets=6 blocked_stops=6 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.527 max_update_ms=0.293 max_batch_ms=0.282 slowest_batch_tasklets=14 max_batch_tasklets=21
+[59876] [I] catch-up soak cycle=2 cell=0001A27F requested=32 responses=32 failures=0 frames=635 slow=622 cycles=5 with_tasklets=5 blocked_stops=5 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.163 max_update_ms=0.112 max_batch_ms=0.050 slowest_batch_tasklets=10 max_batch_tasklets=10
+[59876] [I] catch-up soak cycle=3 cell=0001605E requested=32 responses=32 failures=0 frames=489 slow=489 cycles=2 with_tasklets=2 blocked_stops=2 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.438 max_update_ms=0.200 max_batch_ms=0.236 slowest_batch_tasklets=16 max_batch_tasklets=16
+[59876] [I] catch-up soak cycle=4 cell=0001A27F requested=32 responses=32 failures=0 frames=655 slow=637 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[59876] [I] catch-up soak cycle=5 cell=0001605E requested=32 responses=32 failures=0 frames=688 slow=678 cycles=0 with_tasklets=0 blocked_stops=0 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[59876] [I] catch-up soak cycle=6 cell=0001A27F requested=32 responses=32 failures=0 frames=456 slow=456 cycles=4 with_tasklets=4 blocked_stops=4 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.492 max_update_ms=0.239 max_batch_ms=0.252 slowest_batch_tasklets=24 max_batch_tasklets=24
+[59876] [I] catch-up soak cycle=7 cell=0001605E requested=32 responses=32 failures=0 frames=680 slow=679 cycles=1 with_tasklets=1 blocked_stops=1 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.086 max_update_ms=0.073 max_batch_ms=0.011 slowest_batch_tasklets=2 max_batch_tasklets=2
+[59876] [I] catch-up soak cycle=8 cell=0001A27F requested=32 responses=32 failures=0 frames=440 slow=440 cycles=4 with_tasklets=4 blocked_stops=3 guard_violations=0 overrun_pauses=0 max_frame_extra_ms=0.652 max_update_ms=0.528 max_batch_ms=0.246 slowest_batch_tasklets=20 max_batch_tasklets=93
+[59876] [I] catch-up soak complete
+
+== papyrus error kinds, none-a vs on-b (tests/compare_papyrus_logs.py)
+lines: baseline=4564 candidate=4542
+error: baseline=684 (214 kinds) candidate=677 (214 kinds)
+warning: baseline=1887 (250 kinds) candidate=1877 (249 kinds)
+stack dump: baseline=0 (0 kinds) candidate=0 (0 kinds)
+overstressed: baseline=0 (0 kinds) candidate=0 (0 kinds)
+
+== error: only in candidate (1 kinds)
+      1  Error: Unable to call RegisterForSingleUpdate - no native object bound to the script object, or object is of incorrect type
+
+== error: only in baseline (1 kinds)
+      2  Error: Unable to call RegisterForAnimationEvent - no native object bound to the script object, or object is of incorrect type
+
+== warning: only in baseline (1 kinds)
+      2  warning: Assigning None to a non-object variable named "::temp53"

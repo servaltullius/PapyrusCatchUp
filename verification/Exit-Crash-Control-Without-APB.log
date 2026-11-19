@@ -1,0 +1,39 @@
+Exit-crash control: profile APB-CatchUp-Release with AdaptivePapyrusBudget.dll removed (only APBTestSaveLoader.dll),
+Save93 loaded, 150 s of gameplay, then the window was closed the same way the measurement scripts close it.
+CrashLogger wrote the same exit crash as in the measurement runs, so it is not caused by this plugin.
+
+== crash-2026-11-09-18-23-10.log
+CRASH TIME: 2026-11-09 18:23:10
+Skyrim SSE v1.6.1170
+CrashLoggerSSE v1-27-0-0 Oct 25 2026 06:20:14
+Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF7529B0000
+Exception Flags: 0x00000000 (Continuable)
+Number of Parameters: 2
+Exception Thread ID: 54280
+Access Violation: Tried to execute memory at 0x7FF7529B0000
+ACCESS VIOLATION ANALYSIS: Unable to disassemble instruction at 0x00007FF7529B0000 (memory not readable)
+POSSIBLE RELEVANT OBJECTS:
+CALL STACK ([P]robable / [S]tack scan):
+	[ 0][P] 0x7FF7529B0000                      
+	[ 1][S] 0x7FFFA27B3807    SkyrimUpscaler.dll+02C3807
+	[ 2][S] 0x7FFF750A317E RicochetFramework.dll+00B317E	movaps xmm6, [rsp+0x20] |  F:\VS_Modding\RicochetFramework-master\src\Main.hpp:68 static void Events::MainEvent::ProcessInputHookTemplate(RE::BSTEventSource<RE::InputEvent *> *,RE::InputEvent * const *) [?ProcessInputHookTemplate@MainEvent@Events@@CAXPEAV?$BSTEventSource@PEAVInputEvent@RE@@@RE@@PEBQEAVInputEvent@4@@Z] | params: dispatcher: RE::BSTEventSource<RE::InputEvent *>*, eventList: const RE::InputEvent**
+	[ 3][S] 0x7FF7D12D40EE          SkyrimSE.exe+01640EE -> 11810+0xE	test rax, rax
+	[ 4][S] 0x7FFF611D65C8         SkyPrompt.dll+00365C8
+	[ 5][S] 0x7FFFF51B202E           DINPUT8.dll+001202E
+	[ 6][S] 0x7FFF6020C922         SmartTalk.dll+006C922	add rsp, 0x28 |  F:\VS_Modding\SmartTalk-master\src\Main.hpp:64 static void Events::MainEvent::ProcessInputHookTemplate(RE::BSTEventSource<RE::InputEvent *> *,RE::InputEvent * const *) [?ProcessInputHookTemplate@MainEvent@Events@@CAXPEAV?$BSTEventSource@PEAVInputEvent@RE@@@RE@@PEBQEAVInputEvent@4@@Z] | params: dispatcher: RE::BSTEventSource<RE::InputEvent *>*, eventList: const RE::InputEvent**
+	[ 7][S] 0x7FF7D1E49E00          SkyrimSE.exe+0CD9E00 -> 68654+0x50	mov rax, rsp
+	[ 8][S] 0x7FFF3B28C1DF     zzzz_TypeMode.dll+001C1DF
+	[ 9][S] 0x7FF7D1E4E9FF          SkyrimSE.exe+0CDE9FF -> 68802+0xDF	inc ebx
+	[10][S] 0x7FF7D1E48FC0          SkyrimSE.exe+0CD8FC0 -> 68617+0x80	mov rcx, [0x00007FF7D4321468]
+
+== crash-2026-11-09-18-23-13.log
+CRASH TIME: 2026-11-09 18:23:13
+Skyrim SSE v1.6.1170
+CrashLoggerSSE v1-27-0-0 Oct 25 2026 06:20:14
+Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF7529A0000
+Exception Flags: 0x00000000 (Continuable)
+Number of Parameters: 2
+Exception Thread ID: 8592
+Access Violation: Tried to execute memory at 0x7FF7529A0000
+ACCESS VIOLATION ANALYSIS: Unable to disassemble instruction at 0x00007FF7529A0000 (memory not readable)
+

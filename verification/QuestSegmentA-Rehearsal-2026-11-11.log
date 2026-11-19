@@ -1,0 +1,172 @@
+Quest segment A rehearsal on the 2026-11-11 06:45 build, 06:58-07:40
+Probe DLL APBQuestProbe.dll SHA-256 580C457384A54B23811761F44FF0C8BBE0C17F7188AE5133AA126067B10D0407 (release DLL 01d4e1ed and trace DLL aba1d4f6 of the same build)
+Command: build/catchup/run-quest-series.ps1 -Prefix qs-c -Order off,acc,skip,skip,acc,off -Trials 1
+Profile APB-CatchUp-Test, FramerateLimit 30, game window in front 100% in all six launches, dropped rows 0.
+"acc" = accelerate with the release read rule; "skip" = the same plus the test rule SetSkipBlocked (APB_CATCHUP_SKIP=1); "off" = same mod list, VM catch-up not installed.
+
+What was new in this build for the probe: the gate's menu part is the release plugin's code (src/MenuWatch.h): the loading and main
+menus by their own events, one reading of the UI at kPostLoadGame, the pause read when the gate is asked. HUD-type menu events no
+longer close the gate (probes up to the 19:08 build closed it on every menu event). First quest run of the fixed skip rule (order
+restore of the 20:58 / 22:46 builds) and of the gate_closes counter.
+
+RESULT
+- All six trials ended normally and identically: stage order 20 30 40 48 50 60, stage 48 after the graph event (66-68 ms), scene
+  phases 0..29, 24 Esbern/Delphine lines (digest fdb15642cc), end state digest 995561791e, reload equal, no end-state line differing
+  from the first off trial. guard_violations 0.
+- acc: 2,324 / 2,269 extra cycles, 5,066 / 4,867 extra calls. skip: 4,649 / 4,777 cycles, 10,388 / 10,737 extra calls,
+  16,411 / 16,963 front skips, the queue rebuilt after 4 / 5 cycles (first time the rebuild ran inside a quest trial).
+- The gate: after each of the twelve loading screens of the four catch-up trials (start-save travel, inn door, end reload) counted
+  frames resumed within 3 s of the Loading Menu close event (87-124 frames in those 3 s; 40 after one end reload). So the gate was
+  never left closed, neither by a close event nor by the reading at kPostLoadGame.
+- gate_closes = 0 in every trial although each has three loading screens and a save load (gameplayReady goes false at
+  kPreLoadGame). The counter only counts a VM update that finds the gate closed, so no VM update reached the hook while a load was
+  in progress. It therefore says nothing about loads; a 0 here does show that none of the 65 HUD-type menu events of a trial
+  (71 menu events in qs-c-02-acc) closed the gate under a running VM.
+- Whether the old gate cost anything in this segment cannot be shown from these runs: against the 19:08 probe (qs-b-02/05-acc,
+  qs-b-03/04-skip) counted frames per second of scene (27.5-28.0) and cycles per frame (acc 0.355-0.364, skip 0.673-0.714) are
+  the same within the spread between trials. If every one of ~65 events had cost two frames, that would be about 2% of the frames.
+- Loading hang: none. Segment A totals are now 30 trials: catch-up on 14 with 1 hang (qs-a-02-skip, cause open), off 16 with 0.
+- Every launch left two crash logs after the window was closed (execute access violation at 0x7FF5DF460000 / 0x7FF5DF450000, also in
+  the two off launches where VM catch-up is not installed). In one of the twelve (qs-c-04-skip, 07:25:17) the stack scan lists an
+  address of this project for the first time: APBQuestProbe.dll+003E08C at RSP+0x40, the instruction after the hook's call of the
+  engine's AttemptFunctionCall (VMCatchUp.cpp:645, TaskletCall). It is not a live return address of the faulting chain: the fault's
+  return address is at RSP+0 (SkyrimUpscaler.dll+02C3807), the next code address is RicochetFramework's input hook at RSP+0x30
+  (its epilogue restores xmm6 from [rsp+0x20], so its frame is at least 0x30 bytes), and RSP+0x40 lies inside that frame. The
+  crash thread is a job thread, which also runs tasklets, so the value is what an earlier tasklet call left on that stack. The
+  chain that faulted is input hook -> SkyrimUpscaler -> freed address, as in the earlier exit crashes.
+
+NOT COVERED: the release DLL itself, a pausing menu or a dialogue menu during play (segment A opens none), 42 FPS, the
+catchup-skipfront comparison on this build. This is a rehearsal of one trial per launch, not the main run.
+
+--- output of the series (trial lines and tests/analyze_quest_probe.py)
+series qs-c probe DLL SHA-256 580C457384A54B23811761F44FF0C8BBE0C17F7188AE5133AA126067B10D0407 order=off,acc,skip,skip,acc,off trials=1 mid_save=0 entry_delay=0
+== launch 1 of 6: qs-c-01-off
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:03:26.820] [5448 ] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=252636 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:03:26.820] [5448 ] [I] quest probe complete trials=1 ok=1
+   qs-c-01-off completed
+   Crash log crash-2026-11-11-07-03-28.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-07-03-31.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 2 of 6: qs-c-02-acc
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:10:40.557] [66196] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=237217 stage40=true stage48=true stage50=true stage60=true cu_frames=6518 cu_engaged=6518 cu_held=272 cu_cycles=2324 cu_extra_calls=5066 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:10:40.557] [66196] [I] quest probe complete trials=1 ok=1
+   qs-c-02-acc completed
+   Crash log crash-2026-11-11-07-10-41.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-07-10-44.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 3 of 6: qs-c-03-skip
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:17:53.454] [34192] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=236948 stage40=true stage48=true stage50=true stage60=true cu_frames=6581 cu_engaged=6581 cu_held=272 cu_cycles=4649 cu_extra_calls=10388 cu_front_skips=16411 cu_order_rebuilds=4 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:17:53.454] [34192] [I] quest probe complete trials=1 ok=1
+   qs-c-03-skip completed
+   Crash log crash-2026-11-11-07-17-54.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+   Crash log crash-2026-11-11-07-17-56.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+== launch 4 of 6: qs-c-04-skip
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:25:15.044] [31384] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=250752 stage40=true stage48=true stage50=true stage60=true cu_frames=6972 cu_engaged=6972 cu_held=265 cu_cycles=4777 cu_extra_calls=10737 cu_front_skips=16963 cu_order_rebuilds=5 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:25:15.044] [31384] [I] quest probe complete trials=1 ok=1
+   qs-c-04-skip completed
+   Crash log crash-2026-11-11-07-25-16.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-07-25-19.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 5 of 6: qs-c-05-acc
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:32:22.299] [12132] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=230243 stage40=true stage48=true stage50=true stage60=true cu_frames=6393 cu_engaged=6393 cu_held=267 cu_cycles=2269 cu_extra_calls=4867 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:32:22.299] [12132] [I] quest probe complete trials=1 ok=1
+   qs-c-05-acc completed
+   Crash log crash-2026-11-11-07-32-23.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-07-32-25.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== launch 6 of 6: qs-c-06-off
+   idle sandbox: DLL hidden for this run
+   limiter: FramerateLimit = 30
+   modlist: -TulliusNovelistProbe-0.0.6
+   [07:39:32.783] [63504] [I] quest probe trial=1 segment=A result=ok reason="" scene_ms=238496 stage40=true stage48=true stage50=true stage60=true cu_frames=0 cu_engaged=0 cu_held=0 cu_cycles=0 cu_extra_calls=0 cu_front_skips=0 cu_order_rebuilds=0 cu_gate_closes=0 cu_guard_violations=0 foreground_pct=100.0 dropped_rows=0
+   [07:39:32.783] [63504] [I] quest probe complete trials=1 ok=1
+   qs-c-06-off completed
+   Crash log crash-2026-11-11-07-39-34.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF460000
+   Crash log crash-2026-11-11-07-39-36.log: Unhandled exception "EXCEPTION_ACCESS_VIOLATION" at 0x7FF5DF450000
+== series qs-c finished: 6 launches
+== qs-c-01-off [off] quest probe segment=A trials=1 mid_save=false catch_up=false catch_up_mode=none skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=252.6 foreground=100.0%
+    stages: 20@23.9s 30@34.8s 40@55.8s 48@155.7s 50@155.8s 60@233.2s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 84
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+== qs-c-02-acc [accelerate] quest probe segment=A trials=1 mid_save=false catch_up=true catch_up_mode=accelerate skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=237.2 foreground=100.0%
+    stages: 20@23.5s 30@34.5s 40@48.2s 48@140.8s 50@140.9s 60@218.2s
+    stage 48 path: after the graph event (68 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 86
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=6518 engaged=6518 held=272 cycles=2324 extra_calls=5066 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=53 calls=107 held=0/120; around the animation event: cycles=57 calls=122 held=0/120; around stage 48: cycles=57 calls=122 held=0/120
+== qs-c-03-skip [accelerate+skip] quest probe segment=A trials=1 mid_save=false catch_up=true catch_up_mode=accelerate skip_blocked=true entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=236.9 foreground=100.0%
+    stages: 20@23.3s 30@34.0s 40@48.4s 48@139.0s 50@139.1s 60@217.6s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 88
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=6581 engaged=6581 held=272 cycles=4649 extra_calls=10388 front_skips=16411 order_rebuilds=4 gate_closes=0 violations=0; around stage 40: cycles=120 calls=380 held=0/120; around the animation event: cycles=78 calls=149 held=0/120; around stage 48: cycles=78 calls=149 held=0/120
+== qs-c-04-skip [accelerate+skip] quest probe segment=A trials=1 mid_save=false catch_up=true catch_up_mode=accelerate skip_blocked=true entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=250.8 foreground=100.0%
+    stages: 20@23.4s 30@34.7s 40@65.6s 48@154.2s 50@154.3s 60@232.2s
+    stage 48 path: after the graph event (66 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 86
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=6972 engaged=6972 held=265 cycles=4777 extra_calls=10737 front_skips=16963 order_rebuilds=5 gate_closes=0 violations=0; around stage 40: cycles=121 calls=369 held=0/121; around the animation event: cycles=67 calls=102 held=0/121; around stage 48: cycles=67 calls=102 held=0/121
+== qs-c-05-acc [accelerate] quest probe segment=A trials=1 mid_save=false catch_up=true catch_up_mode=accelerate skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=230.2 foreground=100.0%
+    stages: 20@22.9s 30@33.7s 40@43.8s 48@132.7s 50@132.8s 60@211.1s
+    stage 48 path: after the graph event (67 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 86
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=6393 engaged=6393 held=267 cycles=2269 extra_calls=4867 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=20 calls=82 held=43/121; around the animation event: cycles=63 calls=214 held=0/120; around stage 48: cycles=63 calls=214 held=0/120
+== qs-c-06-off [off] quest probe segment=A trials=1 mid_save=false catch_up=false catch_up_mode=none skip_blocked=false entry_delay_s=0.0 start_save=APB_MQ203_A
+  trial 1: ok "" scene_s=238.5 foreground=100.0%
+    stages: 20@22.8s 30@33.7s 40@51.1s 48@142.0s 50@142.1s 60@219.7s
+    stage 48 path: after the graph event (68 ms from graph event to stage notification)
+    scene phases: 0>1>2>3>4>5>6>7>8>9>10>11>12>13>14>15>16>17>18>19>20>21>22>23>24>25>26>27>28>29
+    Esbern and Delphine lines: 24 (order digest fdb15642cc); all scene actor events incl. Orgnar and equipment: 86
+    player moved after being placed in the inn: 0 units; player packages: none; menus other than HUD and loading: none
+    end state digest: 995561791e  reload equal: True  mid reload equal: None
+    catch-up: frames=0 engaged=0 held=0 cycles=0 extra_calls=0 front_skips=0 order_rebuilds=0 gate_closes=0 violations=0; around stage 40: cycles=0 calls=0 held=0/0; around the animation event: cycles=0 calls=0 held=0/0; around stage 48: cycles=0 calls=0 held=0/0
+
+== values per condition (trials)
+  MQ203 stage order:
+    accelerate      x2  20 30 40 48 50 60
+    accelerate+skip x2  20 30 40 48 50 60
+    off             x2  20 30 40 48 50 60
+  stage 48 path:
+    accelerate      x2  after the graph event
+    accelerate+skip x2  after the graph event
+    off             x2  after the graph event
+  end state digest:
+    accelerate      x2  995561791e
+    accelerate+skip x2  995561791e
+    off             x2  995561791e
+  Esbern and Delphine line order:
+    accelerate      x2  fdb15642cc
+    accelerate+skip x2  fdb15642cc
+    off             x2  fdb15642cc
+
+== end state lines that differ from the first off trial with an end state (qs-c-01-off trial 1)
+  none

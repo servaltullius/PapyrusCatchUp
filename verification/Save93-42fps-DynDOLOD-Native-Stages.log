@@ -1,0 +1,77 @@
+Save93 / Whiterun exterior / stock VM stage attribution of late DynDOLOD GetWorldSpace publication / 2026-11-09
+
+Setup and evidence
+- Skyrim AE 1.6.1170.0, same Save93 and disposable profile as the preceding native drain experiment. SSE Display Tweaks 0.5.16, gameplay cap 42 FPS, dynamic Papyrus budget, frame generation off only in the disposable profile. One Save93 load and four Bannered Mare to WhiterunWorld returns, 32 Utility.Wait(0.01) responses per trial.
+- Preserve native drain, retry, and tasklet behavior. Observe the stock drain 104857, suspended retry 104858 and subsequent stock stages 104859 and 104860. Stage timestamps are on the update thread. Correlate the actual delayed enqueue bracket, native FIFO pop, and preceding depth-1 return on the same stack. Enqueue inside the original VMProcess additionally records its start tick from thread-local same-stack context. A worker event inside a stage's wall-clock interval alone would not prove it was called by the stage.
+- At the end of 104860, record the current FIFO head and overflow flag while holding the stock queue lock. Count a same-render-frame head candidate only if publication finished by the stage end, the target is the actual call-message head with no overflow and remains the first pop of the next drain. This is a local observation of FIFO order. The hook is inside the stock VM update and does not measure the outer update exit or the completion of all tasklet jobs.
+- The preliminary process was closed before Save93 load while adding exact VMProcess context. No trials from that process are included. Final observation DLL SHA256 4E59374D325E183D17203F7F0F547930BFDA4FD8994FE64B98CE4E5849B8FF10.
+- APBGameplayTrace built, budget policy checks passed, synthetic timing checks covered stage boundaries, cross-thread tasklet context, incomplete cycles, frame mismatch, head rejection and next-pop order. Runtime installation passed the exact call/prologue verification.
+- Raw capture: build/gameplay-trace/cell-42-getworldspace-stage-observe-full.
+
+Stage analysis
+trial=1 dyn_tail=1485829 complete_cycles=366 holder_calls={'budget_deferred': 5, 'after_empty_drain': 18, 'after_budget_stop': 1} fifo_head={('after_empty_drain', 'published_after_stage_end'): 18, ('after_budget_stop', 'published_after_stage_end'): 1}
+trial=2 dyn_tail=1487594 complete_cycles=367 holder_calls={'budget_deferred': 3, 'after_budget_stop': 4, 'after_empty_drain': 14} fifo_head={('after_budget_stop', 'published_after_stage_end'): 4, ('after_empty_drain', 'published_after_stage_end'): 14}
+trial=3 dyn_tail=1488825 complete_cycles=385 holder_calls={'budget_deferred': 3, 'after_empty_drain': 20, 'after_budget_stop': 1} fifo_head={('after_empty_drain', 'published_after_stage_end'): 20, ('after_budget_stop', 'published_after_stage_end'): 1}
+trial=4 dyn_tail=1490335 complete_cycles=372 holder_calls={'after_budget_stop': 3, 'after_empty_drain': 16} fifo_head={('after_budget_stop', 'published_after_stage_end'): 3, ('after_empty_drain', 'published_after_stage_end'): 16}
+queue_classification {'budget_deferred': 11, 'after_empty_drain': 68, 'after_budget_stop': 9}
+publication after_budget_stop after_104860 other_thread calls=6
+publication after_budget_stop after_104860 same_thread calls=3
+publication after_empty_drain after_104860 other_thread calls=52
+publication after_empty_drain after_104860 same_thread calls=16
+preceding_return after_budget_stop GetAt inside_previous_drain same_thread calls=4
+preceding_return after_budget_stop GetAt retry_104858 same_thread calls=5
+preceding_return after_empty_drain GetAt inside_previous_drain same_thread calls=64
+preceding_return after_empty_drain GetAt retry_104858 same_thread calls=2
+preceding_return after_empty_drain GetSize retry_104858 same_thread calls=2
+return_route after_budget_stop GetAt A calls=9
+return_route after_empty_drain GetAt A calls=66
+return_route after_empty_drain GetSize A calls=2
+tasklet_context after_budget_stop started_after_return after_104860 calls=9
+tasklet_context after_empty_drain started_after_return after_104860 calls=68
+fifo_head after_budget_stop published_after_stage_end calls=9
+fifo_head after_empty_drain published_after_stage_end calls=68
+lock_overlap after_budget_stop after_104860 ms=80.525
+lock_overlap after_empty_drain after_104860 ms=1376.995
+publication_to_next_drain calls=77 p50_ms=16.446 p95_ms=24.586
+return_to_publication calls=77 p50_ms=0.276 p95_ms=0.434
+return_to_tasklet_start calls=77 p50_ms=0.268 p95_ms=0.427
+stage_104860_end_to_publication calls=77 p50_ms=0.095 p95_ms=0.135
+tasklet_start_to_publication calls=77 p50_ms=0.008 p95_ms=0.014
+
+Independent drain and render validation
+trial=1 mode=off tail=1485829 drains=367 budget_stops=41 frames_first_2s_after_arrival=69 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=5 after_empty_drain=18 after_budget_stop=1
+trial=2 mode=off tail=1487594 drains=368 budget_stops=34 frames_first_2s_after_arrival=71 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=3 after_budget_stop=4 after_empty_drain=14
+trial=3 mode=off tail=1488825 drains=386 budget_stops=24 frames_first_2s_after_arrival=90 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=3 after_empty_drain=20 after_budget_stop=1
+trial=4 mode=off tail=1490335 drains=373 budget_stops=33 frames_first_2s_after_arrival=76 frames_last_2s=84 unpaired_drain_starts=0 after_budget_stop=3 after_empty_drain=16
+drain_end_reasons {'budget': 132, 'empty': 1362} original_budget_ms_median=0.434 min=0.410 max=0.437
+after_budget_stop calls=9 lock_hold_overlap_ms=80.525 Q_to_P_p50_ms=15.887 Q_to_P_p95_ms=16.556
+after_empty_drain calls=68 lock_hold_overlap_ms=1376.995 Q_to_P_p50_ms=16.696 Q_to_P_p95_ms=24.678
+budget_deferred calls=11 lock_hold_overlap_ms=594.798 Q_to_P_p50_ms=48.356 Q_to_P_p95_ms=164.688
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.156 p95_ms=0.202
+after_empty_drain enqueue_done_to_drain_p50_ms=16.641 p95_ms=24.586
+after_empty_drain drain_start_to_pop_p50_ms=0.042 p95_ms=0.183
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.167 p95_ms=0.230
+after_budget_stop enqueue_done_to_drain_p50_ms=15.696 p95_ms=16.491
+after_budget_stop drain_start_to_pop_p50_ms=0.171 p95_ms=0.320
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=28 original_budget_ms=0.435375
+budget_case skipped_drains=4 messages_popped_ahead_in_servicing_drain=1 original_budget_ms=0.430839
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=40 original_budget_ms=0.435415
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=19 original_budget_ms=0.435618
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=8 original_budget_ms=0.432013
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=14 original_budget_ms=0.435658
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=37 original_budget_ms=0.432135
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=5 original_budget_ms=0.435618
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=88 original_budget_ms=0.436185
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=15 original_budget_ms=0.436144
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=2 original_budget_ms=0.436266
+off_metrics probes=128 response_p95_ms=39.767 steady_frame_p50_ms=23.808 steady_frame_p99_ms=24.068 early_frame_p99_ms=88.470 arrival_to_drain_median_ms=2281.459 total_median_ms=12253.119 tail_wait_median_ms=8166.260 at_return_wait_median_ms=966.293 holder_queue_median_ms=491.488
+
+Interpretation
+- 1490 complete cycles between recorded native drains. Of 88 GetWorldSpace calls overlapping the final DynDOLOD stack's lock wait, 77 registered after the earlier drain's last decision. 68 had missed an empty drain and nine published after an expired drain. Eleven were already pending at a budget stop.
+- For the 77 later registrations, the preceding return was GetAt in 75 and GetSize in two. It completed on the drain/update thread inside the preceding native drain in 68 cases and during 104858 in nine. The next VMProcess began after that return, and after 104860, in all 77. Of their enqueues, 58 ran on a different thread from the stock drain, 19 on the same thread.
+- No target from the 77 late publications was already in the FIFO at the end of 104860, so the same-frame head gate had zero candidates at that site. This says nothing about a later, valid job-completion boundary. A future placement needs a verified job completion boundary, original FIFO and phase ordering, and a supported native execution context.
+- The four windows completed and PresentMon exited 0. The response and render figures are stock observation metrics. No accelerated condition was run.
+
+Restoration
+- Original MO2 selection restored, and disposable fixture archived under build/gameplay-trace/getworldspace-stage-fixture.
+- Save93 original hashes matched ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA. Original SkyrimUpscaler.ini SHA256 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E.

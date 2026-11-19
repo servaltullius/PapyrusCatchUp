@@ -1,0 +1,141 @@
+Save93 / Whiterun exterior / GetAt to GetWorldSpace replication / 2026-11-09
+
+Implementation under test
+- GameplayTrace-only mode. The stock tasklet must be at the head of the VM's existing task queue, with the same stock native phase, render frame and remaining budget. Only a stock FormList.GetAt return from DynDOLOD ObjectEnabler can qualify the following stock ObjectReference.GetWorldSpace for immediate execution. The engine executes the original tasklet, object-lock and native-result paths.
+- At most one tasklet slice and one newly eligible native call per render frame. The admission deadline is bounded by the original phase budget and 0.25 ms. A measured slice over 0.50 ms stops further attempts for the trial. This is not a preemptive runtime cap.
+- y/Y records the source and returned VM handles after successful stock marshalling. The analysis compares results to off observations of the same source handle after exterior arrival in the same game process. It checks stock GetAt return -> tasklet accept -> same-thread GetWorldSpace dispatch/return, and correlates the original return lock with recorded ownership. It does not resolve or synthesize an extra Papyrus result.
+- No PEX changes. Production AdaptivePapyrusBudget sources have no changes from this replication.
+
+Conditions and aborted runs
+- Skyrim AE 1.6.1170.0, SSE Display Tweaks 0.5.16 with 42 FPS gameplay cap and dynamic VM budget, 60 FPS loading cap. Papyrus Tweaks NG DLL loaded, with bSpeedUpNativeCalls=false in its winning config.
+- Verified original Save93 ESS SHA256 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE cosave SHA256 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA.
+- Two targeted launches with the original frame generation setting aborted before any measured exterior return. A third launch using the exact prior successful DLL (SHA256 565AA7B3F67850A08AC2BD252D9120C822A84608846433CA7A192F23F8FEE458) reproduced the same Bannered Mare staging freeze. The main thread stack snapshots for the second targeted launch and control matched from ntdll delay through Skyrim, Engine Fixes, SkyrimUpscaler and Community Shaders. These snapshots do not uniquely attribute cause.
+- For subsequent A/B launches only the disposable test mod overrode SkyrimUpscaler.ini mEnableFrameGeneration=false and mFrameGenType=0 in both arms. The same Save93, DynDOLOD files and Display Tweaks configuration were used. Original winning Upscaler config hash 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E; temporary override hash 5A090355F6D3C9DCF0E03BE1315E474AF07D9DBCD8803D6AFFF7FDC472311CEB.
+- Measured runs entered Bannered Mare (0001605E) and waited for 3 x 0.5 s at the target cadence before returning to WhiterunWorld (0001A27F). The first staging also required 5 s of stable frames in Save93. The 32 response probes per trial are Utility.Wait(0.01) starting about one second after arrival. Each process starts from the original Save93 copy. In-session scene state carries from one trial to the next.
+- First frame-generation-off DLL SHA256 16EBAF946591E8483FE4D0356B6223F66A583E03C4270B7A699E883FFECAC4F0. Eight complete A/B trials survived. The game had a Windows-reported execute access violation 0xc0000005 in an unknown module just after the ninth window opened (disabled; before recorded arrival). Cause unproven. That incomplete window is excluded. The second launch changes the test length and ordering only, building SHA256 B88A2F305A7126A58181347A024F3881A219B5928FE23E3991CFD3B23A48D51F.
+- Render percentiles use engine-count-validated PresentMon intervals. The steady interval is the last two seconds. Timing during arrival fluctuates even though the gameplay cap is 42. The local sampled FPS for promotions uses engine frames around +/-250 ms, independently of the VM timing gate.
+
+Prior-render-profile bottleneck readback
+- Reanalyzed the four earlier complete windows in cell-42-continuation-budget-ab. The last DynDOLOD stack spent 840.827 to 1085.271 ms in aggregate between GetAt native return and VM frame completion. GetWorldSpace Q->P was 210.987 to 334.542 ms across those same stacks. The two intervals are different stages.
+- The GetAt return was blocked by the script-instance lock. Across the four prior tails, 190 observed failed acquisition attempts were matched by lock token to an existing DynDOLOD owner at the sample point (126 OnCellAttach, 64 OnCellDetach). This is an attempt count, not the number of distinct calls. The narrow continuation starts after GetAt has already completed its return/lock handoff.
+- xmake built APBGameplayTrace and AdaptivePapyrusBudget successfully. xmake run budget_policy_tests passed. Analyzer synthetic checks covered wrong frame, wrong stack, wrong thread, missing result evidence and prior lock release. The prior capture still analyzes without replication flags.
+
+First measured launch (eight complete trials, ninth incomplete)
+Incomplete launch; analyzing only completed trials. Incomplete trials=[9]
+1 off SHESON_DynDOLOD_ObjectEnabler.OnCellDetach stack=1485876 roots=392 open=0 arrival_ms=7439.953 drain_ms=2300.415 total_ms=9740.368 root_wait_ms=7597.282 root_wait_after_arrival_ms=319.272 native_wait_ms=741.308 tail_wait_ms=8338.591 target_wait_ms=525.596 at_return_wait_ms=1079.730
+  probes=32 p95_ms=40.480 post_load_frames=347 post_load_p99_ms=25.703 last_2s_frames=84 steady_p99_ms=24.321 f=9 m=5 H=4 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=56 max_slice_ms=n/a
+2 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1487625 roots=390 open=0 arrival_ms=7376.110 drain_ms=2036.424 total_ms=9412.534 root_wait_ms=7728.214 root_wait_after_arrival_ms=532.332 native_wait_ms=509.478 tail_wait_ms=8237.693 target_wait_ms=425.565 at_return_wait_ms=777.082
+  probes=32 p95_ms=39.855 post_load_frames=349 post_load_p99_ms=28.485 last_2s_frames=84 steady_p99_ms=24.211 f=6 m=2 H=0 h=1 i=1 k=1 rejected_state=2 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=45 max_slice_ms=0.019
+  promoted stack=1487520 frame=8280 getter=objectreference.getworldspace sampled_render_period_ms=18.292 sampled_local_fps=58.740
+3 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1489082 roots=391 open=0 arrival_ms=7574.597 drain_ms=2280.923 total_ms=9855.520 root_wait_ms=7397.530 root_wait_after_arrival_ms=630.026 native_wait_ms=458.940 tail_wait_ms=7856.470 target_wait_ms=404.726 at_return_wait_ms=833.866
+  probes=32 p95_ms=39.510 post_load_frames=345 post_load_p99_ms=25.637 last_2s_frames=84 steady_p99_ms=24.086 f=11 m=6 H=0 h=1 i=1 k=1 rejected_state=3 rejected_budget=0 target_tail_promotions=1 overall_tail_promotions=1 target_tail_GetAt_lock_failures=45 max_slice_ms=0.026
+  promoted stack=1489082 frame=8932 getter=objectreference.getworldspace sampled_render_period_ms=25.674 sampled_local_fps=42.020
+4 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1490362 roots=388 open=0 arrival_ms=7147.058 drain_ms=2293.908 total_ms=9440.966 root_wait_ms=7372.747 root_wait_after_arrival_ms=341.432 native_wait_ms=798.335 tail_wait_ms=8171.083 target_wait_ms=624.421 at_return_wait_ms=965.231
+  probes=32 p95_ms=39.150 post_load_frames=348 post_load_p99_ms=28.636 last_2s_frames=84 steady_p99_ms=24.437 f=9 m=5 H=2 h=0 i=0 k=0 rejected_state=2 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=52 max_slice_ms=n/a
+5 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1491879 roots=388 open=0 arrival_ms=6931.843 drain_ms=2180.825 total_ms=9112.667 root_wait_ms=7102.590 root_wait_after_arrival_ms=593.471 native_wait_ms=472.552 tail_wait_ms=7575.141 target_wait_ms=421.798 at_return_wait_ms=791.106
+  probes=32 p95_ms=39.597 post_load_frames=348 post_load_p99_ms=24.840 last_2s_frames=84 steady_p99_ms=24.090 f=10 m=9 H=0 h=0 i=0 k=0 rejected_state=1 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=45 max_slice_ms=n/a
+6 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1493059 roots=387 open=0 arrival_ms=7165.134 drain_ms=2325.436 total_ms=9490.569 root_wait_ms=7134.215 root_wait_after_arrival_ms=27.906 native_wait_ms=1073.834 tail_wait_ms=8208.049 target_wait_ms=758.648 at_return_wait_ms=1195.300
+  probes=32 p95_ms=46.169 post_load_frames=345 post_load_p99_ms=27.654 last_2s_frames=84 steady_p99_ms=27.654 f=13 m=13 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=58 max_slice_ms=n/a
+7 off SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1494533 roots=389 open=0 arrival_ms=7101.005 drain_ms=2311.679 total_ms=9412.684 root_wait_ms=7039.165 root_wait_after_arrival_ms=31.737 native_wait_ms=1105.703 tail_wait_ms=8144.869 target_wait_ms=803.508 at_return_wait_ms=1145.445
+  probes=32 p95_ms=39.913 post_load_frames=345 post_load_p99_ms=27.245 last_2s_frames=84 steady_p99_ms=24.284 f=9 m=4 H=5 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=57 max_slice_ms=n/a
+8 on SHESON_DynDOLOD_ObjectEnabler.OnCellDetach stack=1495902 roots=381 open=0 arrival_ms=8115.582 drain_ms=2138.352 total_ms=10253.934 root_wait_ms=8458.243 root_wait_after_arrival_ms=433.715 native_wait_ms=562.960 tail_wait_ms=9021.203 target_wait_ms=353.413 at_return_wait_ms=917.679
+  probes=32 p95_ms=53.895 post_load_frames=345 post_load_p99_ms=32.243 last_2s_frames=84 steady_p99_ms=24.059 f=11 m=3 H=0 h=2 i=2 k=2 rejected_state=3 rejected_budget=1 target_tail_promotions=1 overall_tail_promotions=1 target_tail_GetAt_lock_failures=46 max_slice_ms=0.024
+  promoted stack=1495954 frame=12001 getter=objectreference.getworldspace sampled_render_period_ms=25.474 sampled_local_fps=49.744
+  promoted stack=1495902 frame=12008 getter=objectreference.getworldspace sampled_render_period_ms=25.584 sampled_local_fps=43.714
+off probes=128 response_p95_ms=39.913 response_without_first_four_ms=39.744 frame_median_ms=23.809 frame_p99_ms=24.284 alt_p99_ms=n/a post_load_p99_ms=27.654 arrival_median_ms=7156.096(n=4) drain_median_ms=2306.047(n=4) total_median_ms=9465.768(n=4) root_wait_median_ms=7253.481(n=4) root_wait_after_arrival_median_ms=175.505(n=4) native_wait_median_ms=936.085(n=4) tail_wait_median_ms=8189.566(n=4) target_wait_median_ms=691.535(n=4) at_return_wait_median_ms=1112.587(n=4)
+  stock_GetAt_lock_hold_n=160 p50_ms=23.160 p95_ms=126.510
+  target_tail_final_unlock_to_success_n=10 p50_ms=22.737 p95_ms=84.664 retaken_by_other_stack=84
+on probes=128 response_p95_ms=39.991 response_without_first_four_ms=39.734 frame_median_ms=23.808 frame_p99_ms=24.059 alt_p99_ms=n/a post_load_p99_ms=28.177 arrival_median_ms=7475.354(n=4) drain_median_ms=2159.589(n=4) total_median_ms=9634.027(n=4) root_wait_median_ms=7562.872(n=4) root_wait_after_arrival_median_ms=562.902(n=4) native_wait_median_ms=491.015(n=4) tail_wait_median_ms=8047.081(n=4) target_wait_median_ms=413.262(n=4) at_return_wait_median_ms=812.486(n=4)
+  stock_GetAt_lock_hold_n=160 p50_ms=18.639 p95_ms=82.432
+  target_tail_final_unlock_to_success_n=9 p50_ms=0.138 p95_ms=56.485 retaken_by_other_stack=83
+  return trial=2 stack=1487520 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0118
+  return trial=3 stack=1489082 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0165
+  return trial=8 stack=1495954 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0151
+  return trial=8 stack=1495902 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0154
+GetWorldSpace return comparisons {'matched': 4} distinct_promoted_sources=1
+paired tail_wait on_minus_off_median_ms=-207.755 improved=3/4 activated_median_ms=-100.898(n=3) inactive_median_ms=-632.908(n=1)
+paired target_wait on_minus_off_median_ms=-278.273 improved=4/4 activated_median_ms=-219.696(n=3) inactive_median_ms=-336.850(n=1)
+paired total on_minus_off_median_ms=43.360 improved=2/4 activated_median_ms=414.554(n=3) inactive_median_ms=-377.902(n=1)
+paired drain on_minus_off_median_ms=-158.969 improved=4/4 activated_median_ms=-173.327(n=3) inactive_median_ms=-144.611(n=1)
+paired response_p95 on_minus_off_median_ms=-0.133 improved=2/4 activated_median_ms=0.360(n=3) inactive_median_ms=-6.572(n=1)
+paired steady_p99 on_minus_off_median_ms=-0.288 improved=4/4 activated_median_ms=-0.225(n=3) inactive_median_ms=-3.565(n=1)
+
+Reverse-order second measured launch (fresh Save93, eight trials)
+1 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1485853 roots=392 open=0 arrival_ms=10129.887 drain_ms=2253.745 total_ms=12383.632 root_wait_ms=9904.601 root_wait_after_arrival_ms=32.407 native_wait_ms=1023.544 tail_wait_ms=10928.145 target_wait_ms=594.850 at_return_wait_ms=1169.004
+  probes=32 p95_ms=46.920 post_load_frames=345 post_load_p99_ms=26.711 last_2s_frames=84 steady_p99_ms=24.051 f=9 m=5 H=0 h=2 i=2 k=2 rejected_state=0 rejected_budget=0 target_tail_promotions=1 overall_tail_promotions=1 target_tail_GetAt_lock_failures=56 max_slice_ms=0.024
+  promoted stack=1485958 frame=7748 getter=objectreference.getworldspace sampled_render_period_ms=23.845 sampled_local_fps=49.977
+  promoted stack=1485853 frame=7758 getter=objectreference.getworldspace sampled_render_period_ms=24.096 sampled_local_fps=41.872
+2 off ht_playeralias.OnLocationChange stack=1487775 roots=389 open=0 arrival_ms=9274.131 drain_ms=2098.472 total_ms=11372.603 root_wait_ms=534.069 root_wait_after_arrival_ms=222.772 native_wait_ms=617.875 tail_wait_ms=1151.944 target_wait_ms=654.717 at_return_wait_ms=1070.311
+  probes=32 p95_ms=39.303 post_load_frames=347 post_load_p99_ms=27.390 last_2s_frames=84 steady_p99_ms=23.944 f=7 m=3 H=1 h=0 i=0 k=0 rejected_state=3 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=57 max_slice_ms=n/a
+3 off SHESON_DynDOLOD_ObjectEnabler.OnCellDetach stack=1488960 roots=389 open=0 arrival_ms=10012.590 drain_ms=2178.642 total_ms=12191.232 root_wait_ms=9028.936 root_wait_after_arrival_ms=317.083 native_wait_ms=551.648 tail_wait_ms=9580.584 target_wait_ms=403.616 at_return_wait_ms=949.978
+  probes=32 p95_ms=44.057 post_load_frames=345 post_load_p99_ms=28.406 last_2s_frames=84 steady_p99_ms=24.200 f=11 m=7 H=4 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=48 max_slice_ms=n/a
+4 on SHESON_DynDOLOD_ObjectEnabler.OnCellAttach stack=1490423 roots=387 open=0 arrival_ms=9629.110 drain_ms=2340.550 total_ms=11969.660 root_wait_ms=7229.745 root_wait_after_arrival_ms=700.889 native_wait_ms=685.491 tail_wait_ms=7915.236 target_wait_ms=575.185 at_return_wait_ms=865.291
+  probes=32 p95_ms=46.917 post_load_frames=344 post_load_p99_ms=27.202 last_2s_frames=84 steady_p99_ms=23.940 f=10 m=8 H=0 h=1 i=1 k=1 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=45 max_slice_ms=0.019
+  promoted stack=1490355 frame=9589 getter=objectreference.getworldspace sampled_render_period_ms=24.021 sampled_local_fps=43.420
+5 off ht_playeralias.OnLocationChange stack=1491937 roots=388 open=0 arrival_ms=9678.811 drain_ms=1738.309 total_ms=11417.120 root_wait_ms=580.523 root_wait_after_arrival_ms=268.321 native_wait_ms=167.540 tail_wait_ms=748.064 target_wait_ms=313.860 at_return_wait_ms=878.413
+  probes=32 p95_ms=39.259 post_load_frames=346 post_load_p99_ms=28.458 last_2s_frames=84 steady_p99_ms=27.135 f=0 m=0 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=49 max_slice_ms=n/a
+6 on ht_playeralias.OnLocationChange stack=1493339 roots=388 open=0 arrival_ms=9420.352 drain_ms=1721.037 total_ms=11141.389 root_wait_ms=578.776 root_wait_after_arrival_ms=267.927 native_wait_ms=160.492 tail_wait_ms=739.269 target_wait_ms=376.283 at_return_wait_ms=956.289
+  probes=32 p95_ms=39.276 post_load_frames=347 post_load_p99_ms=28.828 last_2s_frames=83 steady_p99_ms=28.828 f=1 m=1 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=53 max_slice_ms=n/a
+7 on ht_playeralias.OnLocationChange stack=1494890 roots=387 open=0 arrival_ms=9386.990 drain_ms=1786.028 total_ms=11173.019 root_wait_ms=497.371 root_wait_after_arrival_ms=188.129 native_wait_ms=346.442 tail_wait_ms=843.813 target_wait_ms=302.595 at_return_wait_ms=894.441
+  probes=32 p95_ms=39.808 post_load_frames=346 post_load_p99_ms=30.830 last_2s_frames=84 steady_p99_ms=24.519 f=1 m=1 H=0 h=0 i=0 k=0 rejected_state=0 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=50 max_slice_ms=n/a
+8 off ht_playeralias.OnLocationChange stack=1496287 roots=388 open=0 arrival_ms=7218.151 drain_ms=1835.349 total_ms=9053.499 root_wait_ms=524.016 root_wait_after_arrival_ms=205.119 native_wait_ms=437.383 tail_wait_ms=961.399 target_wait_ms=324.065 at_return_wait_ms=776.681
+  probes=32 p95_ms=39.260 post_load_frames=351 post_load_p99_ms=24.074 last_2s_frames=84 steady_p99_ms=24.102 f=5 m=2 H=0 h=0 i=0 k=0 rejected_state=3 rejected_budget=0 target_tail_promotions=0 overall_tail_promotions=0 target_tail_GetAt_lock_failures=45 max_slice_ms=n/a
+off probes=128 response_p95_ms=39.303 response_without_first_four_ms=39.282 frame_median_ms=23.808 frame_p99_ms=24.247 alt_p99_ms=n/a post_load_p99_ms=27.135 arrival_median_ms=9476.471(n=4) drain_median_ms=1966.910(n=4) total_median_ms=11394.862(n=4) root_wait_median_ms=557.296(n=4) root_wait_after_arrival_median_ms=245.546(n=4) native_wait_median_ms=494.516(n=4) tail_wait_median_ms=1056.672(n=4) target_wait_median_ms=363.840(n=4) at_return_wait_median_ms=914.195(n=4)
+  stock_GetAt_lock_hold_n=160 p50_ms=16.970 p95_ms=59.858
+  target_tail_final_unlock_to_success_n=10 p50_ms=0.095 p95_ms=27.048 retaken_by_other_stack=89
+on probes=128 response_p95_ms=40.075 response_without_first_four_ms=39.624 frame_median_ms=23.809 frame_p99_ms=24.051 alt_p99_ms=n/a post_load_p99_ms=29.150 arrival_median_ms=9524.731(n=4) drain_median_ms=2019.886(n=4) total_median_ms=11571.339(n=4) root_wait_median_ms=3904.260(n=4) root_wait_after_arrival_median_ms=228.028(n=4) native_wait_median_ms=515.967(n=4) tail_wait_median_ms=4379.524(n=4) target_wait_median_ms=475.734(n=4) at_return_wait_median_ms=925.365(n=4)
+  stock_GetAt_lock_hold_n=160 p50_ms=17.309 p95_ms=103.005
+  target_tail_final_unlock_to_success_n=8 p50_ms=0.104 p95_ms=80.443 retaken_by_other_stack=89
+  return trial=1 stack=1485958 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0147
+  return trial=1 stack=1485853 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0099
+  return trial=4 stack=1490355 source=0000FFFFBF1CBF23 result=0000FFFF0001A26F off_results=0000FFFF0001A26F match=matched root_lock_observed=True getat_to_worldspace_ms=0.0107
+GetWorldSpace return comparisons {'matched': 3} distinct_promoted_sources=1
+paired tail_wait on_minus_off_median_ms=-63.191 improved=3/4 activated_median_ms=4055.426(n=2) inactive_median_ms=-63.191(n=2)
+paired target_wait on_minus_off_median_ms=20.476 improved=2/4 activated_median_ms=55.851(n=2) inactive_median_ms=20.476(n=2)
+paired total on_minus_off_median_ms=394.729 improved=2/4 activated_median_ms=394.729(n=2) inactive_median_ms=921.894(n=2)
+paired drain on_minus_off_median_ms=69.000 improved=2/4 activated_median_ms=158.591(n=2) inactive_median_ms=-33.296(n=2)
+paired response_p95 on_minus_off_median_ms=1.704 improved=0/4 activated_median_ms=5.239(n=2) inactive_median_ms=0.283(n=2)
+paired steady_p99 on_minus_off_median_ms=0.262 improved=1/4 activated_median_ms=-0.076(n=2) inactive_median_ms=1.055(n=2)
+
+Pooled comparison across the two launches
+off trials 8 probes 256 activated_trials 0 promotions 0 last_DynDOLOD 0 last_overall 0 locks_observed 0
+  medians arrival_ms=7329.052 root_wait_after_arrival_ms=245.546 tail_wait_ms=8157.976 target_wait_ms=575.009 drain_ms=2236.275 total_ms=9615.468 at_return_wait_ms=1017.771
+  p95_ms=39.913 p95_without_first_four_ms=39.389 frame_p50_ms=23.808 frame_p99_ms=24.268 post_p99_ms=27.245 missing_post_windows=0 last_2s_engine_frames=[84]
+on trials 8 probes 256 activated_trials 5 promotions 7 last_DynDOLOD 3 last_overall 3 locks_observed 7
+  medians arrival_ms=8751.286 root_wait_after_arrival_ms=483.024 tail_wait_ms=7885.853 target_wait_ms=413.262 drain_ms=2159.589 total_ms=10697.662 at_return_wait_ms=879.866
+  p95_ms=40.075 p95_without_first_four_ms=39.624 frame_p50_ms=23.809 frame_p99_ms=24.059 post_p99_ms=28.485 missing_post_windows=0 last_2s_engine_frames=[83, 84]
+  GetAt_to_GetWorldSpace_ms=0.0099..0.0165 max_slice_ms=0.0256
+paired arrival all median_on_minus_off_ms=181.848 improved=4/8
+paired arrival active median_on_minus_off_ms=427.539 improved=2/5
+paired root_wait_after_arrival all median_on_minus_off_ms=250.827 improved=3/8
+paired root_wait_after_arrival active median_on_minus_off_ms=288.594 improved=1/5
+paired tail_wait all median_on_minus_off_ms=-109.242 improved=6/8
+paired tail_wait active median_on_minus_off_ms=-100.898 improved=3/5
+paired target_wait all median_on_minus_off_ms=-79.949 improved=6/8
+paired target_wait active median_on_minus_off_ms=-100.030 improved=4/5
+paired drain all median_on_minus_off_ms=-33.296 improved=6/8
+paired drain active median_on_minus_off_ms=-12.985 improved=3/5
+paired total all median_on_minus_off_ms=96.492 improved=4/8
+paired total active median_on_minus_off_ms=414.554 improved=2/5
+paired at_return_wait all median_on_minus_off_ms=-108.026 improved=5/8
+paired at_return_wait active median_on_minus_off_ms=-131.365 improved=4/5
+paired p95 all median_on_minus_off_ms=0.454 improved=2/8
+paired p95 active median_on_minus_off_ms=2.860 improved=1/5
+paired frame_p99 all median_on_minus_off_ms=-0.167 improved=5/8
+paired frame_p99 active median_on_minus_off_ms=-0.225 improved=4/5
+paired arrival inactive median_on_minus_off_ms=-233.291 improved=2/3
+paired root_wait_after_arrival inactive median_on_minus_off_ms=-0.394 improved=2/3
+paired tail_wait inactive median_on_minus_off_ms=-117.586 improved=3/3
+paired target_wait inactive median_on_minus_off_ms=-21.470 improved=2/3
+paired drain inactive median_on_minus_off_ms=-49.321 improved=3/3
+paired total inactive median_on_minus_off_ms=-275.731 improved=2/3
+paired at_return_wait inactive median_on_minus_off_ms=77.877 improved=1/3
+paired p95 inactive median_on_minus_off_ms=0.017 improved=1/3
+paired frame_p99 inactive median_on_minus_off_ms=0.418 improved=1/3
+
+Interpretation and cleanup
+- All seven observed immediate GetWorldSpace calls matched the off result for the same input handle and had a matching live return-lock owner. The matched input was one reference across the measured launches. The three promotions of the last overall stack took place around 41.872, 42.020, and 43.714 local engine FPS. Other promoted calls include post-loading cadence above 45 FPS.
+- The shorter post-arrival paired times do not support an aggregate causal benefit. The median paired delta among actual-activation pairs was -12.985 ms. Among enabled pairs without any promotion it was -49.321 ms. Pooled response p95 slightly increased and request-to-last-stack did not consistently improve. Tail identity varied between DynDOLOD and other scripts, and the total interval includes cell loading.
+- The feature remains in the test DLL because aggregate benefit, broad return equivalence, and crash attribution were not established. Retaining stock object lock semantics is necessary. The next GetWorldSpace begins after the separate GetAt return-lock delay.
+- The reverse launch completed all eight trials and PresentMon exited successfully. After both launches the MO2 selection was restored to TKL - MUNG ADDON - SPS Test and the temporary test mod and profile were archived. The original Save93 and original SkyrimUpscaler.ini hashes matched the recorded values.
+- Raw captures: build/gameplay-trace/cell-42-continuation-replication-no-fg and build/gameplay-trace/cell-42-continuation-replication-no-fg-reverse.

@@ -1,0 +1,22 @@
+Release DLL AdaptivePapyrusBudget 0.3.0 (final build with the state-change guard) and the shipped INI,
+Save93, SSE Display Tweaks limiter 30 FPS, no profiler, five one-minute reports.
+
+[18:28:56.227] [3820 ] [I] AdaptivePapyrusBudget v0-3-0-0
+[18:29:06.211] [3820 ] [I] Installed gameplay VM hook; budget correction=true, native pacing=false, benchmark=false
+[18:29:06.212] [3820 ] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[18:29:06.212] [3820 ] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[18:31:38.074] [61228] [I] VM catch-up: frames=1 slow=1 avg_frame_ms=70.56 extra_cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=1 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[18:32:38.106] [13728] [I] VM catch-up: frames=1789 slow=1781 avg_frame_ms=33.56 extra_cycles=1031 with_tasklets=746 idle_stops=0 time_stops=0 blocked_stops=722 guard_violations=0 frozen_stops=0 held_frames=118 overrun_pauses=0 extra_ms_per_frame=0.0541 max_frame_extra_ms=0.650 max_update_ms=0.495 max_batch_ms=0.574 slowest_batch_tasklets=3 max_batch_tasklets=51
+[18:33:38.108] [61228] [I] VM catch-up: frames=1800 slow=1800 avg_frame_ms=33.33 extra_cycles=1200 with_tasklets=875 idle_stops=3 time_stops=0 blocked_stops=792 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0615 max_frame_extra_ms=0.546 max_update_ms=0.488 max_batch_ms=0.341 slowest_batch_tasklets=4 max_batch_tasklets=52
+[18:34:38.108] [39832] [I] VM catch-up: frames=1800 slow=1799 avg_frame_ms=33.33 extra_cycles=1199 with_tasklets=702 idle_stops=20 time_stops=0 blocked_stops=866 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0556 max_frame_extra_ms=0.552 max_update_ms=0.493 max_batch_ms=0.323 slowest_batch_tasklets=4 max_batch_tasklets=51
+[18:35:38.109] [54644] [I] VM catch-up: frames=1800 slow=1800 avg_frame_ms=33.33 extra_cycles=1200 with_tasklets=715 idle_stops=22 time_stops=0 blocked_stops=893 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0544 max_frame_extra_ms=0.542 max_update_ms=0.490 max_batch_ms=0.266 slowest_batch_tasklets=1 max_batch_tasklets=47
+
+== Final build with [NativePacing] Enabled=true (three one-minute reports)
+[19:07:53.573] [57784] [I] AdaptivePapyrusBudget v0-3-0-0
+[19:08:04.343] [57784] [I] Installed native pacing for stock Form.GetFormID, limit=96 per gameplay VM update
+[19:08:04.343] [57784] [I] Installed gameplay VM hook; budget correction=true, native pacing=true, benchmark=false
+[19:08:04.343] [57784] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[19:08:04.343] [57784] [I] VM catch-up: argument setup call was already hooked by another plugin; calls are passed through to it
+[19:10:33.819] [20792] [I] VM catch-up: frames=1 slow=1 avg_frame_ms=46.03 extra_cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 blocked_stops=0 guard_violations=0 frozen_stops=0 held_frames=1 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[19:11:33.846] [14220] [I] VM catch-up: frames=1786 slow=1779 avg_frame_ms=33.61 extra_cycles=1032 with_tasklets=738 idle_stops=0 time_stops=0 blocked_stops=706 guard_violations=0 frozen_stops=0 held_frames=116 overrun_pauses=0 extra_ms_per_frame=0.0530 max_frame_extra_ms=0.815 max_update_ms=0.395 max_batch_ms=0.745 slowest_batch_tasklets=4 max_batch_tasklets=44
+[19:12:33.850] [58180] [I] VM catch-up: frames=1800 slow=1800 avg_frame_ms=33.34 extra_cycles=1200 with_tasklets=847 idle_stops=7 time_stops=0 blocked_stops=818 guard_violations=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0620 max_frame_extra_ms=0.546 max_update_ms=0.491 max_batch_ms=0.220 slowest_batch_tasklets=3 max_batch_tasklets=53

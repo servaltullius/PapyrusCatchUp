@@ -1,0 +1,102 @@
+Save93 / Whiterun exterior / DynDOLOD lock holder GetWorldSpace and the stock native drain / 2026-11-09
+
+Setup and methods
+- Skyrim AE 1.6.1170.0. Same Save93 ESS and SKSE co-save, active DynDOLOD, SSE Display Tweaks 0.5.16 with its 42 FPS gameplay cap and dynamic budget. The disposable profile uses the same frame-generation-off override as the prior stable comparison. The winning Papyrus Tweaks NG configuration has bSpeedUpNativeCalls=false.
+- Follow each prior lock owner whose native Q->P overlaps the final DynDOLOD stack's contended GetAt return. Join the observed GetWorldSpace call by stack/depth/thread, the original delayed-native enqueue call boundaries and the native drain's actual FIFO pop. Classify publication against the immediately preceding stock drain decision. The producer brackets publication; an overlapping boundary is ambiguous rather than counted as late or budget-deferred.
+- Drain telemetry observes both original queue-pop sites and the clock check after a message. A failed pop means an empty-queue exit. A successful final pop followed by the stock deadline branch means a budget stop. Display Tweaks still supplies the original budget. Last-two-second PresentMon periods are checked against engine frames.
+- Stock observation binary SHA256 E528593E622786943DCCB732E9EB04E3D952D4DDF6E3973DE7B5297598750CF1.
+- Optional A/B mode authorizes up to 0.25 ms once per observed render frame on the same existing stock drain. It requires confirmed exterior arrival, a 20–28.57 ms VM cadence, an unfrozen VM, stock GetWorldSpace identity, observed owning DynDOLOD root lock at enqueue, a matching actual message within the first 48 entries of the original FIFO, no overflow, and prior limiter reserve from SSE Display Tweaks. The phase order, original pop order and object lock instructions remain stock. Earlier FIFO messages can consume the extension before the target.
+- The original stock timer starts inside the engine. Use its own raw tick factor and compare each preceding clock check against the original budget deadline to identify pops reached only because the budget was extended. The extension is a budget, not preemption of a running native callback.
+- Synthetic classifications verified expired budget, late publication, overlap, wrong-thread dispatch and extra-pop identity. Test and production DLL targets built, and budget policy checks passed.
+
+Four stock observation trials
+trial=1 mode=off tail=1485957 drains=370 budget_stops=39 frames_last_2s=82 unpaired_drain_starts=0 budget_deferred=4 after_budget_stop=1 after_empty_drain=18
+trial=2 mode=off tail=1487629 drains=366 budget_stops=31 frames_last_2s=82 unpaired_drain_starts=0 budget_deferred=3 after_budget_stop=1 after_empty_drain=20
+trial=3 mode=off tail=1489222 drains=376 budget_stops=24 frames_last_2s=83 unpaired_drain_starts=0 budget_deferred=1 after_budget_stop=1 after_empty_drain=18
+trial=4 mode=off tail=1490607 drains=379 budget_stops=29 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=3 after_budget_stop=1 after_empty_drain=17
+drain_end_reasons {'budget': 123, 'empty': 1368} original_budget_ms_median=0.434 min=0.258 max=0.436
+after_budget_stop calls=4 lock_hold_overlap_ms=93.053 Q_to_P_p50_ms=17.127 Q_to_P_p95_ms=42.602
+after_empty_drain calls=73 lock_hold_overlap_ms=1330.518 Q_to_P_p50_ms=16.638 Q_to_P_p95_ms=24.144
+budget_deferred calls=11 lock_hold_overlap_ms=484.233 Q_to_P_p50_ms=35.632 Q_to_P_p95_ms=134.542
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.097 p95_ms=0.138
+after_empty_drain enqueue_done_to_drain_p50_ms=16.559 p95_ms=24.121
+after_empty_drain drain_start_to_pop_p50_ms=0.053 p95_ms=0.214
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.137 p95_ms=0.159
+after_budget_stop enqueue_done_to_drain_p50_ms=17.045 p95_ms=42.564
+after_budget_stop drain_start_to_pop_p50_ms=0.070 p95_ms=0.128
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=7 original_budget_ms=0.435618
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=31 original_budget_ms=0.435658
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=16 original_budget_ms=0.435942
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=7 original_budget_ms=0.435942
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=46 original_budget_ms=0.421240
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=26 original_budget_ms=0.429745
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=24 original_budget_ms=0.435375
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=9 original_budget_ms=0.428692
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=43 original_budget_ms=0.430393
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=9 original_budget_ms=0.436063
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=3 original_budget_ms=0.436063
+off_metrics probes=128 response_p95_ms=39.816 steady_frame_p50_ms=23.809 steady_frame_p99_ms=24.224 arrival_to_drain_median_ms=2131.272 total_median_ms=9460.159 tail_wait_median_ms=8175.970 at_return_wait_median_ms=952.725 holder_queue_median_ms=478.441
+
+Producer thread on the four stock trials
+- For the 73 calls published after an empty drain, 50 were published by a thread different from the preceding native drain's thread, and 23 by that same thread. Of the four published after an expired budget cutoff, three were on a different thread. The observed timings do not establish a safe main-thread barrier at which to process these later messages.
+
+Interrupted A/B pilot
+- Raw capture: build/gameplay-trace/cell-42-getworldspace-drain-ab. Three windows completed before the fourth. The crash report at 13:48:20 records a read at 0x258 (RAX=0) with the faulting instruction in Precision.dll+0119A1F, in a physics stack. The faulting location does not establish the underlying cause. PresentMon exit code 0. No conditions pooled with the four-window retry.
+- Pilot DLL SHA256 8D5D430C74F5D82CF277E4C2BD9D6282096DC6336A078E7D961AE6F8273E74C2. The retry adds a second observed-frame check when granting the extra budget, and stops after the four ABBA windows.
+trial=1 enabled=False tagged=40 fifo_matches=16 with_reserve=9 extended=0 extended_empty=0 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=2 enabled=True tagged=40 fifo_matches=13 with_reserve=8 extended=8 extended_empty=8 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=3 enabled=True tagged=40 fifo_matches=8 with_reserve=3 extended=3 extended_empty=3 extra_messages=0 getworldspace_extra=0 holder_extra=0
+
+Completed ABBA retry
+- Raw capture: build/gameplay-trace/cell-42-getworldspace-drain-ab-retry. DLL SHA256 A2D16A6D36F955D6E27FC12EB2D15C75783AD69BD2D65AEC09C367FA854A0354.
+- One Save93 load and four exterior returns, 32 Utility.Wait(0.01) response samples per trial. First and last two-second frame windows are measured separately and cross-checked with engine frame counts. Early frames include exterior streaming variation. Trial order was off/on/on/off.
+
+  off tagged=40 fifo_matches=13 with_reserve=9 extended=0 extended_empty=0 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=1 mode=off tail=1485973 drains=369 budget_stops=40 frames_first_2s_after_arrival=70 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=2 after_budget_stop=2 after_empty_drain=17
+  on tagged=40 fifo_matches=12 with_reserve=7 extended=7 extended_empty=6 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=2 mode=on tail=1487556 drains=370 budget_stops=34 frames_first_2s_after_arrival=72 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=5 after_budget_stop=3 after_empty_drain=16
+  on tagged=40 fifo_matches=3 with_reserve=1 extended=1 extended_empty=1 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=3 mode=on tail=1488926 drains=382 budget_stops=25 frames_first_2s_after_arrival=84 frames_last_2s=83 unpaired_drain_starts=0 budget_deferred=2 after_budget_stop=2 after_empty_drain=20
+  off tagged=40 fifo_matches=2 with_reserve=0 extended=0 extended_empty=0 extra_messages=0 getworldspace_extra=0 holder_extra=0
+trial=4 mode=off tail=1490374 drains=388 budget_stops=24 frames_first_2s_after_arrival=91 frames_last_2s=84 unpaired_drain_starts=0 budget_deferred=1 after_empty_drain=19
+drain_end_reasons {'budget': 123, 'empty': 1386} original_budget_ms_median=0.434 min=0.250 max=0.437
+after_budget_stop calls=7 lock_hold_overlap_ms=166.193 Q_to_P_p50_ms=17.299 Q_to_P_p95_ms=72.906
+after_empty_drain calls=72 lock_hold_overlap_ms=1384.394 Q_to_P_p50_ms=16.480 Q_to_P_p95_ms=24.145
+budget_deferred calls=10 lock_hold_overlap_ms=455.077 Q_to_P_p50_ms=69.102 Q_to_P_p95_ms=103.960
+after_empty_drain previous_cutoff_to_enqueue_p50_ms=0.169 p95_ms=0.231
+after_empty_drain enqueue_done_to_drain_p50_ms=16.407 p95_ms=24.120
+after_empty_drain drain_start_to_pop_p50_ms=0.066 p95_ms=0.195
+after_budget_stop previous_cutoff_to_enqueue_p50_ms=0.231 p95_ms=0.291
+after_budget_stop enqueue_done_to_drain_p50_ms=16.905 p95_ms=72.640
+after_budget_stop drain_start_to_pop_p50_ms=0.263 p95_ms=0.391
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=4 original_budget_ms=0.435901
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=35 original_budget_ms=0.435618
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=25 original_budget_ms=0.431122
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=31 original_budget_ms=0.435658
+budget_case skipped_drains=3 messages_popped_ahead_in_servicing_drain=24 original_budget_ms=0.435861
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=23 original_budget_ms=0.429138
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=3 original_budget_ms=0.436428
+budget_case skipped_drains=2 messages_popped_ahead_in_servicing_drain=16 original_budget_ms=0.426262
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=5 original_budget_ms=0.428733
+budget_case skipped_drains=1 messages_popped_ahead_in_servicing_drain=21 original_budget_ms=0.436104
+off_metrics probes=64 response_p95_ms=39.687 steady_frame_p50_ms=23.809 steady_frame_p99_ms=24.018 early_frame_p99_ms=75.525 arrival_to_drain_median_ms=2091.785 total_median_ms=11714.883 tail_wait_median_ms=8042.294 at_return_wait_median_ms=882.688 holder_queue_median_ms=411.604
+off_activity tagged=80 queue_matches=15 with_reserve=9 extensions=0 extended_empty=0 extra_messages=0 getworldspace_extra=0 holder_extra=0
+on_metrics probes=64 response_p95_ms=39.665 steady_frame_p50_ms=23.807 steady_frame_p99_ms=24.096 early_frame_p99_ms=73.315 arrival_to_drain_median_ms=2125.672 total_median_ms=11856.948 tail_wait_median_ms=10469.474 at_return_wait_median_ms=1106.682 holder_queue_median_ms=591.228
+on_activity tagged=80 queue_matches=15 with_reserve=8 extensions=8 extended_empty=7 extra_messages=0 getworldspace_extra=0 holder_extra=0
+paired_arrival_to_drain median_on_minus_off_ms=33.887 improved=1/2
+paired_total median_on_minus_off_ms=142.065 improved=1/2
+paired_tail_wait median_on_minus_off_ms=2427.180 improved=0/2
+paired_at_return_wait median_on_minus_off_ms=223.994 improved=0/2
+paired_response_p95 median_on_minus_off_ms=-11.190 improved=1/2
+paired_frame_p99 median_on_minus_off_ms=0.084 improved=0/2
+paired_early_frame_p99 median_on_minus_off_ms=-2.576 improved=1/2
+paired_holder_queue median_on_minus_off_ms=179.624 improved=0/2
+
+Interpretation
+- Eight budget grants, seven with an empty exit. No additional FIFO pop in the eight granted phases and no additional GetWorldSpace dispatch for the last DynDOLOD stack's lock holders. The enabled trials exercised the budget change, but they supply no observed chain acceleration.
+- An empty drain cannot reach messages published after its last pop. The 73/88 late-after-empty cases in the stock observation, and 72/89 in the separate ABBA run, are consistent with a drain/publication timing gap. The smaller budget-deferred cohort exists and the guarded 0.25 ms extension did not advance it in this scene.
+- Leave the production path alone. A timing change that acts on late publications would require establishing where those messages become visible relative to later stock VM stages, including where native dispatch and object-lifetime rules remain valid. Do not infer that the lock can safely be released earlier.
+
+Restoration
+- Original MO2 profile selected again. Disposable profile and trace mod archived under build/gameplay-trace/getworldspace-native-drain-fixture.
+- Save93 ESS 87C181889BB60A565C327FF0AA0B1B6F46D568AC0EB29C022925A3912742277D and SKSE 5EE67E98B488FAE5BD5C1E5A9A87DA9D92522D480255F2F1BA84E6FB80F1B0AA match the original hashes. Original SkyrimUpscaler.ini 3CF1A335E01731D2A40A884D7A2335AF55009B29B06DB739EB397566F299677E matches with frame generation enabled.

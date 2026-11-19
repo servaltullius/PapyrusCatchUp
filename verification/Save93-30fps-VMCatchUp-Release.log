@@ -1,0 +1,26 @@
+Release DLL AdaptivePapyrusBudget 0.3.0 with the shipped INI, Save93, SSE Display Tweaks limiter 30 FPS, no profiler.
+Run 1: before the post-load settle and overrun pause; one Update call took about 41 ms in the first minute after load.
+Run 2: final build with the 10 s settle after load and the 3 s pause on overruns.
+
+== Run 1 (before guards)
+[16:07:15.687] [55788] [I] AdaptivePapyrusBudget v0-3-0-0
+[16:07:26.070] [55788] [I] Installed gameplay VM hook; budget correction=true, native pacing=false, benchmark=false
+[16:07:26.071] [55788] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[16:10:00.506] [54300] [I] VM catch-up: frames=1 slow=1 avg_frame_ms=50.70 extra_cycles=1 with_tasklets=1 idle_stops=0 time_stops=0 frozen_stops=0 extra_ms_per_frame=0.6545 max_frame_extra_ms=0.654 max_update_ms=0.593 max_batch_ms=0.059 slowest_batch_tasklets=85 max_batch_tasklets=85
+[16:11:00.537] [58444] [I] VM catch-up: frames=1788 slow=1785 avg_frame_ms=33.57 extra_cycles=1200 with_tasklets=1200 idle_stops=0 time_stops=6 frozen_stops=0 extra_ms_per_frame=0.1443 max_frame_extra_ms=41.064 max_update_ms=40.995 max_batch_ms=10.522 slowest_batch_tasklets=48 max_batch_tasklets=122
+[16:12:00.537] [58444] [I] VM catch-up: frames=1800 slow=1800 avg_frame_ms=33.33 extra_cycles=1200 with_tasklets=1160 idle_stops=40 time_stops=0 frozen_stops=0 extra_ms_per_frame=0.0714 max_frame_extra_ms=0.892 max_update_ms=0.318 max_batch_ms=0.682 slowest_batch_tasklets=21 max_batch_tasklets=120
+
+== Run 2 (final)
+[16:13:47.658] [29872] [I] AdaptivePapyrusBudget v0-3-0-0
+[16:13:57.768] [29872] [I] Installed gameplay VM hook; budget correction=true, native pacing=false, benchmark=false
+[16:13:57.768] [29872] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[16:16:35.700] [58752] [I] VM catch-up: frames=1 slow=1 avg_frame_ms=70.13 extra_cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=1 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[16:17:35.705] [59224] [I] VM catch-up: frames=1790 slow=1783 avg_frame_ms=33.52 extra_cycles=1031 with_tasklets=1030 idle_stops=1 time_stops=0 frozen_stops=0 held_frames=118 overrun_pauses=0 extra_ms_per_frame=0.0654 max_frame_extra_ms=0.680 max_update_ms=0.496 max_batch_ms=0.390 slowest_batch_tasklets=8 max_batch_tasklets=119
+[16:18:35.708] [58752] [I] VM catch-up: frames=1800 slow=1800 avg_frame_ms=33.33 extra_cycles=1200 with_tasklets=1164 idle_stops=36 time_stops=0 frozen_stops=0 held_frames=0 overrun_pauses=0 extra_ms_per_frame=0.0750 max_frame_extra_ms=0.718 max_update_ms=0.491 max_batch_ms=0.647 slowest_batch_tasklets=5 max_batch_tasklets=121
+
+== Run 3 (final, load notification without stateLock)
+[17:33:57.463] [54536] [I] AdaptivePapyrusBudget v0-3-0-0
+[17:34:07.632] [54536] [I] Installed gameplay VM hook; budget correction=true, native pacing=false, benchmark=false
+[17:34:07.632] [54536] [I] Installed VM catch-up: target=50 Hz, max 4 extra cycles and 2.00 ms per frame
+[17:36:33.453] [41736] [I] VM catch-up: frames=1 slow=1 avg_frame_ms=64.80 extra_cycles=0 with_tasklets=0 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=1 overrun_pauses=0 extra_ms_per_frame=0.0000 max_frame_extra_ms=0.000 max_update_ms=0.000 max_batch_ms=0.000 slowest_batch_tasklets=0 max_batch_tasklets=0
+[17:37:33.475] [37280] [I] VM catch-up: frames=1790 slow=1784 avg_frame_ms=33.53 extra_cycles=1030 with_tasklets=1030 idle_stops=0 time_stops=0 frozen_stops=0 held_frames=120 overrun_pauses=0 extra_ms_per_frame=0.0657 max_frame_extra_ms=0.666 max_update_ms=0.496 max_batch_ms=0.291 slowest_batch_tasklets=2 max_batch_tasklets=121

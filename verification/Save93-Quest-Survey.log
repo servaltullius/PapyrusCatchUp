@@ -1,0 +1,96 @@
+Quest survey of the test profile's start save (tests/QuestProgressionTestPlan.md section 5)
+Run: build/catchup/run-quest-survey.ps1 -Sequence survey-save93-2, profile APB-CatchUp-Test, 2026-11-10.
+Plugin: APBQuestProbe (tests/QuestProbe.cpp), APB_QUEST_PROBE=survey; VM catch-up not installed in this run.
+"done" = engine condition GetStageDone evaluated on the player for every stage index 0..1000.
+
+Save catalog (tests/save_catalog.py over every profile's saves folder): 184 saves, all of one character (doro),
+levels 1-14, every save's plugin list active in APB-CatchUp-Test. Save93 (level 14, 2026-11-07) is the latest,
+so no other save is further along either quest line.
+
+Result for Save93:
+- MQ201 Diplomatic Immunity: completed (stage 250).
+- MQ202 A Cornered Rat: running, stage 10, done [5,10]. Esbern is in RiftenEsbernsVault, Delphine in RiverwoodSleepingGiantInn.
+- MQ203 Alduin's Wall and MQ204: never started (already_run=false). Segment A/B start states lie ahead of this save.
+- College: MG01 running at stage 0 (only stage 0 done); MG02-MG08 never started.
+- Arniel's Endeavor: MGRArniel01 running, no stage done; MGRArniel02-04 never started. Segment C needs the College line and Arniel 1-3 first.
+
+Notes on the probe itself:
+- First run (survey-save93, DLL 653DBB00...) also logged TESQuest::IsRunning and the run-time stage list. IsRunning was true for
+  stopped quests and the stage list held two index-0 entries even for MQ201 with 34 stages done, so both were removed.
+  The second run (DLL below) gives the same stages and the same 32 alias lines.
+- Both runs ended with the known exit crash pattern (execute at an unmapped 64 KB-aligned address, two logs seconds apart,
+  stack through other UI plugins); it happened after the survey finished. See Exit-Crash-Control-Without-APB.log.
+
+APBQuestProbe.dll SHA-256 9522C4070B7D6705A3EF7A67F61972B4082490F5993D2123FAD888E4F9C8686C
+
+== build/catchup/survey-save93-2/probe.log
+[I] APBQuestProbe v0-1-0-0
+[I] quest survey saves=1
+[I] survey pre-load file=Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1.ess
+[I] survey save=Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1 index=0 player=doro level=14 cell=0001A275(WhiterunWindDistrict03) location=00018A56 days_passed=15.07
+[I] survey quest MQ201 stopped=true starting=false stopping=false completed=true already_run=true stage=250 done=[10,15,20,30,35,40,50,70,90,95,100,102,105,108,110,140,150,160,165,170,180,185,190,200,205,210,220,222,223,225,227,230,240,250]
+[I] survey objectives MQ201 [5:3,10:3,20:3,30:3,40:3,50:3,55:3,60:3,70:0,80:3,90:3] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MQ202 stopped=false starting=false stopping=false completed=false already_run=true stage=10 done=[5,10]
+[I] survey objectives MQ202 [10:1,20:0,30:0,40:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey alias MQ202.delphine 00013485[델핀] disabled=false dead=false cell=000133C6(RiverwoodSleepingGiantInn) location=0001CB8C
+[I] survey alias MQ202.esbern 00019DFD[에스번] disabled=false dead=false cell=0003B696(RiftenEsbernsVault) location=00022639
+[I] survey alias MQ202.Brynjolf 00020545[브린욜프] disabled=false dead=false cell=00016BDF(RiftenBeeandBarb) location=0002247E
+[I] survey alias MQ202.Vekel 00019DF9[사나이 베켈] disabled=false dead=false cell=00016BCF(RiftenRaggedFlagon) location=0002264A
+[I] survey alias MQ202.Dirge 00019DFA[더지] disabled=false dead=false cell=00016BCF(RiftenRaggedFlagon) location=0002264A
+[I] survey alias MQ202.FlagonBartender 00019DFA[더지] disabled=false dead=false cell=00016BCF(RiftenRaggedFlagon) location=0002264A
+[I] survey alias MQ202.gissur 00039F24[기저] disabled=false dead=false cell=00016BCF(RiftenRaggedFlagon) location=0002264A
+[I] survey alias MQ202.EsbernsDoor 0003B8B6[문] disabled=false cell=0003B696(RiftenEsbernsVault) location=00022639
+[I] survey alias MQ202.Shavari 000A3E22[샤바리] disabled=false dead=false cell=00016BD4(RiftenHaelgasBunkhouse) location=0002263D
+[I] survey alias MQ202.FlagonAmbush1 0006C878[탈모어 마도사] disabled=true dead=false cell=0003B698(RiftenRatway01) location=0003B871
+[I] survey alias MQ202.FlagonAmbush2 0006C87A[탈모어 병사] disabled=true dead=false cell=0003B698(RiftenRatway01) location=0003B871
+[I] survey alias MQ202.FlagonAmbush3 000A3E23[탈모어 병사] disabled=true dead=false cell=0003B698(RiftenRatway01) location=0003B871
+[I] survey alias MQ202.MainAmbush1 0002241F[탈모어 마도사] disabled=false dead=false cell=000A1BFD(RiftenRatway02) location=0003B871
+[I] survey alias MQ202.MainAmbush3 0002241E[탈모어 병사] disabled=false dead=false cell=000A1BFD(RiftenRatway02) location=0003B871
+[I] survey alias MQ202.MainAmbush4 00022416[탈모어 병사] disabled=false dead=false cell=000A1BFD(RiftenRatway02) location=0003B871
+[I] survey alias MQ202.FinalAmbush1 0004BCD2[탈모어 마도사] disabled=true dead=false cell=000A1BFD(RiftenRatway02) location=0003B871
+[I] survey alias MQ202.FinalAmbush2 0004BCD3[탈모어 병사] disabled=true dead=false cell=000A1BFD(RiftenRatway02) location=0003B871
+[I] survey alias MQ202.GissurNote FF0035FA[기저의 쪽지] disabled=false cell=0000921B(ThalmorEmbassyExterior01) location=00018C92
+[I] survey alias MQ202.ShavariNote FF0035FB[샤바리의 쪽지] disabled=false cell=00016BD4(RiftenHaelgasBunkhouse) location=0002263D
+[I] survey quest MQ203 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MQ203 [10:0,20:0,30:0,40:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MQ204 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MQ204 [10:0,20:0,25:0,30:0,40:0,50:0,60:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG01 stopped=false starting=false stopping=false completed=false already_run=true stage=0 done=[0]
+[I] survey objectives MG01 [10:0,20:0,21:0,22:0,23:0,24:0,30:0,40:0,50:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey alias MG01.MG01MirabelleAlias 0001C1B9[미라벨 어바인] disabled=false dead=false cell=00008E62(WinterholdCollegeExterior) location=00076F3A
+[I] survey alias MG01.MG01NiryaAlias 0001C1A9[니르야] disabled=false dead=false cell=0001380F(WinterholdCollegeHallofCountenance) location=0001EB74
+[I] survey alias MG01.MG01TolfdirAlias 0001C1A1[톨프딜] disabled=false dead=false cell=0001380E(WinterholdCollegeHallofTheElements) location=0001EB7A
+[I] survey alias MG01.MG01OnmundAlias 0001C1A2[온문드] disabled=false dead=false cell=000CAB91(WinterholdCollegeHallofAttainment) location=000D16E5
+[I] survey alias MG01.MG01BrelynaAlias 0001C1A4[브렐리나 메리온] disabled=false dead=false cell=000CAB91(WinterholdCollegeHallofAttainment) location=000D16E5
+[I] survey alias MG01.MG01JzargoAlias 0001C1A3[지'자르고] disabled=false dead=false cell=000CAB91(WinterholdCollegeHallofAttainment) location=000D16E5
+[I] survey alias MG01.MG01GateAlias 00051190[] disabled=false cell=00008EA2(WinterholdExterior01) location=00018A51
+[I] survey alias MG01.MG01StoneAlias 00037A7D[관문] disabled=false cell=00008E81(Wilderness) location=00076F3A
+[I] survey alias MG01.MG01AncanoAlias 0001E7D8[안카노] disabled=false dead=false cell=00008E62(WinterholdCollegeExterior) location=00076F3A
+[I] survey alias MG01.MG01FaraldaAlias 0001C1A5[파랄다] disabled=false dead=false cell=00008EA2(WinterholdExterior01) location=00018A51
+[I] survey alias MG01.Player 00000014[doro] disabled=false dead=false cell=0001A275(WhiterunWindDistrict03) location=00018A56
+[I] survey alias MG01.CastMarker 000F9363[] disabled=false cell=0001380E(WinterholdCollegeHallofTheElements) location=0001EB7A
+[I] survey quest MG02 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG02 [10:0,20:0,25:0,30:0,35:0,40:0,50:0,60:0,65:0,70:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG03 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG03 [10:0,20:0,30:0,50:0,60:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG04 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG04 [10:0,15:0,20:0,30:0,40:0,50:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG05 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG05 [10:0,20:0,30:0,40:0,50:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest mg06 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives mg06 [10:0,20:0,25:0,30:0,32:0,35:0,37:0,40:0,50:0,55:0,60:0,70:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG07 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG07 [10:0,20:0,30:0,40:0,50:0,60:0,70:0,80:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MG08 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MG08 [0:0,10:0,20:0,30:0,40:0,50:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MGRArniel01 stopped=false starting=false stopping=false completed=false already_run=true stage=0 done=[]
+[I] survey objectives MGRArniel01 [10:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey alias MGRArniel01.ArnielGane 0001C1AB[아니얼 게인] disabled=false dead=false cell=000CAB91(WinterholdCollegeHallofAttainment) location=000D16E5
+[I] survey quest MGRArniel02 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MGRArniel02 [10:0,20:0,30:0,40:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MGRArniel03 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MGRArniel03 [10:0,13:0,16:0,20:0,30:0,40:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey quest MGRArniel04 stopped=true starting=false stopping=false completed=false already_run=false stage=0 done=[]
+[I] survey objectives MGRArniel04 [10:0,20:0,30:0,40:0] (1 displayed, 2 completed, 3 completed+displayed, 4 failed, 5 failed+displayed)
+[I] survey save=Save93_FC70D793_0_646F726F_WhiterunWorld_000931_20261107204229_14_1 done
+[I] quest survey complete saves=1
