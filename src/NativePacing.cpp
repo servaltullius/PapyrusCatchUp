@@ -94,7 +94,7 @@ namespace
 bool NativePacing::Install()
 {
     const auto base = REL::Module::get().base();
-    stockCallback = REL::ID(reviewedTarget->callbackID).address();
+    stockCallback = REL::ID(reviewedTarget->aeCallbackID).address();
     stockVtable = base + vtableOffset;
     const auto eligibility = REL::ID(104853).address() + 0x61D;
     const auto attempt = REL::ID(105176).address() + 0x82F;

@@ -214,10 +214,11 @@ inline bool IsSideEffectFreeNative(std::string_view className, std::string_view 
 //
 // An entry stands for one implementation, not for a name. At runtime (VMCatchUp.cpp) a game native
 // is accepted only when its function object was built by the game executable and its callback is
-// the address of callbackID (Address Library, AE 1.6.1170); an SKSE native only when its function
-// object and callback lie in skse64_1_6_1170.dll and SKSE is the reviewed version. A helper is
-// accepted when its function object and its callback lie in the same of those two images. A native
-// that another plugin registered under the same name is therefore a change.
+// the address of seCallbackID / aeCallbackID (Address Library, SE 1.5.97 / AE 1.6.x); an SKSE
+// native only when its function object and callback lie in skse64_1_6_1170.dll and SKSE is the
+// reviewed version. A helper is accepted when its function object and its callback lie in the same
+// of those two images. A native that another plugin registered under the same name is therefore a
+// change.
 //
 // What was accepted as "no change" (verification/ReadList-Review.md has the evidence per entry):
 // field reads and lookups; balanced reference counts; locks taken and released; the thread-local
@@ -246,57 +247,58 @@ struct ReviewedRead
     std::string_view className;
     std::string_view name;
     NativeOrigin origin;
-    std::uint64_t callbackID;  // game natives: Address Library ID of the callback; SKSE natives: 0
+    std::uint64_t seCallbackID;  // game natives: SE 1.5.97 Address Library ID; SKSE natives: 0
+    std::uint64_t aeCallbackID;  // game natives: AE 1.6.x Address Library ID; SKSE natives: 0
 };
 
 // SKSE natives were read in the v2.2.8 sources (packed as SKSE reports its version).
 inline constexpr std::uint32_t reviewedSKSEVersion = (2u << 24) | (2u << 16) | (8u << 4);
 
 inline constexpr std::array<ReviewedRead, 44> reviewedReads{ {
-    { "Actor", "GetEquippedArmorInSlot", NativeOrigin::kGame, 54684 },
-    { "Actor", "GetEquippedWeapon", NativeOrigin::kGame, 54924 },
-    { "Actor", "GetFactionRank", NativeOrigin::kGame, 54686 },
-    { "Actor", "GetRace", NativeOrigin::kGame, 54930 },
-    { "Actor", "HasMagicEffect", NativeOrigin::kGame, 54649 },
-    { "Actor", "HasMagicEffectWithKeyword", NativeOrigin::kGame, 54650 },
-    { "Actor", "HasPerk", NativeOrigin::kGame, 54644 },
-    { "Actor", "IsDead", NativeOrigin::kGame, 54705 },
-    { "Actor", "IsInCombat", NativeOrigin::kGame, 54945 },
-    { "Actor", "IsInFaction", NativeOrigin::kGame, 54946 },
-    { "Actor", "IsSneaking", NativeOrigin::kGame, 54953 },
-    { "Actor", "WornHasKeyword", NativeOrigin::kGame, 54777 },
-    { "ActorBase", "GetSex", NativeOrigin::kGame, 56005 },
-    { "Alias", "GetOwningQuest", NativeOrigin::kGame, 55155 },
-    { "Form", "GetFormID", NativeOrigin::kGame, 55902 },  // [NativePacing] lets tasklets run it; NativePacing.cpp takes the callback from here
-    { "Form", "HasKeyword", NativeOrigin::kGame, 55870 },
-    { "FormList", "Find", NativeOrigin::kGame, 55669 },
-    { "FormList", "HasForm", NativeOrigin::kGame, 55682 },
-    { "Game", "GetFormFromFile", NativeOrigin::kGame, 55465 },
-    { "Game", "GetPlayer", NativeOrigin::kGame, 55469 },
-    { "GlobalVariable", "GetValue", NativeOrigin::kGame, 55930 },
-    { "ObjectReference", "GetBaseObject", NativeOrigin::kGame, 56168 },
-    { "ObjectReference", "GetDistance", NativeOrigin::kGame, 56170 },
-    { "ObjectReference", "GetPositionX", NativeOrigin::kGame, 56178 },
-    { "ObjectReference", "GetPositionY", NativeOrigin::kGame, 56179 },
-    { "ObjectReference", "GetPositionZ", NativeOrigin::kGame, 56180 },
-    { "ObjectReference", "GetScale", NativeOrigin::kGame, 56633 },
-    { "ObjectReference", "Is3DLoaded", NativeOrigin::kGame, 56188 },
-    { "ObjectReference", "IsDisabled", NativeOrigin::kGame, 56639 },
-    { "ReferenceAlias", "GetReference", NativeOrigin::kGame, 55287 },
-    { "Actor", "GetEquippedObject", NativeOrigin::kSKSE, 0 },
-    { "Actor", "GetWornForm", NativeOrigin::kSKSE, 0 },
-    { "Armor", "GetMaskForSlot", NativeOrigin::kSKSE, 0 },
-    { "Form", "GetName", NativeOrigin::kSKSE, 0 },
-    { "Game", "GetLightModName", NativeOrigin::kSKSE, 0 },
-    { "Game", "GetModByName", NativeOrigin::kSKSE, 0 },
-    { "Game", "GetModName", NativeOrigin::kSKSE, 0 },
-    { "MagicEffect", "GetCastingArt", NativeOrigin::kSKSE, 0 },
-    { "MagicEffect", "GetHitEffectArt", NativeOrigin::kSKSE, 0 },
-    { "MagicEffect", "GetLight", NativeOrigin::kSKSE, 0 },
-    { "Shout", "GetNthSpell", NativeOrigin::kSKSE, 0 },
-    { "Shout", "GetNthWordOfPower", NativeOrigin::kSKSE, 0 },
-    { "SKSE", "GetVersionRelease", NativeOrigin::kSKSE, 0 },
-    { "Spell", "GetNthEffectMagicEffect", NativeOrigin::kSKSE, 0 },
+    { "Actor", "GetEquippedArmorInSlot", NativeOrigin::kGame, 53875, 54684 },
+    { "Actor", "GetEquippedWeapon", NativeOrigin::kGame, 530331, 54924 },
+    { "Actor", "GetFactionRank", NativeOrigin::kGame, 53877, 54686 },
+    { "Actor", "GetRace", NativeOrigin::kGame, 54134, 54930 },
+    { "Actor", "HasMagicEffect", NativeOrigin::kGame, 53849, 54649 },
+    { "Actor", "HasMagicEffectWithKeyword", NativeOrigin::kGame, 53850, 54650 },
+    { "Actor", "HasPerk", NativeOrigin::kGame, 53845, 54644 },
+    { "Actor", "IsDead", NativeOrigin::kGame, 53893, 54705 },
+    { "Actor", "IsInCombat", NativeOrigin::kGame, 54148, 54945 },
+    { "Actor", "IsInFaction", NativeOrigin::kGame, 54149, 54946 },
+    { "Actor", "IsSneaking", NativeOrigin::kGame, 54156, 54953 },
+    { "Actor", "WornHasKeyword", NativeOrigin::kGame, 53953, 54777 },
+    { "ActorBase", "GetSex", NativeOrigin::kGame, 55450, 56005 },
+    { "Alias", "GetOwningQuest", NativeOrigin::kGame, 54475, 55155 },
+    { "Form", "GetFormID", NativeOrigin::kGame, 55331, 55902 },  // [NativePacing] lets tasklets run it; NativePacing.cpp takes the callback from here
+    { "Form", "HasKeyword", NativeOrigin::kGame, 55289, 55870 },
+    { "FormList", "Find", NativeOrigin::kGame, 55064, 55669 },
+    { "FormList", "HasForm", NativeOrigin::kGame, 55083, 55682 },
+    { "Game", "GetFormFromFile", NativeOrigin::kGame, 54832, 55465 },
+    { "Game", "GetPlayer", NativeOrigin::kGame, 54836, 55469 },
+    { "GlobalVariable", "GetValue", NativeOrigin::kGame, 55359, 55930 },
+    { "ObjectReference", "GetBaseObject", NativeOrigin::kGame, 55639, 56168 },
+    { "ObjectReference", "GetDistance", NativeOrigin::kGame, 55641, 56170 },
+    { "ObjectReference", "GetPositionX", NativeOrigin::kGame, 55649, 56178 },
+    { "ObjectReference", "GetPositionY", NativeOrigin::kGame, 55650, 56179 },
+    { "ObjectReference", "GetPositionZ", NativeOrigin::kGame, 55651, 56180 },
+    { "ObjectReference", "GetScale", NativeOrigin::kGame, 56234, 56633 },
+    { "ObjectReference", "Is3DLoaded", NativeOrigin::kGame, 55659, 56188 },
+    { "ObjectReference", "IsDisabled", NativeOrigin::kGame, 56240, 56639 },
+    { "ReferenceAlias", "GetReference", NativeOrigin::kGame, 54633, 55287 },
+    { "Actor", "GetEquippedObject", NativeOrigin::kSKSE, 0, 0 },
+    { "Actor", "GetWornForm", NativeOrigin::kSKSE, 0, 0 },
+    { "Armor", "GetMaskForSlot", NativeOrigin::kSKSE, 0, 0 },
+    { "Form", "GetName", NativeOrigin::kSKSE, 0, 0 },
+    { "Game", "GetLightModName", NativeOrigin::kSKSE, 0, 0 },
+    { "Game", "GetModByName", NativeOrigin::kSKSE, 0, 0 },
+    { "Game", "GetModName", NativeOrigin::kSKSE, 0, 0 },
+    { "MagicEffect", "GetCastingArt", NativeOrigin::kSKSE, 0, 0 },
+    { "MagicEffect", "GetHitEffectArt", NativeOrigin::kSKSE, 0, 0 },
+    { "MagicEffect", "GetLight", NativeOrigin::kSKSE, 0, 0 },
+    { "Shout", "GetNthSpell", NativeOrigin::kSKSE, 0, 0 },
+    { "Shout", "GetNthWordOfPower", NativeOrigin::kSKSE, 0, 0 },
+    { "SKSE", "GetVersionRelease", NativeOrigin::kSKSE, 0, 0 },
+    { "Spell", "GetNthEffectMagicEffect", NativeOrigin::kSKSE, 0, 0 },
 } };
 
 // The entry for a class and function name, or nullptr. A name match alone does not make a native a

@@ -1,3 +1,4 @@
+#include "CallSiteFinder.h"
 #include "CatchUpPolicy.h"
 #include "IniValues.h"
 #include "LogHistory.h"
@@ -312,12 +313,14 @@ int main()
         const auto* keyword = FindReviewedRead("form", "haskeyword");
         const auto* effect = FindReviewedRead("SPELL", "GetNthEffectMagicEffect");
         const auto* find = FindReviewedRead("FormList", "Find");
-        Check(find && find->origin == NativeOrigin::kGame && find->callbackID == 55669, "FormList.Find is a reviewed read");
+        Check(find && find->origin == NativeOrigin::kGame && find->seCallbackID == 55064 && find->aeCallbackID == 55669,
+            "FormList.Find is a reviewed read");
         // The native that [NativePacing] lets tasklets run must not mark its script as changed.
         const auto* formID = FindReviewedRead("Form", "GetFormID");
-        Check(formID && formID->origin == NativeOrigin::kGame && formID->callbackID == 55902, "Form.GetFormID is a reviewed read");
-        Check(keyword && keyword->origin == NativeOrigin::kGame && keyword->callbackID == 55870 &&
-                  effect && effect->origin == NativeOrigin::kSKSE && effect->callbackID == 0,
+        Check(formID && formID->origin == NativeOrigin::kGame && formID->seCallbackID == 55331 && formID->aeCallbackID == 55902,
+            "Form.GetFormID is a reviewed read");
+        Check(keyword && keyword->origin == NativeOrigin::kGame && keyword->seCallbackID == 55289 && keyword->aeCallbackID == 55870 &&
+                  effect && effect->origin == NativeOrigin::kSKSE && effect->seCallbackID == 0 && effect->aeCallbackID == 0,
             "A reviewed read carries where its implementation is");
     }
     // Read-like names whose implementation was found to write, or was not read, are not listed.
@@ -330,18 +333,21 @@ int main()
               !FindReviewedRead("SomeMod", "GetValue") && !FindReviewedRead("", "GetValue") && !FindReviewedRead("Actor", ""),
         "A native that was not reviewed, or was found to write, is not a reviewed read whatever its name");
     {
-        // The table itself: every game entry names its callback, no callback and no name twice, and no
+        // The table itself: every game entry names both SE and AE callbacks, no callback and no name twice, and no
         // entry contradicts the lists that mark natives as changes under the name rule.
         bool sound = true;
         for (std::size_t i = 0; i < reviewedReads.size(); ++i) {
             const auto& entry = reviewedReads[i];
             sound = sound && !entry.className.empty() && !entry.name.empty();
-            sound = sound && (entry.origin == NativeOrigin::kGame ? entry.callbackID != 0 : entry.callbackID == 0);
+            sound = sound && (entry.origin == NativeOrigin::kGame ?
+                (entry.seCallbackID != 0 && entry.aeCallbackID != 0) :
+                (entry.seCallbackID == 0 && entry.aeCallbackID == 0));
             sound = sound && !IsHeldBackByPapyrusTweaks(entry.className, entry.name) &&
                 !IsKnownChangeBehindReadName(entry.className, entry.name);
             sound = sound && FindReviewedRead(entry.className, entry.name) == &entry;
             for (std::size_t j = 0; j < i; ++j) {
-                sound = sound && (entry.callbackID == 0 || entry.callbackID != reviewedReads[j].callbackID);
+                sound = sound && (entry.seCallbackID == 0 || entry.seCallbackID != reviewedReads[j].seCallbackID);
+                sound = sound && (entry.aeCallbackID == 0 || entry.aeCallbackID != reviewedReads[j].aeCallbackID);
             }
         }
         Check(sound, "The reviewed-read table must be consistent");
@@ -540,6 +546,99 @@ int main()
         "Multiple unknown names collapse into one count");
     Check(SlowFrameReport::Summarize({ "A.f", "B.g", "C.h", "D.i" }, 2) == "A.f, B.g (+2 more)",
         "Equal counts keep their order and the rest is counted");
+
+    // Call-site finder: locates E8 relative calls by resolved target, disambiguates repeated
+    // callees with a prefix, and falls back to a unique prefix when another plugin already hooked
+    // the call via SKSE's trampoline.
+    {
+        constexpr std::uintptr_t base = 0x140100000ULL;
+        constexpr std::uintptr_t targetA = 0x140100500ULL;
+        constexpr std::uintptr_t targetB = 0x1400FF800ULL;  // negative rel32 displacement
+        constexpr std::uintptr_t trampolineTarget = 0x140200000ULL;  // outside the image below
+        constexpr CallSiteFinder::Bounds image{ 0x140000000ULL, 0x140180000ULL };
+        constexpr std::span<const std::int16_t> noPrefix{};
+
+        std::vector<std::uint8_t> code(64, 0x90);
+        const auto putCall = [&](std::size_t at, std::uintptr_t target) {
+            code[at] = 0xE8;
+            const auto disp = static_cast<std::int32_t>(
+                static_cast<std::intptr_t>(target) - static_cast<std::intptr_t>(base + at + 5));
+            std::memcpy(code.data() + at + 1, &disp, sizeof(disp));
+        };
+
+        // Unique unhooked call to targetA at +8 (preceded by 0x48, 0x8B, 0xCE).
+        code[5] = 0x48; code[6] = 0x8B; code[7] = 0xCE;
+        putCall(8, targetA);
+        // Two calls to targetB at +20 and +40; only +40 has prefix 0x4D, 0x8B, 0xC4.
+        code[17] = 0x48; code[18] = 0x8B; code[19] = 0xD3;
+        putCall(20, targetB);
+        code[37] = 0x4D; code[38] = 0x8B; code[39] = 0xC4;
+        putCall(40, targetB);
+
+        const auto uniqueA = CallSiteFinder::FindUniqueCall(base, code, targetA, noPrefix, image);
+        Check(uniqueA && uniqueA->callOffset == 8 && !uniqueA->chained,
+            "A single unhooked E8 call to targetA must match directly");
+
+        // Repeated callee without prefix is ambiguous and rejected; with prefix it disambiguates.
+        Check(!CallSiteFinder::FindUniqueCall(base, code, targetB, noPrefix, image),
+            "Multiple E8 calls without a prefix must be rejected as ambiguous");
+        constexpr std::array<std::int16_t, 4> prefixB{ 0x4D, 0x8B, 0xC4, 0xE8 };
+        const auto disambigB = CallSiteFinder::FindUniqueCall(base, code, targetB, prefixB, image);
+        Check(disambigB && disambigB->callOffset == 40 && !disambigB->chained,
+            "Prefix must disambiguate repeated E8 calls to the same callee");
+
+        // A prefix is required wherever one is given: the only call to targetA does not count when
+        // the instructions before it differ.
+        constexpr std::array<std::int16_t, 4> otherPrefix{ 0x48, 0x8B, 0xCF, 0xE8 };
+        Check(!CallSiteFinder::FindUniqueCall(base, code, targetA, otherPrefix, image),
+            "The only call to a target must still carry the given prefix");
+        constexpr std::array<std::int16_t, 4> exactPrefixA{ 0x48, 0x8B, 0xCE, 0xE8 };
+        const auto prefixedA = CallSiteFinder::FindUniqueCall(base, code, targetA, exactPrefixA, image);
+        Check(prefixedA && prefixedA->callOffset == 8 && !prefixedA->chained,
+            "The only call to a target with the given prefix matches directly");
+        Check(!CallSiteFinder::FindExactCalls(base, code, targetB, 2, prefixB, image),
+            "FindExactCalls must reject hits that do not all carry the prefix");
+
+        // Simulate another plugin hooking targetA at +8 (changing rel32 to trampolineTarget).
+        putCall(8, trampolineTarget);
+        Check(!CallSiteFinder::FindUniqueCall(base, code, targetA, noPrefix, image),
+            "A hooked call without a fallback prefix must not match");
+        constexpr std::array<std::int16_t, 4> prefixA{ 0x48, CallSiteFinder::kWildcard, 0xCE, 0xE8 };
+        const auto chainedA = CallSiteFinder::FindUniqueCall(base, code, targetA, prefixA, image);
+        Check(chainedA && chainedA->callOffset == 8 && chainedA->chained,
+            "A hooked call with a unique wildcard prefix must resolve as chained");
+        // A call with the prefix that leads to another function of the game is not a redirected
+        // stock call.
+        putCall(8, 0x140120000ULL);
+        Check(!CallSiteFinder::FindUniqueCall(base, code, targetA, prefixA, image),
+            "A prefixed call into the game image must not be taken for a hooked stock call");
+        putCall(8, trampolineTarget);
+
+        // FindExactCalls: exact 2 hits for targetB, and chained fallback when one of the two is hooked.
+        const auto bothB = CallSiteFinder::FindExactCalls(base, code, targetB, 2, noPrefix, image);
+        Check(bothB && !bothB->chained && bothB->callOffsets == std::vector<std::size_t>{ 20, 40 },
+            "FindExactCalls must return both unhooked call sites in order");
+        // Give both targetB calls the same prefix and hook the first one.
+        code[17] = 0x48; code[18] = 0x8D; code[19] = 0x54;
+        code[37] = 0x48; code[38] = 0x8D; code[39] = 0x54;
+        putCall(20, trampolineTarget);
+        constexpr std::array<std::int16_t, 4> popLikePrefix{ 0x48, 0x8D, 0x54, 0xE8 };
+        const auto chainedBoth = CallSiteFinder::FindExactCalls(base, code, targetB, 2, popLikePrefix, image);
+        Check(chainedBoth && chainedBoth->chained && chainedBoth->callOffsets == std::vector<std::size_t>{ 20, 40 },
+            "FindExactCalls must recover both sites via prefix when one was hooked");
+        // A stock call without the prefix stays while two prefixed calls lead elsewhere: the stock
+        // call would be dropped, so nothing is accepted.
+        code[37] = 0x90;
+        code[50] = 0x48; code[51] = 0x8D; code[52] = 0x54;
+        putCall(53, trampolineTarget);
+        Check(!CallSiteFinder::FindExactCalls(base, code, targetB, 2, popLikePrefix, image),
+            "FindExactCalls must not drop a remaining stock call for other prefixed calls");
+
+        // Truncated E8 at the very end of the buffer must not match.
+        std::vector<std::uint8_t> shortCode{ 0x48, 0x8B, 0xCE, 0xE8, 0x00 };
+        Check(!CallSiteFinder::FindUniqueCall(base, shortCode, targetA, prefixA, image),
+            "An E8 call without room for its 4-byte displacement must be rejected");
+    }
 
     std::cout << "Catch-up policy checks passed\n";
 }

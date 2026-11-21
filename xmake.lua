@@ -1,5 +1,5 @@
 set_project("PapyrusCatchUp")
-set_version("0.3.0")
+set_version("0.3.1")
 set_languages("c++23")
 set_arch("x64")
 add_rules("mode.debug", "mode.releasedbg")

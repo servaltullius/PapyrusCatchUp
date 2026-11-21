@@ -1,5 +1,6 @@
 #include "VMCatchUp.h"
 
+#include "CallSiteFinder.h"
 #include "CatchUpPolicy.h"
 #include "NativeClassification.h"
 #include "QueueOrder.h"
@@ -7,11 +8,14 @@
 
 #include "RE/F/FunctionMessage.h"
 
+#include <Windows.h>
 #include <algorithm>
 #include <intrin.h>
 #include <optional>
+#include <span>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace
@@ -22,42 +26,88 @@ namespace
     using JobsFn = void(JobList*);
     using SubmitFn = void(JobList*, JobList*, std::uint64_t);
 
-    // AE 1.6.1170 "VM update" job (ID 39074) from +0x50: RDI holds the gameplay job list (35404(0))
-    // and RBX the VM. It calls TasksToJobs inside a scope object whose constructor (69360,
-    // `mov rax, rcx; ret`) and destructor (69361, `ret 0`) do nothing, then submits, waits for and
-    // resets the job list. Extra cycles therefore call TasksToJobs, submit, wait and reset directly.
-    constexpr std::size_t jobTailOffset = 0x50;
-    constexpr std::size_t resetCallOffset = 0x94;
-    constexpr std::array<std::uint8_t, 73> jobTail{
-        0x48, 0x8B, 0xF8, 0x48, 0x8B, 0xD0, 0x48, 0x8D, 0x4C, 0x24, 0x48, 0xE8, 0x40, 0x3D, 0x62, 0x00,
-        0x90, 0x4C, 0x8B, 0x03, 0x48, 0x8B, 0xD7, 0x48, 0x8B, 0xCB, 0x41, 0xFF, 0x90, 0x90, 0x00, 0x00,
-        0x00, 0x90, 0x48, 0x8D, 0x4C, 0x24, 0x48, 0xE8, 0x34, 0x3D, 0x62, 0x00, 0x45, 0x33, 0xC0, 0x33,
-        0xD2, 0x48, 0x8B, 0xCF, 0xE8, 0x97, 0x3A, 0x62, 0x00, 0x48, 0x8B, 0xCF, 0xE8, 0xAF, 0x3A, 0x62,
-        0x00, 0x48, 0x8B, 0xCF, 0xE8, 0x37, 0x3B, 0x62, 0x00
-    };
-    static_assert(jobTailOffset + jobTail.size() == resetCallOffset + 5);
-    // E8 calls inside jobTail: the empty scope pair around TasksToJobs, submit, wait, reset.
-    constexpr std::array<std::size_t, 5> jobTailCalls{ 11, 39, 52, 60, 68 };
+    // Address Library IDs (SE 1.5.97, AE 1.6.x) for the gameplay VM job and queue functions.
+    constexpr auto vmUpdateJobID = REL::RelocationID(38118, 39074);
+    constexpr auto skyrimVMUpdateGameID = REL::RelocationID(53115, 53926);
+    constexpr auto jobScopeCtorID = REL::RelocationID(67997, 69360);
+    constexpr auto jobScopeDtorID = REL::RelocationID(67998, 69361);
+    constexpr auto jobsSubmitID = REL::RelocationID(67991, 69352);
+    constexpr auto jobsWaitID = REL::RelocationID(67992, 69353);
+    constexpr auto jobsResetID = REL::RelocationID(67994, 69355);
+    constexpr auto updateBudgetSettingID = REL::RelocationID(510638, 383725);
+    constexpr auto vmUpdateID = REL::RelocationID(98044, 104767);
+    constexpr auto attemptFunctionCallID = REL::RelocationID(98130, 104853);
+    constexpr auto returnFromLatentID = REL::RelocationID(98131, 104854);
+    constexpr auto drainFuncQueueID = REL::RelocationID(98134, 104857);
+    constexpr auto retrySuspendedID = REL::RelocationID(98135, 104858);
+    constexpr auto popFuncMessageID = REL::RelocationID(98155, 104879);
+    constexpr auto queueFuncCallID = REL::RelocationID(98125, 104848);
+    constexpr auto prepareArgsID = REL::RelocationID(98492, 105148);
+    constexpr auto codeTaskletRunID = REL::RelocationID(98520, 105176);
+    constexpr auto codeTaskletResumeID = REL::RelocationID(98548, 105204);
 
-    // Compares code exactly, except the targets of the listed E8 calls. Another plugin that already
-    // hooked one of those calls with SKSE's write_call (for example Papyrus Tweaks NG's argument
-    // log) keeps working: our hook calls whatever target it finds, which then calls the stock code.
-    template <std::size_t N, std::size_t M>
-    bool MatchesCode(std::uintptr_t address, const std::array<std::uint8_t, N>& code,
-        const std::array<std::size_t, M>& calls, bool& chained)
+    struct ImageRange
     {
-        const auto* live = reinterpret_cast<const std::uint8_t*>(address);
-        for (std::size_t i = 0; i < N; ++i) {
-            const bool target = std::ranges::any_of(calls, [i](std::size_t call) { return i > call && i <= call + 4; });
-            if (live[i] == code[i]) {
-                continue;
-            }
-            if (!target) {
-                return false;
-            }
-            chained = true;
+        std::uintptr_t begin{};
+        std::uintptr_t end{};
+
+        [[nodiscard]] bool Holds(std::uintptr_t address) const noexcept { return address >= begin && address < end; }
+        [[nodiscard]] bool HoldsRange(std::uintptr_t address, std::size_t size) const noexcept
+        {
+            return address >= begin && address <= end && size <= end - address;
         }
-        return true;
+    };
+
+    ImageRange ImageOf(std::uintptr_t base)
+    {
+        if (base == 0) {
+            return {};
+        }
+        // PE headers: e_lfanew at +0x3C; SizeOfImage at +0x50 of the NT headers.
+        const auto headers = base + *reinterpret_cast<const std::int32_t*>(base + 0x3C);
+        return { base, base + *reinterpret_cast<const std::uint32_t*>(headers + 0x50) };
+    }
+
+    // Returns the code of an engine function from its start to the end of its x64 .pdata entry
+    // (capped by `limit`). Empty unless `address` is where a .pdata entry begins, so a wrong ID or a
+    // function without unwind data is never scanned and the hooks stay off.
+    std::span<const std::uint8_t> FunctionCode(std::uintptr_t address, std::size_t limit)
+    {
+        const auto image = ImageOf(REL::Module::get().base());
+        if (!image.Holds(address)) {
+            return {};
+        }
+        DWORD64 imageBase = 0;
+        const auto* entry = RtlLookupFunctionEntry(static_cast<DWORD64>(address), &imageBase, nullptr);
+        if (!entry || static_cast<std::uintptr_t>(imageBase) + entry->BeginAddress != address) {
+            return {};
+        }
+        const auto end = static_cast<std::uintptr_t>(imageBase) + entry->EndAddress;
+        if (end <= address || end > image.end) {
+            return {};
+        }
+        return { reinterpret_cast<const std::uint8_t*>(address), std::min<std::size_t>(end - address, limit) };
+    }
+
+    CallSiteFinder::Bounds GameBounds()
+    {
+        const auto image = ImageOf(REL::Module::get().base());
+        return { image.begin, image.end };
+    }
+
+    // Verifies the empty scope pair around TasksToJobs inside the "VM update" job:
+    // ctor is `mov rax, rcx; ret` (48 8B C1 C3) and dtor is `ret 0` (C2 00 00) or `ret` (C3).
+    bool IsEmptyJobScope(std::uintptr_t ctorAddress, std::uintptr_t dtorAddress)
+    {
+        const auto image = ImageOf(REL::Module::get().base());
+        if (!image.HoldsRange(ctorAddress, 4) || !image.HoldsRange(dtorAddress, 3)) {
+            return false;
+        }
+        constexpr std::array<std::uint8_t, 4> emptyCtor{ 0x48, 0x8B, 0xC1, 0xC3 };
+        const auto* ctor = reinterpret_cast<const std::uint8_t*>(ctorAddress);
+        const auto* dtor = reinterpret_cast<const std::uint8_t*>(dtorAddress);
+        const bool dtorEmpty = dtor[0] == 0xC3 || (dtor[0] == 0xC2 && dtor[1] == 0x00 && dtor[2] == 0x00);
+        return std::memcmp(ctor, emptyCtor.data(), emptyCtor.size()) == 0 && dtorEmpty;
     }
 
     // SkyrimVM::UpdateGame gives VirtualMachine::Update 0.9 of the 0.9 game share of
@@ -136,86 +186,88 @@ namespace
         using UpdateGameFn = void(RE::SkyrimVM*, float);
         using Mode = VMCatchUp::Mode;
 
-        struct Site
-        {
-            std::size_t offset;
-            std::size_t call;  // offset of the E8 call inside the verified bytes
-        };
+        // Fallback byte prefixes ending in 0xE8, used only when another plugin already hooked the
+        // target E8 call via SKSE trampoline (so its rel32 no longer points at the stock callee)
+        // or when a host function calls the same callee multiple times (queueCallPrefix).
+        using PatternByte = std::int16_t;
+        constexpr PatternByte W = CallSiteFinder::kWildcard;
 
-        // "VM update" job (ID 39074) +0x14: calls SkyrimVM::UpdateGame, which runs the stock
-        // VirtualMachine::Update. The job then turns the resumed scripts into tasklet jobs.
-        constexpr Site updateGame{ 0x14, 10 };
-        constexpr std::array<std::uint8_t, 15> updateGameCode{
-            0x0F, 0x57, 0xC9, 0x48, 0x8B, 0x0D, 0x82, 0x8D, 0xA2, 0x01, 0xE8, 0x0D, 0xCE, 0x2E, 0x00
+        // "VM update" job (SE 38118 / AE 39074): calls SkyrimVM::UpdateGame (hooked by carried only).
+        constexpr std::array<PatternByte, 11> updateGamePrefix{
+            0x0F, 0x57, 0xC9, 0x48, 0x8B, 0x0D, W, W, W, W, 0xE8
         };
-        // AttemptFunctionCall (ID 104853) +0x63D: every call that runs now reaches this argument
-        // setup: the drain and the retry pass, and tasklet calls whose function may run on a tasklet
-        // (+0x60B..0x638 queues the others through 104848 instead). RCX points at the IFunction
-        // smart pointer.
-        constexpr Site prepare{ 0x63D, 0x13 };
-        constexpr std::array<std::uint8_t, 24> prepareCode{
+        // Its tail (+0x50 on SE 1.5.97 and AE 1.6.1170, byte for byte apart from the call
+        // displacements): the gameplay JobList in rdi, TasksToJobs through the VM's vtable (slot 0x12)
+        // inside an empty scope pair, then submit(jobs, 0, 0), wait(jobs) and reset(jobs). The extra
+        // cycles repeat exactly this on the list that reset receives, so the whole sequence is
+        // compared, as 0.3.0 did, and not only the calls.
+        constexpr std::array<PatternByte, 74> jobTailPattern{
+            0x48, 0x8B, 0xF8, 0x48, 0x8B, 0xD0, 0x48, 0x8D, 0x4C, 0x24, 0x48, 0xE8, W, W, W, W,
+            0x90, 0x4C, 0x8B, 0x03, 0x48, 0x8B, 0xD7, 0x48, 0x8B, 0xCB, 0x41, 0xFF, 0x90, 0x90, 0x00, 0x00,
+            0x00, 0x90, 0x48, 0x8D, 0x4C, 0x24, 0x48, 0xE8, W, W, W, W, 0x45, 0x33, 0xC0, 0x33,
+            0xD2, 0x48, 0x8B, 0xCF, 0xE8, W, W, W, W, 0x48, 0x8B, 0xCF, 0xE8, W, W, W,
+            W, 0x48, 0x8B, 0xCF, 0xE8, W, W, W, W, 0x90
+        };
+        constexpr std::size_t tailScopeCtor = 0x0B;
+        constexpr std::size_t tailScopeDtor = 0x27;
+        constexpr std::size_t tailSubmit = 0x34;
+        constexpr std::size_t tailWait = 0x3C;
+        constexpr std::size_t tailReset = 0x44;
+        // VirtualMachine::Update's retry pass (SE 98044 / AE 104767): RetryPass writes the count of
+        // suspended entries through r8, so the instructions that set r8, xmm1 and rcx must be there.
+        constexpr std::array<PatternByte, 12> retryPassPrefixSE{
+            0x4C, 0x8D, 0x45, W, 0x41, 0x0F, 0x28, 0xCB, 0x49, 0x8B, 0xCF, 0xE8
+        };
+        constexpr std::array<PatternByte, 11> retryPassPrefixAE{
+            0x4C, 0x8D, 0x45, W, 0x0F, 0x28, 0xCF, 0x48, 0x8B, 0xCE, 0xE8
+        };
+        // The suspended-stack retry (SE 98135 / AE 104858) calling AttemptFunctionCall.
+        constexpr std::array<PatternByte, 14> retryDispatchPrefixSE{
+            0x45, 0x33, 0xC9, 0x4C, 0x8D, 0x45, W, 0x48, 0x8B, 0xD7, 0x49, 0x8B, 0xCF, 0xE8
+        };
+        constexpr std::array<PatternByte, 15> retryDispatchPrefixAE{
+            0x45, 0x33, 0xC9, 0x4C, 0x8D, 0x44, 0x24, W, 0x48, 0x8B, 0xD7, 0x48, 0x8B, 0xCE, 0xE8
+        };
+        // AttemptFunctionCall (SE 98130 / AE 104853): argument setup call (SE 98492 / AE 105148).
+        // Identical 19-byte prefix on SE 1.5.97 and AE 1.6.1170; chains with Papyrus Tweaks NG's
+        // bImproveValidateArgsLogs hook on this exact call.
+        constexpr std::array<PatternByte, 20> preparePrefix{
             0x41, 0xB9, 0x00, 0x04, 0x00, 0x00, 0x4C, 0x8D, 0x45, 0x10, 0x48, 0x8D, 0x55, 0x98, 0x48, 0x8D,
-            0x4C, 0x24, 0x50, 0xE8, 0x3B, 0x33, 0x01, 0x00
+            0x4C, 0x24, 0x50, 0xE8
         };
-        // The two tasklet callers of AttemptFunctionCall pass the calling stack in RDX: the code
-        // tasklet's call opcode (ID 105176 +0x82F) and its resume path (ID 105204 +0x56).
-        constexpr Site taskletCall{ 0x81C, 19 };
-        constexpr std::array<std::uint8_t, 24> taskletCallCode{
+        // Tasklet callers of AttemptFunctionCall pass the calling stack in RDX:
+        // - CodeTasklet::Resume (SE 98548 / AE 105204) always calls AttemptFunctionCall.
+        // - CodeTasklet::Run (SE 98520 / AE 105176) inlines one direct call on AE 1.6.x, while on
+        //   SE 1.5.97 it delegates through CodeTasklet::Resume instead.
+        constexpr std::array<PatternByte, 20> taskletCallPrefix{
             0x45, 0x0F, 0xB6, 0xCE, 0x4C, 0x8D, 0x85, 0x00, 0x09, 0x00, 0x00, 0x48, 0x8B, 0x56, 0x10, 0x48,
-            0x8B, 0x4E, 0x18, 0xE8, 0xEC, 0xB4, 0xFE, 0xFF
+            0x8B, 0x4E, 0x18, 0xE8
         };
-        // Test builds only (Settings::observeQueuedCalls). AttemptFunctionCall +0x62A: a tasklet's
-        // call to a function that may not run on a tasklet is queued here through ID 104848
-        // (RCX = VM, RDX = stack, R8 = query). The function the call resolved to is in the smart
-        // pointer at [rsp+0x50] of AttemptFunctionCall's frame: +0x618 loads it from there for the
-        // tasklet check, and +0x63D passes that address on as the argument setup's first argument.
-        constexpr Site queueCall{ 0x62A, 9 };
-        constexpr std::array<std::uint8_t, 14> queueCallCode{
-            0x4D, 0x8B, 0xC4, 0x48, 0x8B, 0xD3, 0x48, 0x8B, 0xCE, 0xE8, 0x38, 0xEF, 0xFF, 0xFF
+        constexpr std::array<PatternByte, 17> resumeCallPrefix{
+            0x41, 0xB1, 0x01, 0x4C, 0x8D, 0x44, 0x24, 0x50, 0x48, 0x8B, 0x51, 0x10, 0x48, 0x8B, 0x49, 0x18,
+            0xE8
+        };
+        // Test builds only (Settings::observeQueuedCalls). AttemptFunctionCall has three calls to
+        // QueueFuncCall (SE 98125 / AE 104848); this 10-byte prefix uniquely selects the tasklet
+        // queueing site where the resolved function sits at [rsp+0x50].
+        constexpr std::array<PatternByte, 10> queueCallPrefix{
+            0x4D, 0x8B, 0xC4, 0x48, 0x8B, 0xD3, 0x48, 0x8B, 0xCE, 0xE8
         };
         constexpr std::size_t resolvedFunctionOffset = 0x50;
-        constexpr Site resumeCall{ 0x46, 16 };
-        constexpr std::array<std::uint8_t, 21> resumeCallCode{
-            0x41, 0xB1, 0x01, 0x4C, 0x8D, 0x44, 0x24, 0x50, 0x48, 0x8B, 0x51, 0x10, 0x48, 0x8B, 0x49, 0x18,
-            0xE8, 0x85, 0x73, 0xFE, 0xFF
+        // Native-call drain (SE 98134 / AE 104857): two calls to PopFuncMessage (SE 98155 / AE 104879),
+        // one call to AttemptFunctionCall, one call to ReturnFromLatent (SE 98131 / AE 104854).
+        constexpr std::array<PatternByte, 9> popPrefix{
+            0x48, 0x8D, 0x54, 0x24, 0x28, 0x48, 0x8B, 0xCE, 0xE8
         };
-        // Native-call drain (ID 104857): both pops run while the drain holds funcQueueLock, and the
-        // message is dispatched after the lock is released (calls to 104853, returns to 104854).
-        // Pop (104879) takes the head of the linked queue (105142 -> 105068) and, when that is
-        // empty, the last overflow entry; it returns false without touching the queue or the waiting
-        // count when both are empty, and the drain then ends (104857 +0x134 / +0x1F9). Every
-        // gameplay push (104848, 104849) holds funcQueueLock, so under it the front read here is the
-        // entry the next pop takes.
-        constexpr Site firstPop{ 0xF2, 8 };
-        constexpr std::array<std::uint8_t, 13> firstPopCode{
-            0x48, 0x8D, 0x54, 0x24, 0x28, 0x48, 0x8B, 0xCE, 0xE8, 0x41, 0x22, 0x00, 0x00
-        };
-        constexpr Site nextPop{ 0x1B7, 8 };
-        constexpr std::array<std::uint8_t, 13> nextPopCode{
-            0x48, 0x8D, 0x54, 0x24, 0x28, 0x48, 0x8B, 0xCE, 0xE8, 0x7C, 0x21, 0x00, 0x00
-        };
-        constexpr Site drainDispatch{ 0x17E, 16 };
-        constexpr std::array<std::uint8_t, 21> drainDispatchCode{
+        constexpr std::array<PatternByte, 17> drainDispatchPrefix{
             0x45, 0x33, 0xC9, 0x4C, 0x8D, 0x44, 0x24, 0x38, 0x48, 0x8B, 0x54, 0x24, 0x30, 0x48, 0x8B, 0xCE,
-            0xE8, 0xBD, 0xEB, 0xFF, 0xFF
+            0xE8
         };
-        constexpr Site drainReturn{ 0x169, 14 };
-        constexpr std::array<std::uint8_t, 19> drainReturnCode{
-            0x45, 0x33, 0xC9, 0x41, 0xB0, 0x01, 0x48, 0x8B, 0x54, 0x24, 0x30, 0x48, 0x8B, 0xCE, 0xE8, 0xA4,
-            0xF6, 0xFF, 0xFF
+        constexpr std::array<PatternByte, 15> drainReturnPrefix{
+            0x45, 0x33, 0xC9, 0x41, 0xB0, 0x01, 0x48, 0x8B, 0x54, 0x24, 0x30, 0x48, 0x8B, 0xCE, 0xE8
         };
-        // Suspended-stack retry pass (ID 104858) +0x441: retries a suspended call.
-        constexpr Site retryDispatch{ 0x441, 14 };
-        constexpr std::array<std::uint8_t, 19> retryDispatchCode{
-            0x45, 0x33, 0xC9, 0x4C, 0x8D, 0x44, 0x24, 0x50, 0x48, 0x8B, 0xD7, 0x48, 0x8B, 0xCE, 0xE8, 0x7C,
-            0xE6, 0xFF, 0xFF
-        };
-        // VirtualMachine::Update (ID 104767) +0x104: calls the retry pass with the count output in R8.
-        constexpr Site retryPass{ 0x104, 10 };
-        constexpr std::array<std::uint8_t, 15> retryPassCode{
-            0x4C, 0x8D, 0x45, 0x67, 0x0F, 0x28, 0xCF, 0x48, 0x8B, 0xCE, 0xE8, 0x7D, 0xB5, 0x00, 0x00
-        };
-        // The retry pass reports this sum of suspended entries before it resumes anything (104858 +0x2D9).
+        // The retry pass reports this sum of suspended entries before it resumes anything (identical
+        // offsets on SE 1.5.97 and AE 1.6.x).
         constexpr std::size_t queueEntriesOffset = 0x810;
         constexpr std::size_t arraySizeOffset = 0x10;
 
@@ -280,13 +332,6 @@ namespace
 
         // The reviewed reads of NativeClassification.h, by implementation. Filled once by Install,
         // before any hook runs, and only read afterwards.
-        struct ImageRange
-        {
-            std::uintptr_t begin{};
-            std::uintptr_t end{};
-
-            [[nodiscard]] bool Holds(std::uintptr_t address) const { return address >= begin && address < end; }
-        };
         ImageRange gameImage;
         // Empty unless SKSE is the version whose natives were reviewed.
         ImageRange skseImage;
@@ -301,9 +346,13 @@ namespace
         constexpr std::size_t nativeCallbackOffset = 0x50;
         // Function objects of the game that report GetIsNative() but are not native function objects
         // and hold no callback: the getter and the setter of an auto property and the stub of a
-        // native that is not bound (primary vtables, IDs 252795, 252797, 252808; slot 8 of each is
-        // `mov al, 1; ret`). Nothing past their vtable pointer may be read.
-        constexpr std::array<std::uint64_t, 3> accessorVtableIDs{ 252795, 252797, 252808 };
+        // native that is not bound (primary vtables, SE 302644/302645/302696, AE 252795/252797/252808;
+        // slot 8 of each is `mov al, 1; ret`). Nothing past their vtable pointer may be read.
+        constexpr std::array<std::pair<std::uint64_t, std::uint64_t>, 3> accessorVtableIDs{ {
+            { 302644, 252795 },
+            { 302645, 252797 },
+            { 302696, 252808 },
+        } };
         std::array<std::uintptr_t, accessorVtableIDs.size()> accessorVtables{};
         // The first of them, the getter of an auto property, is a read: its Call (ID 105248) copies
         // the script variable into the stack's return value and writes nothing else of the script,
@@ -350,16 +399,9 @@ namespace
         // Census only: "class.name" of the native that made `prepared` a change.
         thread_local std::string preparedBy;
 
-        std::uintptr_t CallTarget(std::uintptr_t call)
-        {
-            std::int32_t displacement{};
-            std::memcpy(&displacement, reinterpret_cast<const void*>(call + 1), sizeof(displacement));
-            return call + 5 + displacement;
-        }
-
         void Record(std::uintptr_t call, const char* name)
         {
-            patched.push_back({ call, CallTarget(call), name });
+            patched.push_back({ call, CallSiteFinder::CallTarget(call), name });
         }
 
         // Returns false once any patched call no longer reaches this module.
@@ -369,7 +411,8 @@ namespace
                 return false;
             }
             for (const auto& site : patched) {
-                if (*reinterpret_cast<const std::uint8_t*>(site.call) != 0xE8 || CallTarget(site.call) != site.target) {
+                if (*reinterpret_cast<const std::uint8_t*>(site.call) != 0xE8 ||
+                    CallSiteFinder::CallTarget(site.call) != site.target) {
                     disabled.store(true, std::memory_order_relaxed);
                     SKSE::log::warn("VM catch-up turned off: the {} call was changed by another plugin after installation", site.name);
                     return false;
@@ -418,37 +461,37 @@ namespace
 
         // accelerate ------------------------------------------------------------------------
 
-        ImageRange ImageOf(std::uintptr_t base)
-        {
-            if (base == 0) {
-                return {};
-            }
-            // PE headers: e_lfanew at +0x3C; SizeOfImage at +0x50 of the NT headers.
-            const auto headers = base + *reinterpret_cast<const std::int32_t*>(base + 0x3C);
-            return { base, base + *reinterpret_cast<const std::uint32_t*>(headers + 0x50) };
-        }
-
         void PrepareReviewedReads()
         {
             gameImage = ImageOf(REL::Module::get().base());
             std::size_t gameEntries = 0;
+            std::size_t skseEntries = 0;
             for (std::size_t i = 0; i < reviewedReads.size(); ++i) {
                 const bool game = reviewedReads[i].origin == NativeOrigin::kGame;
-                reviewedCallbacks[i] = game ? REL::ID(reviewedReads[i].callbackID).address() : 0;
-                gameEntries += game ? 1 : 0;
+                if (game) {
+                    // Every ID was checked present for the runtimes Plugin.cpp accepts; a missing one
+                    // would end the game in CommonLibSSE-NG rather than return 0.
+                    reviewedCallbacks[i] = REL::RelocationID(reviewedReads[i].seCallbackID, reviewedReads[i].aeCallbackID).address();
+                    ++gameEntries;
+                } else {
+                    reviewedCallbacks[i] = 0;
+                    ++skseEntries;
+                }
             }
             for (std::size_t i = 0; i < accessorVtableIDs.size(); ++i) {
-                accessorVtables[i] = REL::ID(accessorVtableIDs[i]).address();
+                accessorVtables[i] = REL::RelocationID(accessorVtableIDs[i].first, accessorVtableIDs[i].second).address();
             }
+            const auto runtimeVersion = REL::Module::get().version();
             const auto skseVersion = SKSE::GetSKSEVersion();
-            skseImage = skseVersion == reviewedSKSEVersion ?
+            const bool reviewedSKSE = runtimeVersion == SKSE::RUNTIME_SSE_1_6_1170 && skseVersion == reviewedSKSEVersion;
+            skseImage = reviewedSKSE ?
                 ImageOf(reinterpret_cast<std::uintptr_t>(REX::W32::GetModuleHandleW(L"skse64_1_6_1170.dll"))) : ImageRange{};
             if (skseImage.end != 0) {
                 SKSE::log::info("VM catch-up reads: {} game natives and {} SKSE natives count as reads", gameEntries,
-                    reviewedReads.size() - gameEntries);
+                    skseEntries);
             } else {
-                SKSE::log::info("VM catch-up reads: {} game natives count as reads; SKSE natives (StringUtil included) do not, because SKSE {:08X} is not the reviewed {:08X}",
-                    gameEntries, skseVersion, reviewedSKSEVersion);
+                SKSE::log::info("VM catch-up reads: {} game natives count as reads; SKSE natives (StringUtil included) do not on Skyrim {} / SKSE {:08X} (reviewed: 1.6.1170 / SKSE {:08X})",
+                    gameEntries, runtimeVersion.string(), skseVersion, reviewedSKSEVersion);
             }
         }
 
@@ -1089,95 +1132,223 @@ namespace
             pendingChangeCall.clear();
         }
 
-        struct Addresses
+        struct JobSites
         {
-            std::uintptr_t job;
-            std::uintptr_t update;
-            std::uintptr_t attempt;
-            std::uintptr_t drain;
-            std::uintptr_t retry;
-            std::uintptr_t tasklet;
-            std::uintptr_t resume;
+            std::uintptr_t updateGame{};
+            std::uintptr_t submitCall{};
+            std::uintptr_t waitCall{};
+            std::uintptr_t resetCall{};
         };
 
-        template <std::size_t N>
-        bool Matches(std::uintptr_t function, const Site& site, const std::array<std::uint8_t, N>& code,
-            const char* name, std::vector<const char*>& chained)
+        struct ResolvedSites
         {
-            if (code[site.call] != 0xE8) {
+            JobSites job{};
+            std::uintptr_t firstPop{};
+            std::uintptr_t nextPop{};
+            std::uintptr_t drainDispatch{};
+            std::uintptr_t drainReturn{};
+            std::uintptr_t retryPass{};
+            std::uintptr_t prepare{};
+            std::uintptr_t retryDispatch{};
+            // Zero when CodeTasklet::Run delegates through CodeTasklet::Resume (SE 1.5.97).
+            std::uintptr_t taskletCall{};
+            std::uintptr_t resumeCall{};
+            std::uintptr_t queueCall{};
+        };
+
+        bool ResolveUnique(std::uintptr_t function, std::span<const std::uint8_t> code, std::uintptr_t target,
+            std::span<const PatternByte> prefix, const char* name, std::uintptr_t& outCall,
+            std::vector<const char*>& chained, CallSiteFinder::Bounds image)
+        {
+            const auto match = CallSiteFinder::FindUniqueCall(function, code, target, prefix, image);
+            if (!match) {
+                SKSE::log::warn("VM catch-up: could not locate {} call site on this runtime", name);
                 return false;
             }
-            bool hooked = false;
-            if (!MatchesCode(function + site.offset, code, std::array{ site.call }, hooked)) {
-                SKSE::log::warn("VM catch-up: {} code differs from AE 1.6.1170", name);
-                return false;
-            }
-            if (hooked) {
+            outCall = function + match->callOffset;
+            if (match->chained) {
                 chained.push_back(name);
             }
             return true;
         }
 
-        bool Verify(Mode wanted, bool observeQueuedCalls, const Addresses& at, std::vector<const char*>& chained)
+        // A call of the job tail: to the stock target, or, where `chainable`, redirected by another
+        // plugin to code outside the game. `chained` notes the second case.
+        bool TailCallFits(std::uintptr_t call, std::uintptr_t target, bool chainable, CallSiteFinder::Bounds image, bool& chained)
         {
-            if (wanted == Mode::kAccelerate && observeQueuedCalls &&
-                !Matches(at.attempt, queueCall, queueCallCode, "tasklet queue call", chained)) {
+            const auto actual = CallSiteFinder::CallTarget(call);
+            if (actual == target) {
+                return true;
+            }
+            if (chainable && !image.Holds(actual)) {
+                chained = true;
+                return true;
+            }
+            return false;
+        }
+
+        bool ResolveJob(Mode wanted, std::uintptr_t job, JobSites& out, std::vector<const char*>& chained, CallSiteFinder::Bounds image)
+        {
+            const auto code = FunctionCode(job, 0x180);
+            const auto scopeCtorTarget = jobScopeCtorID.address();
+            const auto scopeDtorTarget = jobScopeDtorID.address();
+            if (code.empty() || !IsEmptyJobScope(scopeCtorTarget, scopeDtorTarget)) {
+                SKSE::log::warn("VM catch-up: gameplay VM job scope differs from expected empty wrapper");
                 return false;
             }
-            const bool common = Matches(at.drain, firstPop, firstPopCode, "first queue pop", chained) &&
-                Matches(at.drain, nextPop, nextPopCode, "next queue pop", chained) &&
-                Matches(at.drain, drainDispatch, drainDispatchCode, "queue dispatch", chained) &&
-                Matches(at.drain, drainReturn, drainReturnCode, "queue return dispatch", chained) &&
-                Matches(at.update, retryPass, retryPassCode, "retry pass", chained);
-            if (!common) {
+            const auto tails = CallSiteFinder::FindPattern(code, jobTailPattern);
+            if (tails.size() != 1 || tails[0] + jobTailPattern.size() > code.size()) {
+                SKSE::log::warn("VM catch-up: gameplay VM job tail (TasksToJobs, submit, wait, reset) could not be verified");
+                return false;
+            }
+            const auto tail = job + tails[0];
+            // The extra cycles call TasksToJobs without the scope, so its calls must reach the empty
+            // stock functions; submit, wait and reset may lead into another plugin's hook, which the
+            // extra cycles then call too.
+            bool tailChained = false;
+            if (!TailCallFits(tail + tailScopeCtor, scopeCtorTarget, false, image, tailChained) ||
+                !TailCallFits(tail + tailScopeDtor, scopeDtorTarget, false, image, tailChained) ||
+                !TailCallFits(tail + tailSubmit, jobsSubmitID.address(), true, image, tailChained) ||
+                !TailCallFits(tail + tailWait, jobsWaitID.address(), true, image, tailChained) ||
+                !TailCallFits(tail + tailReset, jobsResetID.address(), true, image, tailChained)) {
+                SKSE::log::warn("VM catch-up: a gameplay VM job tail call leads somewhere unexpected");
                 return false;
             }
             if (wanted == Mode::kCarried) {
-                return Matches(at.job, updateGame, updateGameCode, "gameplay VM update", chained);
+                const auto update = CallSiteFinder::FindUniqueCall(job, code, skyrimVMUpdateGameID.address(), updateGamePrefix, image);
+                if (!update || job + update->callOffset >= tail) {
+                    SKSE::log::warn("VM catch-up: gameplay VM update call could not be located");
+                    return false;
+                }
+                out.updateGame = job + update->callOffset;
+                if (update->chained) {
+                    chained.push_back("gameplay VM update");
+                }
             }
-            return Matches(at.attempt, prepare, prepareCode, "argument setup", chained) &&
-                Matches(at.retry, retryDispatch, retryDispatchCode, "suspended retry", chained) &&
-                Matches(at.tasklet, taskletCall, taskletCallCode, "tasklet call", chained) &&
-                Matches(at.resume, resumeCall, resumeCallCode, "tasklet resume call", chained);
+            if (tailChained) {
+                chained.push_back("gameplay VM job");
+            }
+            out.submitCall = tail + tailSubmit;
+            out.waitCall = tail + tailWait;
+            out.resetCall = tail + tailReset;
+            return true;
         }
 
-        void Install(Mode wanted, bool observeQueuedCalls, const Addresses& at)
+        bool Verify(Mode wanted, bool observeQueuedCalls, ResolvedSites& sites, std::vector<const char*>& chained)
+        {
+            const auto image = GameBounds();
+            const bool se = REL::Module::IsSE();
+            const auto job = vmUpdateJobID.address();
+            const auto update = vmUpdateID.address();
+            const auto attempt = attemptFunctionCallID.address();
+            const auto drain = drainFuncQueueID.address();
+            const auto retry = retrySuspendedID.address();
+
+            if (!ResolveJob(wanted, job, sites.job, chained, image)) {
+                return false;
+            }
+
+            const auto drainCode = FunctionCode(drain, 0x400);
+            const auto updateCode = FunctionCode(update, 0x1000);
+            const auto pops = CallSiteFinder::FindExactCalls(drain, drainCode, popFuncMessageID.address(), 2, popPrefix, image);
+            if (!pops || pops->callOffsets.size() != 2 || pops->callOffsets[0] >= pops->callOffsets[1]) {
+                SKSE::log::warn("VM catch-up: could not locate both queue pop call sites on this runtime");
+                return false;
+            }
+            sites.firstPop = drain + pops->callOffsets[0];
+            sites.nextPop = drain + pops->callOffsets[1];
+            if (pops->chained) {
+                chained.push_back("queue pop");
+            }
+
+            const std::span<const PatternByte> retryPassPrefix = se ? std::span<const PatternByte>(retryPassPrefixSE) :
+                                                                      std::span<const PatternByte>(retryPassPrefixAE);
+            const bool common =
+                ResolveUnique(drain, drainCode, attempt, drainDispatchPrefix, "queue dispatch", sites.drainDispatch, chained, image) &&
+                ResolveUnique(drain, drainCode, returnFromLatentID.address(), drainReturnPrefix, "queue return dispatch", sites.drainReturn, chained, image) &&
+                ResolveUnique(update, updateCode, retry, retryPassPrefix, "retry pass", sites.retryPass, chained, image);
+            if (!common) {
+                return false;
+            }
+
+            if (wanted == Mode::kCarried) {
+                return true;
+            }
+
+            const auto tasklet = codeTaskletRunID.address();
+            const auto resume = codeTaskletResumeID.address();
+            const auto attemptCode = FunctionCode(attempt, 0x1000);
+            const auto retryCode = FunctionCode(retry, 0xA00);
+            const auto resumeCode = FunctionCode(resume, 0x200);
+            const auto taskletCode = FunctionCode(tasklet, 0x1400);
+            const std::span<const PatternByte> retryDispatchPrefix = se ? std::span<const PatternByte>(retryDispatchPrefixSE) :
+                                                                          std::span<const PatternByte>(retryDispatchPrefixAE);
+
+            if (observeQueuedCalls &&
+                !ResolveUnique(attempt, attemptCode, queueFuncCallID.address(), queueCallPrefix, "tasklet queue call", sites.queueCall, chained, image)) {
+                return false;
+            }
+            if (!ResolveUnique(attempt, attemptCode, prepareArgsID.address(), preparePrefix, "argument setup", sites.prepare, chained, image) ||
+                !ResolveUnique(retry, retryCode, attempt, retryDispatchPrefix, "suspended retry", sites.retryDispatch, chained, image) ||
+                !ResolveUnique(resume, resumeCode, attempt, resumeCallPrefix, "tasklet resume call", sites.resumeCall, chained, image)) {
+                return false;
+            }
+
+            if (!se) {
+                // AE 1.6.x inlines one direct AttemptFunctionCall into CodeTasklet::Run.
+                if (!ResolveUnique(tasklet, taskletCode, attempt, taskletCallPrefix, "tasklet call", sites.taskletCall, chained, image)) {
+                    return false;
+                }
+            } else if (taskletCode.empty() || CallSiteFinder::FindCallsTo(tasklet, taskletCode, resume).size() != 1 ||
+                       !CallSiteFinder::FindCallsTo(tasklet, taskletCode, attempt).empty()) {
+                // SE 1.5.97: CodeTasklet::Run calls CodeTasklet::Resume once and AttemptFunctionCall
+                // never, so every call a tasklet makes passes the resume hook above.
+                SKSE::log::warn("VM catch-up: could not verify CodeTasklet::Run call path on this runtime");
+                return false;
+            } else {
+                sites.taskletCall = 0;
+                SKSE::log::info("VM catch-up: CodeTasklet::Run delegates through CodeTasklet::Resume; direct tasklet-call hook not needed");
+            }
+            return true;
+        }
+
+        void Install(Mode wanted, bool observeQueuedCalls, const ResolvedSites& sites)
         {
             mode = wanted;
             auto& trampoline = SKSE::GetTrampoline();
-            const auto call = [](std::uintptr_t function, const Site& site) { return function + site.offset + site.call; };
             if (wanted == Mode::kAccelerate) {
                 PrepareReviewedReads();
             }
             if (wanted == Mode::kAccelerate && observeQueuedCalls) {
-                const auto site = call(at.attempt, queueCall);
-                originalQueueCall = trampoline.write_call<5>(site, QueueFromTasklet);
-                Record(site, "tasklet queue call");
-                queueCallReturn = site + 5;
+                originalQueueCall = trampoline.write_call<5>(sites.queueCall, QueueFromTasklet);
+                Record(sites.queueCall, "tasklet queue call");
+                queueCallReturn = sites.queueCall + 5;
             }
             if (wanted == Mode::kCarried) {
-                originalUpdateGame = trampoline.write_call<5>(call(at.job, updateGame), UpdateGame);
-                Record(call(at.job, updateGame), "gameplay VM update");
+                originalUpdateGame = trampoline.write_call<5>(sites.job.updateGame, UpdateGame);
+                Record(sites.job.updateGame, "gameplay VM update");
             } else {
-                originalPrepare = trampoline.write_call<5>(call(at.attempt, prepare), Prepare);
-                Record(call(at.attempt, prepare), "argument setup");
-                originalRetryDispatch = trampoline.write_call<5>(call(at.retry, retryDispatch), RetryDispatch);
-                Record(call(at.retry, retryDispatch), "suspended retry");
-                originalTaskletCall = trampoline.write_call<5>(call(at.tasklet, taskletCall), TaskletCall);
-                Record(call(at.tasklet, taskletCall), "tasklet call");
-                originalResumeCall = trampoline.write_call<5>(call(at.resume, resumeCall), ResumeCall);
-                Record(call(at.resume, resumeCall), "tasklet resume call");
+                originalPrepare = trampoline.write_call<5>(sites.prepare, Prepare);
+                Record(sites.prepare, "argument setup");
+                originalRetryDispatch = trampoline.write_call<5>(sites.retryDispatch, RetryDispatch);
+                Record(sites.retryDispatch, "suspended retry");
+                if (sites.taskletCall != 0) {
+                    originalTaskletCall = trampoline.write_call<5>(sites.taskletCall, TaskletCall);
+                    Record(sites.taskletCall, "tasklet call");
+                }
+                originalResumeCall = trampoline.write_call<5>(sites.resumeCall, ResumeCall);
+                Record(sites.resumeCall, "tasklet resume call");
             }
-            originalFirstPop = trampoline.write_call<5>(call(at.drain, firstPop), FirstPop);
-            Record(call(at.drain, firstPop), "first queue pop");
-            originalNextPop = trampoline.write_call<5>(call(at.drain, nextPop), NextPop);
-            Record(call(at.drain, nextPop), "next queue pop");
-            originalDrainDispatch = trampoline.write_call<5>(call(at.drain, drainDispatch), DrainDispatch);
-            Record(call(at.drain, drainDispatch), "queue dispatch");
-            originalDrainReturn = trampoline.write_call<5>(call(at.drain, drainReturn), DrainReturn);
-            Record(call(at.drain, drainReturn), "queue return dispatch");
-            originalRetryPass = trampoline.write_call<5>(call(at.update, retryPass), RetryPass);
-            Record(call(at.update, retryPass), "retry pass");
+            originalFirstPop = trampoline.write_call<5>(sites.firstPop, FirstPop);
+            Record(sites.firstPop, "first queue pop");
+            originalNextPop = trampoline.write_call<5>(sites.nextPop, NextPop);
+            Record(sites.nextPop, "next queue pop");
+            originalDrainDispatch = trampoline.write_call<5>(sites.drainDispatch, DrainDispatch);
+            Record(sites.drainDispatch, "queue dispatch");
+            originalDrainReturn = trampoline.write_call<5>(sites.drainReturn, DrainReturn);
+            Record(sites.drainReturn, "queue return dispatch");
+            originalRetryPass = trampoline.write_call<5>(sites.retryPass, RetryPass);
+            Record(sites.retryPass, "retry pass");
         }
     }
 
@@ -1567,22 +1738,26 @@ bool VMCatchUp::Install(const Settings& requested, GateFn* gate)
     if (installed || !gate) {
         return installed;
     }
-    const auto job = REL::ID(39074).address();
-    std::vector<const char*> chained;
-    bool jobHooked = false;
-    if (!MatchesCode(job + jobTailOffset, jobTail, jobTailCalls, jobHooked)) {
-        SKSE::log::warn("VM catch-up disabled because the gameplay VM job differs from AE 1.6.1170 or was patched");
+    const auto budgetAddress = updateBudgetSettingID.address();
+    if (budgetAddress == 0) {
+        SKSE::log::warn("VM catch-up disabled because fUpdateBudgetMS could not be resolved");
         return false;
     }
     // Extra cycles are only installed together with the queue hooks that enforce the mode's rule.
     const auto sanitized = Sanitize(requested);
-    const Chain::Addresses chainAt{ job, REL::ID(104767).address(), REL::ID(104853).address(),
-        REL::ID(104857).address(), REL::ID(104858).address(), REL::ID(105176).address(), REL::ID(105204).address() };
-    if (jobHooked) {
-        chained.push_back("gameplay VM job");
+    std::vector<const char*> chained;
+    Chain::ResolvedSites sites{};
+    if (!Chain::Verify(sanitized.mode, sanitized.observeQueuedCalls, sites, chained)) {
+        SKSE::log::warn("VM catch-up disabled because the gameplay VM job or native-call queue layout could not be verified on Skyrim {}",
+            REL::Module::get().version().string());
+        return false;
     }
-    if (!Chain::Verify(sanitized.mode, sanitized.observeQueuedCalls, chainAt, chained)) {
-        SKSE::log::warn("VM catch-up disabled because the native-call queue code differs from AE 1.6.1170 or was patched");
+    const std::size_t hookCount = 6 + (sanitized.mode == Mode::kCarried ? 1 :
+        (sites.taskletCall != 0 ? 4 : 3) + (sanitized.observeQueuedCalls ? 1 : 0));
+    constexpr std::size_t bytesPerCallHook = 14;
+    if (SKSE::GetTrampoline().free_size() < hookCount * bytesPerCallHook) {
+        SKSE::log::warn("VM catch-up disabled because trampoline free space ({} bytes) is below required {} bytes",
+            SKSE::GetTrampoline().free_size(), hookCount * bytesPerCallHook);
         return false;
     }
     {
@@ -1597,17 +1772,17 @@ bool VMCatchUp::Install(const Settings& requested, GateFn* gate)
         frameCycles.reserve(CatchUpPolicy::maxPassLimit);
         frameFunctions.reserve(maxRecordedFunctions);
         // The same targets the stock job calls, so other plugins' hooks on them still run.
-        submitAddress = reinterpret_cast<JobsFn*>(Chain::CallTarget(job + jobTailOffset + jobTailCalls[2]));
-        waitAddress = reinterpret_cast<JobsFn*>(Chain::CallTarget(job + jobTailOffset + jobTailCalls[3]));
-        updateBudgetMS = reinterpret_cast<const float*>(REL::ID(383725).address());
-        Chain::Install(settings.mode, settings.observeQueuedCalls, chainAt);
-        originalReset = SKSE::GetTrampoline().write_call<5>(job + resetCallOffset, ResetGameplayJobs);
-        Chain::Record(job + resetCallOffset, "gameplay VM job reset");
+        submitAddress = reinterpret_cast<JobsFn*>(CallSiteFinder::CallTarget(sites.job.submitCall));
+        waitAddress = reinterpret_cast<JobsFn*>(CallSiteFinder::CallTarget(sites.job.waitCall));
+        updateBudgetMS = reinterpret_cast<const float*>(budgetAddress);
+        Chain::Install(settings.mode, settings.observeQueuedCalls, sites);
+        originalReset = SKSE::GetTrampoline().write_call<5>(sites.job.resetCall, ResetGameplayJobs);
+        Chain::Record(sites.job.resetCall, "gameplay VM job reset");
         installed = true;
     }
-    SKSE::log::info("Installed VM catch-up: mode={}, below {:.0f} FPS, target={:.0f} Hz, max {} extra cycles and {:.2f} ms per frame, skip waiting calls={}",
-        settings.mode == Mode::kAccelerate ? "accelerate" : "carried", std::min(settings.engageHz, settings.targetHz),
-        settings.targetHz, settings.maxPasses, settings.maxExtraMS,
+    SKSE::log::info("Installed VM catch-up on Skyrim {}: mode={}, below {:.0f} FPS, target={:.0f} Hz, max {} extra cycles and {:.2f} ms per frame, skip waiting calls={}",
+        REL::Module::get().version().string(), settings.mode == Mode::kAccelerate ? "accelerate" : "carried",
+        std::min(settings.engageHz, settings.targetHz), settings.targetHz, settings.maxPasses, settings.maxExtraMS,
         settings.mode == Mode::kAccelerate && Chain::skipBlocked.load(std::memory_order_relaxed));
     for (const auto* name : chained) {
         SKSE::log::info("VM catch-up: {} call was already hooked by another plugin; calls are passed through to it", name);

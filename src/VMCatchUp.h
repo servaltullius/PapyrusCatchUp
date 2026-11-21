@@ -87,7 +87,7 @@ namespace VMCatchUp
 
     [[nodiscard]] Settings Sanitize(Settings settings);
 
-    // Verifies the AE 1.6.1170 job code before patching it. Call from kPostPostLoad.
+    // Verifies the gameplay VM job and native-call queue hooks before patching. Call from kPostPostLoad.
     bool Install(const Settings& settings, GateFn* gate);
 
     [[nodiscard]] bool Installed();

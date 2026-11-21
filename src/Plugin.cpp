@@ -17,9 +17,27 @@ namespace
     using Clock = Benchmark::Clock;
     using RunTasks = void(void*, void*, void*, void*, float);
 
-    constexpr auto runtime = SKSE::RUNTIME_SSE_1_6_1170;
+    constexpr auto legacyHooksRuntime = SKSE::RUNTIME_SSE_1_6_1170;
     constexpr auto pluginName = "PapyrusCatchUp";
+    constexpr auto pluginVersion = REL::Version{ 0, 3, 1, 0 };
     constexpr auto iniName = L"PapyrusCatchUp.ini";
+
+    // Runtimes whose Address Library files were checked to hold every ID this plugin resolves
+    // (tests/verify_call_sites.py). CommonLibSSE-NG ends the game with a message box when an ID is
+    // missing, so a runtime that was not checked is refused at load instead of being tried.
+    // Only SE 1.5.97 and AE 1.6.1170 were also checked against their executables; the hook sites
+    // of the others are accepted only where they carry the same instruction prefixes.
+    // The GOG builds: the official GOG SKSE reports them with runtime type 1 in the last field
+    // (skse_version.h RUNTIME_TYPE_GOG), CommonLibSSE-NG's constants with 0; both are accepted, as
+    // no other 1.6.659 or 1.6.1179 executable exists.
+    constexpr std::array supportedRuntimes{ SKSE::RUNTIME_SSE_1_5_97, REL::Version(1, 6, 640, 0),
+        REL::Version(1, 6, 659, 0), REL::Version(1, 6, 659, 1), REL::Version(1, 6, 1130, 0), SKSE::RUNTIME_SSE_1_6_1170,
+        REL::Version(1, 6, 1179, 0), REL::Version(1, 6, 1179, 1) };
+
+    constexpr bool IsSupportedRuntime(REL::Version version) noexcept
+    {
+        return std::ranges::find(supportedRuntimes, version) != supportedRuntimes.end();
+    }
     // Logs of earlier game sessions kept beside the current one (LogHistory.h). A log is a few
     // kilobytes, and on a day of many short launches ten of them covered only a few hours.
     constexpr std::size_t keptLogs = 50;
@@ -319,6 +337,13 @@ namespace
 
     void InstallBudgetHooks()
     {
+        if (REL::Module::get().version() != legacyHooksRuntime) {
+            if (enableCorrection || enableNativePacing) {
+                SKSE::log::warn("Legacy [General] budget correction and [NativePacing] are only supported on Skyrim 1.6.1170; skipping on {}",
+                    REL::Module::get().version().string());
+            }
+            return;
+        }
         bool installBudget = enableCorrection;
         if (!installBudget) {
             SKSE::log::info("Compensation disabled in plugin INI");
@@ -417,21 +442,41 @@ namespace
 SKSE_PLUGIN_VERSION = [] {
     SKSE::PluginVersionData info{};
     info.PluginName(pluginName);
-    info.PluginVersion({ 0, 3, 0, 0 });
-    info.CompatibleVersions({ runtime });
+    info.PluginVersion(pluginVersion);
+    info.UsesAddressLibrary();
     info.UsesUpdatedStructs();
+    // Clear kVersionIndependentEx_AddressLibraryV5 so SKSE for 1.7.x refuses cleanly instead of
+    // loading against an Address Library format this CommonLibSSE-NG build cannot read.
+    info.versionIndependenceEx = 0;
     return info;
 }();
 
+SKSE_PLUGIN_QUERY(const SKSE::QueryInterface* skse, SKSE::PluginInfo* info)
+{
+    if (!skse || !info || skse->IsEditor()) {
+        return false;
+    }
+    info->infoVersion = SKSE::PluginInfo::kVersion;
+    info->name = pluginName;
+    info->version = static_cast<std::uint32_t>(pluginVersion.pack());
+    return skse->RuntimeVersion() == SKSE::RUNTIME_SSE_1_5_97;
+}
+
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
-    if (skse->RuntimeVersion() != runtime) {
+    if (!skse || skse->IsEditor() || !IsSupportedRuntime(skse->RuntimeVersion())) {
         return false;
     }
     // Before the log is opened: the previous session's log is moved aside instead of being overwritten.
     const auto logDirectory = SKSE::log::log_directory();
     const auto history = logDirectory ? LogHistory::Keep(*logDirectory, pluginName, keptLogs) : LogHistory::Result{};
     SKSE::Init(skse, { .logName = pluginName, .trampoline = true, .trampolineSize = 256 });
+    // CommonLibSSE-NG's InitTrampoline skips create() if an older SE SKSE lacks kTrampoline.
+    if (SKSE::GetTrampoline().capacity() < 256) {
+        SKSE::GetTrampoline().create(256);
+    }
+    SKSE::log::info("Loaded {} v{} on Skyrim {} (SKSE {:08X})", pluginName, pluginVersion.string(),
+        skse->RuntimeVersion().string(), skse->SKSEVersion());
     if (!history.kept.empty()) {
         SKSE::log::info("The previous session's log was kept as {}; {} older log(s) removed, up to {} are kept",
             history.kept.filename().string(), history.removed, keptLogs);
